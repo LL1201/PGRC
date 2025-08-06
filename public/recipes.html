@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGRC - Ricette</title>
+    <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/recipes.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
+                <span class="logo-text">PGRC</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipes.html">Ricette</a></li>
+                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
+                <li id="auth-link"><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="recipes-container">
+        <h1>Esplora Ricette</h1>
+
+        <section class="search-section">
+            <input type="text" id="search-input" placeholder="Cerca per nome o ingrediente...">
+            <button id="search-button" class="btn primary-btn">Cerca</button>
+            <button id="reset-button" class="btn">Reset</button>
+        </section>
+
+        <section class="alphabetical-filter">
+            <label>O cerca per lettera:</label>
+            <div class="letter-buttons">
+            </div>
+        </section>
+
+        <section class="recipes-list">
+            <h2>Risultati della Ricerca</h2>
+            <div id="recipes-results" class="grid-container">
+                <p id="no-results-message">Nessuna ricetta trovata. Prova una ricerca diversa!</p>
+            </div>
+
+            <div class="pagination-controls">
+                <button id="prev-page" class="btn" disabled>Precedente</button>
+                <span id="page-info">Pagina 1</span>
+                <button id="next-page" class="btn">Successiva</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/recipes.js"></script>
+    <script src="js/authUtils.js"></script>
+</body>
+
+</html>

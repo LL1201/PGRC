@@ -1,0 +1,61 @@
+/* public/css/verify-account.css */
+
+.verify-container {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.verify-content {
+    background-color: var(--white-color);
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.verify-content h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#verification-message {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin: 20px 0;
+}
+
+/* Spinner Styles */
+.spinner {
+    border: 4px solid var(--light-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Messaggi di stato (riuso da style.css ma con display block) */
+.message.success,
+.message.error {
+    display: block;
+    margin-top: 15px;
+}
+
+/* Link di reindirizzamento */
+#login-redirect-link {
+    margin-top: 20px;
+    display: none;
+    /* Nascosto di default, mostrato da JS */
+}

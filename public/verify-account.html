@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGRC - Verifica Account</title>
+    <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/verify-account.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
+                <span class="logo-text">PGRC</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipes.html">Ricette</a></li>
+                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="verify-container">
+        <div class="verify-content">
+            <h1>Verifica il tuo Account</h1>
+            <div id="loading-spinner" class="spinner"></div>
+            <p id="verification-message">Stiamo verificando il tuo account...</p>
+            <a href="login.html" id="login-redirect-link" class="btn primary-btn" style="display: none;">Vai al
+                Login</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    </footer>
+
+    <script src="js/verify-account.js"></script>
+</body>
+
+</html>

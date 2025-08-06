@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGRC - Login / Registrazione</title>
+    <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="js/auth.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
+                <span class="logo-text">PGRC</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipes.html">Ricette</a></li>
+                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
+                <li id="auth-link"><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-form-wrapper">
+            <div class="tabs">
+                <button class="tab-button active" id="login-tab">Login</button>
+                <button class="tab-button" id="register-tab">Registrazione</button>
+            </div>
+
+            <form id="login-form" class="auth-form active">
+                <h2>Accedi al tuo account</h2>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <!-- type text perché sennò c'era la validazione integrata del browser...-->
+                    <input type="text" id="login-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Accedi</button>
+                <div class="message" id="login-message"></div>
+            </form>
+
+            <form id="register-form" class="auth-form">
+                <h2>Registra un nuovo account</h2>
+                <div class="form-group">
+                    <label>Nome Utente:</label>
+                    <input type="text" id="register-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="register-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="register-password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label>Conferma Password:</label>
+                    <input type="password" id="register-confirm-password" name="confirm_password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Registrati</button>
+                <div class="message" id="register-message"></div>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    </footer>
+</body>
+
+</html>

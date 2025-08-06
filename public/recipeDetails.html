@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGRC - Il mio Ricettario</title>
+    <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cookbook.css">
+    <link rel="stylesheet" href="css/recipeDetails.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
+                <span class="logo-text">PGRC</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="recipes.html">Ricette</a></li>
+                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
+                <li id="auth-link"><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="recipe-details-container">
+        <div id="recipe-content">
+            <!-- Recipe Container -->
+            <div id="recipe-container" style="display: none;">
+                <h1 id="recipe-title" class="recipe-details-title"></h1>
+
+                <div class="recipe-details-image">
+                    <img id="recipe-image" src="" alt="">
+                </div>
+
+                <div class="recipe-info">
+                    <div class="ingredients-box">
+                        <h3>Ingredienti</h3>
+                        <ul id="ingredients-list" class="ingredients-list">
+                        </ul>
+                    </div>
+
+                    <div class="recipe-meta">
+                        <h3>Informazioni</h3>
+                        <div class="meta-item">
+                            <span class="meta-label">Categoria:</span>
+                            <span id="recipe-category"></span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Origine:</span>
+                            <span id="recipe-area"></span>
+                        </div>
+                        <div id="youtube-container" class="meta-item" style="display: none;">
+                            <span class="meta-label">Video:</span>
+                            <a id="youtube-link" href="" target="_blank">Guarda su YouTube</a>
+                        </div>
+                        <div id="tags-container" class="meta-item" style="display: none;">
+                            <span class="meta-label">Tags:</span>
+                            <br>
+                            <div id="tags-list" class="tags-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instructions-section">
+                    <h3>Procedimento</h3>
+                    <div id="recipe-instructions" class="instructions-text"></div>
+                </div>
+            </div>
+
+            <!-- Error Container -->
+            <div id="error-container" class="error-container" style="display: none;">
+                <h2 id="error-title"></h2>
+                <p id="error-message"></p>
+                <a href="recipes.html" class="btn primary-btn">Torna alle ricette</a>
+            </div>
+
+            <!-- Loading Container -->
+            <div id="loading-container" class="loading-container">
+                <p>Caricamento ricetta...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/recipeDetails.js"></script>
+    <script src="js/authUtils.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,203 @@
+:root {
+    --primary-color: #ff9100;
+    --secondary-color: #FFC107;
+    --dark-color: #333;
+    --light-color: #f4f4f4;
+    --text-color: #333;
+    --white-color: #fff;
+    --border-color: #ddd;
+    --error-color: #d32f2f;
+    --success-color: #388e3c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    /*TODO*/
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--light-color);
+    display: flex;
+    flex-direction: column;
+    /*vh: It stands for viewport height. The viewport refers to the browser window size. 
+    Thus when using "vh" as a unit, the element’s height is adjusted relative to the browser
+     window (viewport’s) height.
+     forza il body a occupare tutta la viewport possibile in modo da spingere il footer sempre in fondo alla pagina*/
+    min-height: 100vh;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    list-style: none;
+}
+
+header {
+    background: var(--dark-color);
+    color: var(--white-color);
+    /*TODO*/
+    padding: 1rem 0;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+header nav {
+    /*flex perché voglio un layout flessibile a seconda del contenuto, perché varia se loggato o meno*/
+    display: flex;
+    /*space between per avere lo stesso spazio tra i menu*/
+    justify-content: space-between;
+    /*il modo in cui riempiono lo spazio verticale
+    stretch default 
+    start all'inizio, end al bottom, centrer ok ci siamo capiti*/
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--white-color);
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    margin-left: 20px;
+}
+
+.logo-img {
+    width: 80px;
+    height: auto;
+    display: block;
+}
+
+.nav-links {
+    display: flex;
+}
+
+.nav-links li {
+    margin-left: 20px;
+}
+
+.nav-links a {
+    color: var(--white-color);
+    font-weight: bold;
+    padding: 5px 10px;
+}
+
+.nav-links a:hover {
+    background-color: var(--primary-color);
+    text-decoration: none;
+}
+
+#cookbook-nav-item {
+    display: none;
+}
+
+main {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    clear: both;
+    flex: 1;
+}
+
+.description {
+    background: var(--primary-color);
+    color: var(--white-color);
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.description h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.description p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.primary-btn {
+    background-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+.btn:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+.features {
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.feature-box {
+    float: left;
+    width: 30%;
+    margin: 1.5%;
+    background-color: var(--white-color);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.feature-box h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+footer {
+    background: var(--dark-color);
+    color: var(--white-color);
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+    clear: both;
+}
+
+.message {
+    padding: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.message.error {
+    background-color: #ffebee;
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+}
+
+.message.success {
+    background-color: #e8f5e9;
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
