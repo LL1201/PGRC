@@ -75,7 +75,6 @@
 
 .grid-container {
     display: grid;
-
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     column-gap: 20px;
     row-gap: 20px;
@@ -165,9 +164,15 @@
     margin: 0 15px;
 }
 
+.btn.add-to-cookbook-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #666;
+    margin: 5px;
+}
+
 .btn.add-to-cookbook-btn {
     background-color: #007bff;
     color: var(--white-color);
     margin: 5px;
-
 }

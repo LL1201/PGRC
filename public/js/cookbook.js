@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const pageInfoSpanCookbook = document.getElementById('page-info-cookbook');
 
     let currentPageCookbook = 1;
-    const itemsPerPageCookbook = 10;
+    const itemsPerPageCookbook = 12;
 
     //per visualizzare le ricette nel ricettario
     function displayCookbookRecipes(recipes)
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () =>
             {
                 const data = await response.json();
                 displayCookbookRecipes(data.recipes);
-                updatePaginationControlsCookbook(data.totalCount || data.recipes.length);
+                updatePaginationControlsCookbook(data.total);
             } else
             {
                 const errorData = await response.json();
@@ -106,46 +106,50 @@ document.addEventListener('DOMContentLoaded', () =>
 
     function updatePaginationControlsCookbook(totalResults)
     {
-        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook}`;
+        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${Math.ceil(totalResults / itemsPerPageCookbook)}`;
         prevPageBtnCookbook.disabled = currentPageCookbook === 1;
-        nextPageBtnCookbook.disabled = totalResults < itemsPerPageCookbook;
+        nextPageBtnCookbook.disabled = totalResults <= itemsPerPageCookbook;
     }
 
     async function handleRemoveFromCookbook(event)
     {
-        if (!confirm('Sei sicuro di voler rimuovere questa ricetta dal tuo ricettario?'))
-        {
-            return;
-        }
-
         if (!authUtils.requireAuth()) return;
 
         const cookbookRecipeId = event.target.dataset.cookbookrecipeid;
         const userId = localStorage.getItem('userId');
 
-        try
-        {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response) return;
-
-            const data = await response.json();
-
-            if (response.ok)
+        alertMsgs.showConfirmation(
+            'Sei sicuro di voler rimuovere questa ricetta dal tuo ricettario?',
+            async () =>
             {
-                alert(data.message);
-                fetchCookbookRecipes();
-            } else
-            {
-                alert(data.message || 'Errore durante la rimozione della ricetta.');
-            }
-        } catch (error)
-        {
-            console.error('Network error removing recipe:', error);
-            alert('Si è verificato un errore di rete durante la rimozione.');
-        }
+                try
+                {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response) return;
+
+                    const data = await response.json();
+
+                    if (response.ok)
+                    {
+                        alertMsgs.showSuccess(data.message);
+                        fetchCookbookRecipes();
+                    } else
+                    {
+                        alertMsgs.showError(data.message || 'Errore durante la rimozione della ricetta.');
+                    }
+                } catch (error)
+                {
+                    console.error('Network error removing recipe:', error);
+                    alertMsgs.showError('Si è verificato un errore di rete durante la rimozione.');
+                }
+            },
+            null,
+            'Rimuovi',
+            'Annulla'
+        );
     }
 
     async function handleEditNote(event)
@@ -156,38 +160,44 @@ document.addEventListener('DOMContentLoaded', () =>
         const currentNote = event.target.dataset.privatenote;
         const userId = localStorage.getItem('userId');
 
-        const newNote = prompt('Modifica la tua nota privata (lascia vuoto per rimuovere):', currentNote);
-
-        if (newNote === null)
-            return;
-
-        try
-        {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ privateNote: newNote.trim() })
-            });
-
-            if (!response) return;
-
-            const data = await response.json();
-
-            if (response.ok)
+        alertMsgs.showPrompt(
+            'Modifica la tua nota privata per questa ricetta:',
+            currentNote,
+            async (newNote) =>
             {
-                alert(data.message);
-                fetchCookbookRecipes();
-            } else
-            {
-                alert(data.message || 'Errore durante l\'aggiornamento della nota.');
-            }
-        } catch (error)
-        {
-            console.error('Network error updating note:', error);
-            alert('Si è verificato un errore di rete durante l\'aggiornamento.');
-        }
+                try
+                {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ privateNote: newNote.trim() })
+                    });
+
+                    if (!response) return;
+
+                    const data = await response.json();
+
+                    if (response.ok)
+                    {
+                        alertMsgs.showSuccess(data.message);
+                        fetchCookbookRecipes();
+                    } else
+                    {
+                        alertMsgs.showError(data.message || 'Errore durante l\'aggiornamento della nota.');
+                    }
+                } catch (error)
+                {
+                    console.error('Network error updating note:', error);
+                    alertMsgs.showError('Si è verificato un errore di rete durante l\'aggiornamento.');
+                }
+            },
+            null,
+            'Salva',
+            'Annulla',
+            'Scrivi qui la tua nota privata... (lascia vuoto per rimuovere)'
+        );
     }
 
     prevPageBtnCookbook.addEventListener('click', () =>

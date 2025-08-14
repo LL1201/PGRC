@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const itemsPerPage = 12;
     let currentQuery = { q: '', letter: '' };
 
-    //genera i pulsanti per il filtro alfabetico
+    //genera i pulsanti per il filtro alfabetico e gestisce il loro evento di click
     function generateAlphabetButtons()
     {
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -23,27 +23,27 @@ document.addEventListener('DOMContentLoaded', () =>
             const button = document.createElement('button');
             button.classList.add('btn');
             button.textContent = letter;
-            button.dataset.letter = letter; // Salva la lettera nel dataset
+            button.dataset.letter = letter; //li genera con l'attributo data-letter
             letterButtonsContainer.appendChild(button);
 
             button.addEventListener('click', () =>
             {
-                // Rimuovi 'active' da tutti i pulsanti lettera
+                //rimuove la classe css active da tutti i pulsanti lettera in modo da applicare lo stile corretto
                 document.querySelectorAll('.letter-buttons .btn').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active'); // Aggiungi 'active' al pulsante cliccato
+                button.classList.add('active'); //aggiunge la classe css active al pulsante cliccato
 
-                searchInput.value = ''; // Pulisci il campo di ricerca testuale
-                currentPage = 1; // Resetta la pagina
+                searchInput.value = '';
+                currentPage = 1;
                 currentQuery = { q: '', letter: letter };
                 fetchRecipes();
             });
         });
     }
 
-    // Funzione per visualizzare le ricette
+    //funzione per visualizzare le ricette
     function displayRecipes(recipes)
     {
-        recipesResultsContainer.innerHTML = ''; // Pulisce i risultati precedenti
+        recipesResultsContainer.innerHTML = ''; //pulisce i risultati precedenti
         noResultsMessage.style.display = 'none';
 
         if (recipes && recipes.length > 0)
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () =>
                 const recipeCard = document.createElement('div');
                 recipeCard.classList.add('recipe-card');
                 recipeCard.innerHTML = `
-                    <img src="${recipe.mealThumb || 'https://via.placeholder.com/200'}" alt="${recipe.name}">
+                    <img src="${recipe.mealThumb || 'https://dummyimage.com/200'}" alt="${recipe.name}">
                     <div class="recipe-card-content">
                         <h3>${recipe.name}</h3>
                         <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () =>
                 `; //TODO - continuare con l'aggiunta della ricetta al ricettario, il bottone sopra qua aggiunto
                 recipesResultsContainer.appendChild(recipeCard);
             });
-            // Aggiungi event listener ai nuovi pulsanti "Vedi Dettagli"
+
+            //aggiunge event listener ai nuovi pulsanti per i dettagli delle ricette
             document.querySelectorAll('.view-details-btn').forEach(button =>
             {
                 button.addEventListener('click', (event) =>
@@ -72,13 +73,26 @@ document.addEventListener('DOMContentLoaded', () =>
                     window.open('recipeDetails.html?id=' + mealDbId).focus();
                 });
             });
+
+            //event listener per il bottone per aggiungere al proprio ricettario
+            document.querySelectorAll('.add-to-cookbook-btn').forEach(button =>
+            {
+                if (authUtils.isAuthenticated())
+                    button.addEventListener('click', (event) =>
+                    {
+                        button.disabled = false;
+                        const mealDbId = event.target.dataset.mealid;
+                        addToCookbook(mealDbId);
+                    });
+                else
+                    button.disabled = true;
+            });
         } else
         {
             noResultsMessage.style.display = 'block';
         }
     }
 
-    // Funzione per effettuare la chiamata API per le ricette
     async function fetchRecipes()
     {
         //const token = localStorage.getItem('accessToken');
@@ -114,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () =>
             {
                 const data = await response.json();
                 displayRecipes(data.recipes);
-                updatePaginationControls(data.total); // Assumi totalCount se il backend lo fornisce
+                updatePaginationControls(data.total);
             } else
             {
                 const errorData = await response.json();
@@ -134,16 +148,43 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    // Funzione per aggiornare i controlli di paginazione
+    //funzione per aggiornare i controlli di paginazione
     function updatePaginationControls(totalResults)
     {
-        pageInfoSpan.textContent = `Pagina ${currentPage}`;
+        //se totalResult è maggiore di 0, allora calcola il numero di pagine totali, altrimenti mette 1 di 1
+        pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1}`;
         prevPageBtn.disabled = currentPage === 1;
-        // Questa logica per next_page è semplificata. Idealmente, il backend dovrebbe
-        // restituire il numero totale di risultati per calcolare se c'è una prossima pagina.
-        // Per ora, assumiamo che se la pagina corrente ha meno di `itemsPerPage`, non ci sia una prossima.
-        nextPageBtn.disabled = totalResults < itemsPerPage; // Se hai un 'totalCount' dal backend, usalo
+        nextPageBtn.disabled = totalResults <= itemsPerPage;
     }
+
+    async function addToCookbook(mealDbId)
+    {
+        if (!authUtils.requireAuth()) return;
+
+        const userId = localStorage.getItem('userId');
+        const url = `/pgrc/api/users/${userId}/cookbook`;
+
+        const response = await authUtils.authenticatedFetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mealDbId: parseInt(mealDbId), privateNote: "ss" })
+        });
+
+        if (!response) return;
+
+        const data = await response.json();
+
+        if (response.ok)
+        {
+            alertMsgs.showSuccess(data.message);
+        } else
+        {
+            alertMsgs.showError(data.message);
+        }
+    }
+
 
     // Event Listeners
     searchButton.addEventListener('click', () =>

@@ -77,7 +77,7 @@ router.get('/search', async (req, res) =>
 
         res.status(200).json({
             recipes: paginatedRecipes,
-            total: paginatedRecipes.length
+            total: total
         });
     } catch (error)
     {
