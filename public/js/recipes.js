@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () =>
                         <button class="btn primary-btn view-details-btn" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
                         <button class="btn add-to-cookbook-btn" data-mealid="${recipe.mealDbId}">Aggiungi al tuo ricettario</button>
                     </div>
-                `; //TODO - continuare con l'aggiunta della ricetta al ricettario, il bottone sopra qua aggiunto
+                `;
                 recipesResultsContainer.appendChild(recipeCard);
             });
 
@@ -95,8 +95,6 @@ document.addEventListener('DOMContentLoaded', () =>
 
     async function fetchRecipes()
     {
-        //const token = localStorage.getItem('accessToken');
-
         //in pratica il range è [start, end)
         const startIndex = (currentPage - 1) * itemsPerPage;
         let url = `/pgrc/api/recipes/search?start=${startIndex}&end=${startIndex + itemsPerPage}`;
@@ -117,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         try
         {
-            const response = await fetch(url, {
+            const response = await authUtils.authenticatedFetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -170,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () =>
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ mealDbId: parseInt(mealDbId), privateNote: "ss" })
+            body: JSON.stringify({ mealDbId: parseInt(mealDbId) })
         });
 
         if (!response) return;

@@ -1,4 +1,5 @@
 /* public/css/cookbook.css */
+/*TODO - capire perché qua non è responsice come ricette*/
 
 .cookbook-container {
     padding: 20px;
@@ -26,7 +27,10 @@
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    column-gap: 20px;
+    row-gap: 20px;
     align-items: start;
     overflow: visible;
     padding-bottom: 20px;
@@ -131,6 +135,5 @@
 .recipe-card-content {
     text-align: center;
     width: 100%;
-    max-width: 500px;
-    height: auto
+    height: auto;
 }

@@ -109,6 +109,8 @@ document.addEventListener('DOMContentLoaded', () =>
         nextPageBtnCookbook.disabled = totalResults <= itemsPerPageCookbook;
     }
 
+    //TODO - quando viene rimossa la ricetta bisogna gestire la riduzione del numero di pagine, sennò 
+    //l'utente rischia di trovarsi in una pagina che non esiste...
     async function handleRemoveFromCookbook(event)
     {
         if (!authUtils.requireAuth()) return;
