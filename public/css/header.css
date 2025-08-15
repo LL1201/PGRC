@@ -1,0 +1,66 @@
+ul {
+    list-style: none;
+}
+
+header {
+    background: var(--dark-color);
+    color: var(--white-color);
+    /*TODO*/
+    padding: 1rem 0;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+header nav {
+    /*flex perché voglio un layout flessibile a seconda del contenuto, perché varia se loggato o meno*/
+    display: flex;
+    /*space between per avere lo stesso spazio tra i menu*/
+    justify-content: space-between;
+    /*il modo in cui riempiono lo spazio verticale
+    stretch default 
+    start all'inizio, end al bottom, centrer ok ci siamo capiti*/
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--white-color);
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    margin-left: 20px;
+}
+
+.logo-img {
+    width: 80px;
+    height: auto;
+    display: block;
+}
+
+.nav-links {
+    display: flex;
+}
+
+.nav-links li {
+    margin-left: 20px;
+}
+
+.nav-links a {
+    color: var(--white-color);
+    font-weight: bold;
+    padding: 5px 10px;
+}
+
+.nav-links a:hover {
+    background-color: var(--primary-color);
+    text-decoration: none;
+}
+
+#cookbook-nav-item {
+    display: none;
+}
