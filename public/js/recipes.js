@@ -157,6 +157,7 @@ document.addEventListener('DOMContentLoaded', () =>
         nextPageBtn.disabled = totalResults <= itemsPerPage;
     }
 
+    //TODO - manca la specifica della nota quando aggiunto al ricettario
     async function addToCookbook(mealDbId)
     {
         if (!authUtils.requireAuth()) return;

@@ -29,10 +29,8 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             const recipeCard = document.createElement('div');
             recipeCard.classList.add('recipe-card');
-            recipeCard.innerHTML = `
-                <div style="text-align: center;">
-                    <img src="${recipe.mealThumb}" alt="${recipe.name}">
-                </div>
+            recipeCard.innerHTML = `                
+                <img src="${recipe.mealThumb}" alt="${recipe.name}">                
                 <div class="recipe-card-content">
                     <h3>${recipe.name}</h3>
                     <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
