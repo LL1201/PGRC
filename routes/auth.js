@@ -3,7 +3,8 @@ const router = express.Router();
 const emailValidator = require("email-validator");
 const bcrypt = require("bcryptjs");
 const { getDb } = require("../db/db.js");
-const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, findRefreshTokenInDb } = require("../utils/authUtil");
+const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken } = require("../utils/authUtil");
+const authenticateToken = require('../middleware/authMiddleware');
 
 router.post("/login", async (req, res) =>
 {
@@ -149,6 +150,31 @@ router.post("/confirm-account", async (req, res) =>
     {
         console.error("Error during account verification:", e);
         res.status(500).json({ message: 'An internal server error occurred during verification.' });
+    }
+});
+
+router.get("/access-token/verify-token", authenticateToken, async (req, res) =>
+{
+    try
+    {
+        const db = getDb();
+        const user = await db.collection('users').findOne(
+            { _id: req.userObjectId },
+            { projection: { _id: 1, username: 1, email: 1 } } // Seleziona solo i campi che vuoi restituire
+        );
+
+        if (!user)
+        {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        res.status(200).json({
+            message: 'Token is valid.'
+        });
+    } catch (error)
+    {
+        console.error('Error in /verify-token endpoint:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
 });
 

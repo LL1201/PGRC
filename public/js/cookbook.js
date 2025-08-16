@@ -108,10 +108,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
     function updatePaginationControlsCookbook(totalResults)
     {
-        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1;
-        pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalPages}`;
-        prevPageBtn.disabled = currentPage === 1;
-        nextPageBtn.disabled = currentPage >= totalPages;
+        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPageCookbook) : 1;
+        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${totalPages}`;
+        prevPageBtnCookbook.disabled = currentPageCookbook === 1;
+        nextPageBtnCookbook.disabled = currentPageCookbook >= totalPages;
     }
 
     //TODO - quando viene rimossa la ricetta bisogna gestire la riduzione del numero di pagine, sennò 

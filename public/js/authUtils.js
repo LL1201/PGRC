@@ -82,11 +82,33 @@ async function authenticatedFetch(url, options = {})
     }
 }
 
-function isAuthenticated()
+async function isAuthenticated()
 {
     const token = localStorage.getItem('accessToken');
-    const userId = localStorage.getItem('userId');
-    return !!(token && userId);
+    //const userId = localStorage.getItem('userId');    
+
+    try
+    {
+        let response = await fetch('/pgrc/api/auth/access-token/verify-token', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401 || response.status === 403)
+        {
+            const newToken = await refreshAccessToken();
+
+            if (!newToken)
+                return null;
+            else
+                return true;
+        }
+    } catch (error)
+    {
+        console.error('Error during token verification:', error);
+    }
 }
 
 //controlla se l'utente è loggato, in caso contrario manda al login
