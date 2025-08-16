@@ -1,4 +1,3 @@
-// TODO: Aggiungere logica per il modale di modifica nota
 document.addEventListener('DOMContentLoaded', () =>
 {
     const cookbookRecipesContainer = document.getElementById('cookbook-recipes');
@@ -52,19 +51,17 @@ document.addEventListener('DOMContentLoaded', () =>
             cookbookRecipesContainer.appendChild(recipeCard);
         });
 
-        //event listener per il btn rimuovi
+        //event listeners
         document.querySelectorAll('.remove-btn').forEach(button =>
         {
             button.addEventListener('click', handleRemoveFromCookbook);
         });
 
-        //event listener per il btn modifica nota
         document.querySelectorAll('.edit-note-btn').forEach(button =>
         {
             button.addEventListener('click', handleEditNote);
         });
 
-        //event listener per il btn dettagli
         document.querySelectorAll('.view-details-btn').forEach(button =>
         {
             button.addEventListener('click', (event) =>
@@ -111,10 +108,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
     function updatePaginationControlsCookbook(totalResults)
     {
-        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPageCookbook) : 1;
-        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${totalPages}`;
-        prevPageBtnCookbook.disabled = currentPageCookbook === 1;
-        nextPageBtnCookbook.disabled = currentPageCookbook >= totalPages || totalResults === 0;
+        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1;
+        pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalPages}`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage >= totalPages;
     }
 
     //TODO - quando viene rimossa la ricetta bisogna gestire la riduzione del numero di pagine, sennò 

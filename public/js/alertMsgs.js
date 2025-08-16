@@ -1,7 +1,6 @@
-// Alert message utility functions
-//TODO - vedere bene e capire il codice scritto e semplificare il css magari
+//utility per mostrare alert o prompt
 
-// Show alert message with different types
+//mostra alert a seconda del tipo di messaggio che viene passato
 function showAlert(message, type = 'info', duration = 5000)
 {
     // Remove existing alert if present
@@ -28,7 +27,6 @@ function showAlert(message, type = 'info', duration = 5000)
     }
 }
 
-// Hide alert message
 function hideAlert()
 {
     const existingAlert = document.querySelector('.alert');
@@ -38,7 +36,7 @@ function hideAlert()
     }
 }
 
-// Convenience functions for different alert types
+//funzioni che vengono effettivamente chiamate per mostrare i messaggi
 function showSuccess(message, duration = 5000)
 {
     showAlert(message, 'success', duration);
@@ -59,7 +57,6 @@ function showInfo(message, duration = 5000)
     showAlert(message, 'info', duration);
 }
 
-// Show confirmation dialog
 function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Conferma', cancelText = 'Annulla')
 {
     // Remove existing dialogs
@@ -115,7 +112,6 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
     });
 }
 
-// Hide confirmation dialog
 function hideConfirmation()
 {
     const existingConfirmation = document.querySelector('.confirmation-overlay');
@@ -125,7 +121,6 @@ function hideConfirmation()
     }
 }
 
-// Show custom prompt dialog
 function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, confirmText = 'Conferma', cancelText = 'Annulla', placeholder = '')
 {
     // Remove existing dialogs
@@ -204,7 +199,6 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
     });
 }
 
-// Hide prompt dialog
 function hidePrompt()
 {
     const existingPrompt = document.querySelector('.prompt-overlay');
@@ -214,7 +208,6 @@ function hidePrompt()
     }
 }
 
-// Export functions for use in other modules
 window.alertMsgs = {
     showAlert,
     hideAlert,

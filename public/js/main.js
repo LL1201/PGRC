@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
     if (authUtils.isAuthenticated())
     {
-        // Nascondi login e mostra dropdown profilo + ricettario
+        //nascondi login e mostra dropdown del profilo
         authLink.style.display = 'none';
         profileDropdown.style.display = 'block';
         cookbookNavItem.style.display = 'block';
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () =>
         logoutBtn.addEventListener('click', handleLogout);
     } else
     {
-        // Mostra login e nascondi dropdown profilo + ricettario
+        //mostra login e nascondi dropdown profilo
         authLink.style.display = 'block';
         profileDropdown.style.display = 'none';
         cookbookNavItem.style.display = 'none';

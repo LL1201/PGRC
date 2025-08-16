@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const loginMessage = document.getElementById('login-message');
     const registerMessage = document.getElementById('register-message');
 
-    // Funzione per mostrare/nascondere i messaggi
+    //funzione per mostrare/nascondere i messaggi di errore o successo
     function showMessage(element, msg, type)
     {
         element.textContent = msg;
@@ -20,14 +20,13 @@ document.addEventListener('DOMContentLoaded', () =>
         }, 10000);
     }
 
-    // Funzione di validazione email
     function isValidEmail(email)
     {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 
-    // Clear messages when switching tabs (Bootstrap handles tab switching automatically)
+    //pulisce i messaggi al cambio di pagina
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab =>
     {
         tab.addEventListener('shown.bs.tab', () =>

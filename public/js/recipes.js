@@ -110,11 +110,8 @@ document.addEventListener('DOMContentLoaded', () =>
             url += `&letter=${encodeURIComponent(currentQuery.letter)}`;
         else
         {
-            //TODO
-            // Se non c'è query o lettera, potresti caricare ricette recenti o popolari
-            // O mostrare un messaggio di invito alla ricerca
-            displayRecipes([]); // Non caricare nulla se non c'è una query iniziale
-            updatePaginationControls(0); // Disabilita i controlli
+            displayRecipes([]);
+            updatePaginationControls(0);
             return;
         }
 
@@ -154,13 +151,10 @@ document.addEventListener('DOMContentLoaded', () =>
     //funzione per aggiornare i controlli di paginazione
     function updatePaginationControls(totalResults)
     {
-        //TODO - capire perché non funziona
-        console.log(totalResults);
-        //se totalResult è maggiore di 0, allora calcola il numero di pagine totali, altrimenti mette 1 di 1
-        pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1}`;
+        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1;
+        pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalPages}`;
         prevPageBtn.disabled = currentPage === 1;
-        nextPageBtn.disabled = totalResults <= itemsPerPage;
-
+        nextPageBtn.disabled = currentPage >= totalPages;
     }
 
     //TODO - manca la specifica della nota quando aggiunto al ricettario
@@ -193,10 +187,10 @@ document.addEventListener('DOMContentLoaded', () =>
     }
 
 
-    // Event Listeners
+    //event Listeners
     searchButton.addEventListener('click', () =>
     {
-        // Rimuovi 'active' da tutti i pulsanti lettera
+        //rimuovi 'active' da tutti i pulsanti lettera
         document.querySelectorAll('.letter-buttons .btn').forEach(btn => btn.classList.remove('active'));
         currentPage = 1;
         currentQuery = { q: searchInput.value.trim(), letter: '' };
@@ -243,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () =>
         fetchRecipes();
     });
 
-    // Inizializzazione della pagina
+    //inizializzazione pagina
     generateAlphabetButtons();
     const initialCol = document.createElement('div');
     initialCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');

@@ -1,6 +1,5 @@
-// Utility functions for authentication and token management
+//utility per la gestione in comodità delle richieste autenticate
 
-// Refresh access token using refresh token
 async function refreshAccessToken()
 {
     try
@@ -33,7 +32,7 @@ async function refreshAccessToken()
     }
 }
 
-// Make authenticated fetch request with automatic token refresh
+//fetch autenticato automatico con eventuale rinnovo del refresh token
 async function authenticatedFetch(url, options = {})
 {
     const token = localStorage.getItem('accessToken');
@@ -45,7 +44,6 @@ async function authenticatedFetch(url, options = {})
         return null;
     }
 
-    // Add authorization header
     const authOptions = {
         ...options,
         headers: {
@@ -59,14 +57,15 @@ async function authenticatedFetch(url, options = {})
     {
         let response = await fetch(url, authOptions);
 
-        // If unauthorized, try to refresh token once
+        //se la richiesta precedente non va a buon fine per errori di autenticazione
+        //allora prova a fare il refresh del token
         if (response.status === 401 || response.status === 403)
         {
             const newToken = await refreshAccessToken();
 
             if (newToken)
             {
-                // Retry the request with new token
+                //riprova la richiesta con il nuovo token
                 authOptions.headers['Authorization'] = `Bearer ${newToken}`;
                 response = await fetch(url, authOptions);
             } else
@@ -83,7 +82,6 @@ async function authenticatedFetch(url, options = {})
     }
 }
 
-// Check if user is authenticated
 function isAuthenticated()
 {
     const token = localStorage.getItem('accessToken');
@@ -91,7 +89,7 @@ function isAuthenticated()
     return !!(token && userId);
 }
 
-// Redirect to login if not authenticated
+//controlla se l'utente è loggato, in caso contrario manda al login
 function requireAuth()
 {
     if (!isAuthenticated())
@@ -102,22 +100,20 @@ function requireAuth()
     return true;
 }
 
-// Logout user by clearing tokens and calling logout endpoint
 async function logout()
 {
     try
     {
-        // Call logout endpoint to invalidate refresh token
         await fetch('/pgrc/api/auth/logout', {
             method: 'POST',
-            credentials: 'include' // Include cookies
+            credentials: 'include' //per includere il cookie che contiene il refresh token
         });
     } catch (error)
     {
         console.error('Error during logout:', error);
     } finally
     {
-        // Clear local storage regardless of API call result
+        //pulizia local storage
         localStorage.removeItem('accessToken');
         localStorage.removeItem('userId');
         window.accessToken = null;
@@ -125,7 +121,6 @@ async function logout()
     }
 }
 
-// Export functions for use in other modules
 window.authUtils = {
     refreshAccessToken,
     authenticatedFetch,
