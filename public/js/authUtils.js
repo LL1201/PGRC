@@ -88,7 +88,6 @@ function isAuthenticated()
 {
     const token = localStorage.getItem('accessToken');
     const userId = localStorage.getItem('userId');
-    console.log('isAuthenticated:', token, userId);
     return !!(token && userId);
 }
 

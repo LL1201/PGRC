@@ -10,25 +10,10 @@
     --success-color: #388e3c;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    /*TODO*/
-    box-sizing: border-box;
-}
-
 body {
     font-family: Arial, sans-serif;
-    line-height: 1.5;
     color: var(--text-color);
     background-color: var(--light-color);
-    display: flex;
-    flex-direction: column;
-    /*vh: It stands for viewport height. The viewport refers to the browser window size. 
-    Thus when using "vh" as a unit, the element’s height is adjusted relative to the browser
-     window (viewport’s) height.
-     forza il body a occupare tutta la viewport possibile in modo da spingere il footer sempre in fondo alla pagina*/
-    min-height: 100vh;
 }
 
 a {
@@ -40,78 +25,52 @@ a:hover {
     text-decoration: underline;
 }
 
-main {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 20px;
-    clear: both;
-    flex: 1;
-}
-
 .description {
     background: var(--primary-color);
     color: var(--white-color);
-    padding: 40px 20px;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.description h1 {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-}
-
-.description p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
 }
 
 .btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: var(--secondary-color);
-    color: var(--dark-color);
-    border: none;
-    cursor: pointer;
     font-size: 1rem;
 }
 
 .primary-btn {
     background-color: var(--secondary-color);
     color: var(--dark-color);
+    border: 1px solid var(--secondary-color);
 }
 
-.btn:hover {
-    opacity: 0.8;
-    text-decoration: none;
-}
-
-.features {
-    overflow: hidden;
-    margin-bottom: 30px;
-}
-
-.feature-box {
-    float: left;
-    width: 30%;
-    margin: 1.5%;
-    background-color: var(--white-color);
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    text-align: center;
+.primary-btn:hover {
+    background-color: var(--primary-color);
+    border-color: var(--dark-color);
+    color: var(--white-color);
 }
 
 .feature-box h2 {
     color: var(--primary-color);
-    margin-bottom: 15px;
-    font-size: 1.5rem;
 }
 
-footer {
-    background: var(--dark-color);
+/* Bootstrap nav-link overrides for custom tabs */
+.nav-tabs .nav-link {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    border: 1px solid var(--border-color);
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: var(--primary-color);
     color: var(--white-color);
-    text-align: center;
-    padding: 20px 0;
-    margin-top: 30px;
-    clear: both;
+    border-color: var(--primary-color);
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-color: var(--primary-color);
+}
+
+/* Form focus states */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 145, 0, 0.25);
 }

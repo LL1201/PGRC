@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         document.title = `PGRC - ${recipe.name}`;
 
-        // Show recipe content and hide error
+        // Show recipe content and hide loading/error
         const recipeContainer = document.getElementById('recipe-container');
         const errorContainer = document.getElementById('error-container');
         const loadingContainer = document.getElementById('loading-container');
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () =>
             recipe.tags.forEach(tag =>
             {
                 const span = document.createElement('span');
-                span.className = 'tag';
+                span.className = 'badge tag me-1 mb-1';
                 span.textContent = tag;
                 tagsList.appendChild(span);
             });
@@ -85,8 +85,11 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         const recipeContainer = document.getElementById('recipe-container');
         const errorContainer = document.getElementById('error-container');
+        const loadingContainer = document.getElementById('loading-container');
+
         recipeContainer.style.display = 'none';
         errorContainer.style.display = 'block';
+        loadingContainer.style.display = 'none';
 
         document.getElementById('error-title').textContent = title;
         document.getElementById('error-message').textContent = message;

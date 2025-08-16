@@ -1,105 +1,63 @@
 /* public/css/recipes.css */
 
-.recipes-container {
-    padding: 20px;
-}
-
-.recipes-container h1 {
-    text-align: center;
+h1 {
     color: var(--primary-color);
-    margin-bottom: 30px;
-}
-
-.search-section {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.search-section input[type="text"] {
-    width: 300px;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    margin-right: 10px;
-}
-
-.search-section .btn {
-    padding: 10px 15px;
-    margin-right: 10px;
-}
-
-.alphabetical-filter {
-    text-align: center;
-    margin-bottom: 30px;
-    background-color: var(--white-color);
-    padding: 15px;
-    border: 1px solid var(--border-color);
-}
-
-.alphabetical-filter label {
-    font-weight: bold;
-    margin-right: 15px;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.letter-buttons {
-    text-align: center;
 }
 
 .letter-buttons .btn {
     width: 35px;
     height: 35px;
-    padding: 5px;
-    margin: 2px;
     font-size: 0.9rem;
     background-color: var(--light-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
+    padding: 0;
 }
 
 .letter-buttons .btn:hover {
     background-color: var(--primary-color);
     color: var(--white-color);
+    border-color: var(--primary-color);
 }
 
 .letter-buttons .btn.active {
     background-color: var(--primary-color);
     color: var(--white-color);
+    border-color: var(--primary-color);
 }
 
-.recipes-list h2 {
-    text-align: center;
-    color: var(--dark-color);
-    margin-bottom: 25px;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    column-gap: 20px;
-    row-gap: 20px;
-    align-items: start;
-    overflow: visible;
-    padding-bottom: 20px;
+#recipes-results {
+    min-height: 500px;
+    transition: all 0.3s ease;
 }
 
 .recipe-card {
-    float: none;
-    width: auto;
-    margin: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
     min-height: 400px;
     background-color: var(--white-color);
     border: 1px solid var(--border-color);
-    text-align: center;
+    border-radius: 0.375rem;
+    transition: transform 0.2s;
+}
+
+.recipe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-card img {
     width: 100%;
-    height: auto;
-    display: block;
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
 }
 
 .recipe-card-content {
@@ -107,6 +65,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    text-align: center;
 }
 
 .recipe-card h3 {
@@ -123,56 +82,31 @@
     font-size: 0.9rem;
     color: #666;
     margin-bottom: 15px;
+    flex-grow: 1;
 }
 
 .recipe-card .btn {
-    width: 90%;
-    padding: 8px;
-    font-size: 0.9rem;
     margin-top: auto;
-    align-self: center;
-}
-
-#no-results-message {
-    text-align: center;
-    font-size: 1.1rem;
-    color: #666;
-    margin: 30px 0;
-    clear: both;
-}
-
-.pagination-controls {
-    text-align: center;
-    margin-top: 20px;
-    clear: both;
-}
-
-.pagination-controls .btn {
-    padding: 8px 15px;
-    margin: 0 5px;
-}
-
-.pagination-controls .btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    color: #666;
-}
-
-#page-info {
-    font-weight: bold;
-    color: var(--dark-color);
-    margin: 0 15px;
-}
-
-.btn.add-to-cookbook-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    color: #666;
-    margin: 5px;
+    font-size: 0.9rem;
 }
 
 .btn.add-to-cookbook-btn {
     background-color: #007bff;
     color: var(--white-color);
-    margin: 5px;
+    border-color: #007bff;
+}
+
+.btn.add-to-cookbook-btn:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn.add-to-cookbook-btn:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: var(--white-color);
+}
+
+.pagination-controls .btn:disabled {
+    opacity: 0.5;
 }

@@ -44,21 +44,22 @@ document.addEventListener('DOMContentLoaded', () =>
     function displayRecipes(recipes)
     {
         recipesResultsContainer.innerHTML = ''; //pulisce i risultati precedenti
-        noResultsMessage.style.display = 'none';
 
         if (recipes && recipes.length > 0)
         {
             recipes.forEach(recipe =>
             {
                 const recipeCard = document.createElement('div');
-                recipeCard.classList.add('recipe-card');
+                recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3');
                 recipeCard.innerHTML = `
-                    <img src="${recipe.mealThumb || 'https://dummyimage.com/200'}" alt="${recipe.name}">
-                    <div class="recipe-card-content">
-                        <h3>${recipe.name}</h3>
-                        <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                        <button class="btn primary-btn view-details-btn" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
-                        <button class="btn add-to-cookbook-btn" data-mealid="${recipe.mealDbId}">Aggiungi al tuo ricettario</button>
+                    <div class="recipe-card h-100">
+                        <img src="${recipe.mealThumb || 'https://dummyimage.com/200'}" alt="${recipe.name}" class="card-img-top">
+                        <div class="recipe-card-content">
+                            <h3>${recipe.name}</h3>
+                            <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
+                            <button class="btn primary-btn view-details-btn w-100 mb-2" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
+                            <button class="btn add-to-cookbook-btn w-100" data-mealid="${recipe.mealDbId}">Aggiungi al tuo ricettario</button>
+                        </div>
                     </div>
                 `;
                 recipesResultsContainer.appendChild(recipeCard);
@@ -89,7 +90,11 @@ document.addEventListener('DOMContentLoaded', () =>
             });
         } else
         {
-            noResultsMessage.style.display = 'block';
+            const noResultsCol = document.createElement('div');
+            noResultsCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+            noResultsCol.style.minHeight = '300px';
+            noResultsCol.innerHTML = '<p class="text-center text-muted fs-5">Nessuna ricetta trovata. Prova una ricerca diversa!</p>';
+            recipesResultsContainer.appendChild(noResultsCol);
         }
     }
 
@@ -115,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         try
         {
-            const response = await authUtils.authenticatedFetch(url, {
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,10 +154,13 @@ document.addEventListener('DOMContentLoaded', () =>
     //funzione per aggiornare i controlli di paginazione
     function updatePaginationControls(totalResults)
     {
+        //TODO - capire perché non funziona
+        console.log(totalResults);
         //se totalResult è maggiore di 0, allora calcola il numero di pagine totali, altrimenti mette 1 di 1
         pageInfoSpan.textContent = `Pagina ${currentPage} di ${totalResults > 0 ? Math.ceil(totalResults / itemsPerPage) : 1}`;
         prevPageBtn.disabled = currentPage === 1;
         nextPageBtn.disabled = totalResults <= itemsPerPage;
+
     }
 
     //TODO - manca la specifica della nota quando aggiunto al ricettario
@@ -209,9 +217,14 @@ document.addEventListener('DOMContentLoaded', () =>
         document.querySelectorAll('.letter-buttons .btn').forEach(btn => btn.classList.remove('active'));
         currentPage = 1;
         currentQuery = { q: '', letter: '' };
-        displayRecipes([]); // Pulisce i risultati
-        noResultsMessage.textContent = 'Inizia la tua ricerca per trovare ricette!';
-        noResultsMessage.style.display = 'block';
+
+        const welcomeCol = document.createElement('div');
+        welcomeCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+        welcomeCol.style.minHeight = '300px';
+        welcomeCol.innerHTML = '<p class="text-center text-muted fs-5">Inizia la tua ricerca per trovare ricette!</p>';
+        recipesResultsContainer.innerHTML = '';
+        recipesResultsContainer.appendChild(welcomeCol);
+
         updatePaginationControls(0);
     });
 
@@ -232,8 +245,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
     // Inizializzazione della pagina
     generateAlphabetButtons();
-    // Non avviare una ricerca automatica al caricamento, aspetta l'input dell'utente
-    noResultsMessage.textContent = 'Inizia la tua ricerca per trovare ricette!';
-    noResultsMessage.style.display = 'block';
-    updatePaginationControls(0); // Disabilita controlli inizialmente
+    const initialCol = document.createElement('div');
+    initialCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+    initialCol.style.minHeight = '300px';
+    initialCol.innerHTML = '<p class="text-center text-muted fs-5">Inizia la tua ricerca per trovare ricette!</p>';
+    recipesResultsContainer.appendChild(initialCol);
+    updatePaginationControls(0);
 });

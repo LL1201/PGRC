@@ -24,35 +24,33 @@
     font-weight: bold;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    max-width: 1200px;
-    margin: 0 auto;
-    column-gap: 20px;
-    row-gap: 20px;
-    align-items: start;
-    overflow: visible;
-    padding-bottom: 20px;
+#cookbook-recipes {
+    min-height: 500px;
+    transition: all 0.3s ease;
 }
 
 .recipe-card {
-    float: none;
-    width: auto;
-    margin: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
-    min-height: 400px;
+    min-height: 450px;
     background-color: var(--white-color);
     border: 1px solid var(--border-color);
-    text-align: center;
+    border-radius: 0.375rem;
+    transition: transform 0.2s;
+}
+
+.recipe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-card img {
     width: 100%;
-    height: auto;
-    display: block;
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
 }
 
 .recipe-card-content {
@@ -60,6 +58,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    text-align: center;
 }
 
 .recipe-card h3 {
@@ -93,6 +92,7 @@
     background-color: #ccc;
     cursor: not-allowed;
     color: #666;
+    opacity: 0.5;
 }
 
 #page-info-cookbook {
@@ -103,23 +103,37 @@
 
 .cookbook-card-actions {
     margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     text-align: center;
 }
 
 .cookbook-card-actions .btn {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    margin: 2px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
 }
 
 .btn.remove-btn {
     background-color: var(--error-color);
     color: var(--white-color);
+    border-color: var(--error-color);
+}
+
+.btn.remove-btn:hover {
+    background-color: #b71c1c;
+    border-color: #b71c1c;
 }
 
 .btn.edit-note-btn {
     background-color: #007bff;
     color: var(--white-color);
+    border-color: #007bff;
+}
+
+.btn.edit-note-btn:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
 }
 
 .private-note-display {
@@ -129,11 +143,5 @@
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid var(--border-color);
-}
-
-.recipe-card-image,
-.recipe-card-content {
-    text-align: center;
-    width: 100%;
-    height: auto;
+    word-wrap: break-word;
 }

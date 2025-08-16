@@ -2,8 +2,6 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
     const cookbookRecipesContainer = document.getElementById('cookbook-recipes');
-    const emptyCookbookMessage = document.getElementById('empty-cookbook-message');
-    const authRequiredMessage = document.getElementById('auth-required-message');
     const prevPageBtnCookbook = document.getElementById('prev-page-cookbook');
     const nextPageBtnCookbook = document.getElementById('next-page-cookbook');
     const pageInfoSpanCookbook = document.getElementById('page-info-cookbook');
@@ -15,12 +13,19 @@ document.addEventListener('DOMContentLoaded', () =>
     function displayCookbookRecipes(recipes)
     {
         cookbookRecipesContainer.innerHTML = '';
-        emptyCookbookMessage.style.display = 'none';
-        authRequiredMessage.style.display = 'none';
 
         if (!recipes || recipes.length === 0)
         {
-            emptyCookbookMessage.style.display = 'block';
+            const emptyCol = document.createElement('div');
+            emptyCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+            emptyCol.style.minHeight = '300px';
+            emptyCol.innerHTML = `
+                <p class="text-center text-muted fs-5">
+                    Il tuo ricettario è vuoto! Inizia ad aggiungere ricette dalla pagina 
+                    <a href="recipes.html" class="fw-bold">Ricette</a>.
+                </p>
+            `;
+            cookbookRecipesContainer.appendChild(emptyCol);
             updatePaginationControlsCookbook(0);
             return;
         }
@@ -28,17 +33,19 @@ document.addEventListener('DOMContentLoaded', () =>
         recipes.forEach(recipe =>
         {
             const recipeCard = document.createElement('div');
-            recipeCard.classList.add('recipe-card');
-            recipeCard.innerHTML = `                
-                <img src="${recipe.mealThumb}" alt="${recipe.name}">                
-                <div class="recipe-card-content">
-                    <h3>${recipe.name}</h3>
-                    <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                    ${recipe.privateNote ? `<p class="private-note-display">Nota: ${recipe.privateNote}</p>` : ''}
-                    <div class="cookbook-card-actions">
-                        <button class="btn primary-btn view-details-btn" data-mealid="${recipe.mealDbId}">Dettagli</button>
-                        <button class="btn edit-note-btn" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Modifica Nota</button>
-                        <button class="btn remove-btn" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Rimuovi</button>
+            recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3');
+            recipeCard.innerHTML = `
+                <div class="recipe-card h-100">
+                    <img src="${recipe.mealThumb}" alt="${recipe.name}" class="card-img-top">
+                    <div class="recipe-card-content">
+                        <h3>${recipe.name}</h3>
+                        <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
+                        ${recipe.privateNote ? `<p class="private-note-display">Nota: ${recipe.privateNote}</p>` : ''}
+                        <div class="cookbook-card-actions">
+                            <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
+                            <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Modifica Nota</button>
+                            <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Rimuovi</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -104,9 +111,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
     function updatePaginationControlsCookbook(totalResults)
     {
-        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${Math.ceil(totalResults / itemsPerPageCookbook)}`;
+        const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPageCookbook) : 1;
+        pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${totalPages}`;
         prevPageBtnCookbook.disabled = currentPageCookbook === 1;
-        nextPageBtnCookbook.disabled = totalResults <= itemsPerPageCookbook;
+        nextPageBtnCookbook.disabled = currentPageCookbook >= totalPages || totalResults === 0;
     }
 
     //TODO - quando viene rimossa la ricetta bisogna gestire la riduzione del numero di pagine, sennò 
@@ -216,5 +224,16 @@ document.addEventListener('DOMContentLoaded', () =>
     });
 
     //popolamento della pagina, prima cosa che succede all'apertura 
-    fetchCookbookRecipes();
+    if (authUtils.isAuthenticated())
+    {
+        fetchCookbookRecipes();
+    } else
+    {
+        const authCol = document.createElement('div');
+        authCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+        authCol.style.minHeight = '300px';
+        authCol.innerHTML = '<p class="text-center text-muted fs-5">Accedi per visualizzare il tuo ricettario.</p>';
+        cookbookRecipesContainer.appendChild(authCol);
+        updatePaginationControlsCookbook(0);
+    }
 });

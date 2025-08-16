@@ -1,17 +1,24 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
     const authLink = document.getElementById('auth-link');
+    const profileDropdown = document.getElementById('profile-dropdown');
     const cookbookNavItem = document.getElementById('cookbook-nav-item');
-    const userId = localStorage.getItem('userId');
-    const accessToken = localStorage.getItem('accessToken');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    if (userId && accessToken)
+    if (authUtils.isAuthenticated())
     {
-        //se l'utente è loggato, mostra logout e il mio ricettario
-        authLink.innerHTML = '<a href="#" id="logout-btn">Logout</a>';
+        // Nascondi login e mostra dropdown profilo + ricettario
+        authLink.style.display = 'none';
+        profileDropdown.style.display = 'block';
         cookbookNavItem.style.display = 'block';
-        const logoutBtn = document.getElementById('logout-btn');
+
         logoutBtn.addEventListener('click', handleLogout);
+    } else
+    {
+        // Mostra login e nascondi dropdown profilo + ricettario
+        authLink.style.display = 'block';
+        profileDropdown.style.display = 'none';
+        cookbookNavItem.style.display = 'none';
     }
 
     async function handleLogout(event)

@@ -2,10 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const loginTab = document.getElementById('login-tab');
-    const registerTab = document.getElementById('register-tab');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form-element');
+    const registerForm = document.getElementById('register-form-element');
 
     const loginMessage = document.getElementById('login-message');
     const registerMessage = document.getElementById('register-message');
@@ -29,35 +27,19 @@ document.addEventListener('DOMContentLoaded', () =>
         return emailRegex.test(email);
     }
 
-    // Gestione del cambio tab
-    loginTab.addEventListener('click', () =>
+    // Clear messages when switching tabs (Bootstrap handles tab switching automatically)
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab =>
     {
-        loginTab.classList.add('active');
-        registerTab.classList.remove('active');
-        loginForm.classList.add('active');
-        registerForm.classList.remove('active');
-
-        //pulisce eventuali messaggi quando si cambia tab
-        loginMessage.classList.remove('show');
-        registerMessage.classList.remove('show');
+        tab.addEventListener('shown.bs.tab', () =>
+        {
+            loginMessage.classList.remove('show');
+            registerMessage.classList.remove('show');
+        });
     });
-
-    registerTab.addEventListener('click', () =>
-    {
-        registerTab.classList.add('active');
-        loginTab.classList.remove('active');
-        registerForm.classList.add('active');
-        loginForm.classList.remove('active');
-
-        //pulisce eventuali messaggi quando si cambia tab
-        loginMessage.classList.remove('show');
-        registerMessage.classList.remove('show');
-    });
-
 
     loginForm.addEventListener('submit', async (event) =>
     {
-        event.preventDefault(); // Previene il ricaricamento della pagina
+        event.preventDefault();
 
         const email = loginForm['login-email'].value;
         const password = loginForm['login-password'].value;
@@ -87,11 +69,9 @@ document.addEventListener('DOMContentLoaded', () =>
 
             if (response.ok)
             {
-                //salva l'access token in memoria
                 localStorage.setItem('accessToken', data.accessToken);
                 localStorage.setItem('userId', data.userId);
                 showMessage(loginMessage, data.message, 'success');
-                // Reindirizza l'utente dopo un breve ritardo per mostrare il messaggio
                 setTimeout(() =>
                 {
                     window.location.href = 'index.html';
@@ -107,10 +87,9 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     });
 
-    // --- Gestione del form di Registrazione ---
     registerForm.addEventListener('submit', async (event) =>
     {
-        event.preventDefault(); // Previene il ricaricamento della pagina
+        event.preventDefault();
 
         const username = registerForm['register-username'].value;
         const email = registerForm['register-email'].value;

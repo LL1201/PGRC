@@ -6,61 +6,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PGRC - Ricette</title>
     <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/recipes.css">
     <link rel="stylesheet" href="css/alertBanners.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
-                <span class="logo-text">PGRC</span>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-xl">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo.png" alt="Logo PGRC" class="logo-img">
+                    <span class="logo-text">PGRC</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="recipes.html">Ricette</a>
+                        </li>
+                        <li class="nav-item" id="cookbook-nav-item">
+                            <a class="nav-link" href="cookbook.html">Il mio Ricettario</a>
+                        </li>
+                        <li class="nav-item" id="auth-link">
+                            <a class="nav-link" href="login.html">Login</a>
+                        </li>
+                        <li class="nav-item dropdown" id="profile-dropdown" style="display: none;">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-expanded="false">Il mio profilo</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">I tuoi dati</a></li>
+                                <li><a class="dropdown-item" href="#">Cambia password</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="recipes.html">Ricette</a></li>
-                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
-                <li id="auth-link"><a href="login.html">Login</a></li>
-            </ul>
         </nav>
     </header>
 
-    <main class="recipes-container">
-        <h1>Esplora Ricette</h1>
+    <main class="container-xl flex-grow-1 py-4">
+        <h1 class="text-center mb-4">Esplora Ricette</h1>
 
-        <section class="search-section">
-            <input type="text" id="search-input" placeholder="Cerca per nome o ingrediente...">
-            <button id="search-button" class="btn primary-btn">Cerca</button>
-            <button id="reset-button" class="btn">Reset</button>
+        <section class="search-section text-center mb-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="input-group mb-3">
+                        <input type="text" id="search-input" class="form-control"
+                            placeholder="Cerca per nome o ingrediente...">
+                        <button id="search-button" class="btn primary-btn">Cerca</button>
+                        <button id="reset-button" class="btn btn-outline-secondary">Reset</button>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section class="alphabetical-filter">
-            <label>O cerca per lettera:</label>
-            <div class="letter-buttons">
+        <section class="alphabetical-filter bg-white border rounded p-3 mb-4">
+            <div class="text-center">
+                <label class="fw-bold mb-3 d-block">O cerca per lettera:</label>
+                <div class="letter-buttons d-flex flex-wrap justify-content-center gap-1">
+                    <!-- Letters will be populated by JavaScript -->
+                </div>
             </div>
         </section>
 
         <section class="recipes-list">
-            <h2>Risultati della Ricerca</h2>
-            <div id="recipes-results" class="grid-container">
-                <p id="no-results-message">Nessuna ricetta trovata. Prova una ricerca diversa!</p>
+            <h2 class="text-center mb-4">Risultati della Ricerca</h2>
+            <div id="recipes-results" class="row g-3">
+                <div class="col-12">
+                    <p id="no-results-message" class="text-center text-muted fs-5 py-4">Nessuna ricetta trovata. Prova
+                        una ricerca diversa!</p>
+                </div>
             </div>
 
-            <div class="pagination-controls">
-                <button id="prev-page" class="btn" disabled>Precedente</button>
-                <span id="page-info">Pagina 1</span>
-                <button id="next-page" class="btn">Successiva</button>
+            <div class="pagination-controls text-center mt-4">
+                <button id="prev-page" class="btn btn-outline-primary me-2" disabled>Precedente</button>
+                <span id="page-info" class="fw-bold mx-3">Pagina 1</span>
+                <button id="next-page" class="btn btn-outline-primary ms-2">Successiva</button>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
+        <p class="mb-0">&copy; 2025 PGRC. Tutti i diritti riservati.</p>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/alertMsgs.js"></script>
     <script src="js/authUtils.js"></script>
     <script src="js/main.js"></script>

@@ -4,80 +4,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGRC - Login / Registrazione</title>
+    <title>PGRC - Login</title>
     <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/alertBanners.css">
-    <script src="js/auth.js"></script>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
-                <span class="logo-text">PGRC</span>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-xl">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo.png" alt="Logo PGRC" class="logo-img">
+                    <span class="logo-text">PGRC</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="recipes.html">Ricette</a>
+                        </li>
+                        <li class="nav-item" id="cookbook-nav-item">
+                            <a class="nav-link" href="cookbook.html">Il mio Ricettario</a>
+                        </li>
+                        <li class="nav-item" id="auth-link">
+                            <a class="nav-link" href="login.html">Login</a>
+                        </li>
+                        <li class="nav-item dropdown" id="profile-dropdown" style="display: none;">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-expanded="false">Il mio profilo</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">I tuoi dati</a></li>
+                                <li><a class="dropdown-item" href="#">Cambia password</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="recipes.html">Ricette</a></li>
-                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
-                <li id="auth-link"><a href="login.html">Login</a></li>
-            </ul>
         </nav>
     </header>
 
-    <main class="auth-container">
-        <div class="auth-form-wrapper">
-            <div class="tabs">
-                <button class="tab-button active" id="login-tab">Login</button>
-                <button class="tab-button" id="register-tab">Registrazione</button>
+    <main class="flex-grow-1 d-flex align-items-center py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="auth-form-wrapper bg-white border rounded p-4">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs justify-content-center mb-4" role="tablist">
+                            <li class="nav-item flex-fill">
+                                <button class="nav-link active w-100" id="login-tab" data-bs-toggle="tab"
+                                    data-bs-target="#login-form" type="button">Login</button>
+                            </li>
+                            <li class="nav-item flex-fill">
+                                <button class="nav-link w-100" id="register-tab" data-bs-toggle="tab"
+                                    data-bs-target="#register-form" type="button">Registrati</button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab content -->
+                        <div class="tab-content">
+                            <!-- Login Form -->
+                            <div class="tab-pane fade show active" id="login-form" role="tabpanel">
+                                <h2 class="text-center mb-4">Accedi</h2>
+                                <form id="login-form-element">
+                                    <div class="mb-3">
+                                        <label for="login-email" class="form-label fw-bold">Email</label>
+                                        <input type="email" class="form-control" id="login-email" name="login-email"
+                                            required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="login-password" class="form-label fw-bold">Password</label>
+                                        <input type="password" class="form-control" id="login-password"
+                                            name="login-password" required>
+                                    </div>
+                                    <button type="submit" class="btn primary-btn w-100 py-2">Accedi</button>
+                                </form>
+                                <div id="login-message" class="message mt-3"></div>
+                            </div>
+
+                            <!-- Register Form -->
+                            <div class="tab-pane fade" id="register-form" role="tabpanel">
+                                <h2 class="text-center mb-4">Registrati</h2>
+                                <form id="register-form-element">
+                                    <div class="mb-3">
+                                        <label for="register-username" class="form-label fw-bold">Username</label>
+                                        <input type="text" class="form-control" id="register-username"
+                                            name="register-username" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="register-email" class="form-label fw-bold">Email</label>
+                                        <input type="email" class="form-control" id="register-email"
+                                            name="register-email" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="register-password" class="form-label fw-bold">Password</label>
+                                        <input type="password" class="form-control" id="register-password"
+                                            name="register-password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="register-confirm-password" class="form-label fw-bold">Conferma
+                                            Password</label>
+                                        <input type="password" class="form-control" id="register-confirm-password"
+                                            name="register-confirm-password" required>
+                                    </div>
+                                    <button type="submit" class="btn primary-btn w-100 py-2">Registrati</button>
+                                </form>
+                                <div id="register-message" class="message mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <form id="login-form" class="auth-form active">
-                <h2>Accedi al tuo account</h2>
-                <div class="form-group">
-                    <label>Email:</label>
-                    <!-- type text perché sennò c'era la validazione integrata del browser...-->
-                    <input type="text" id="login-email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="login-password" name="password" required>
-                </div>
-                <button type="submit" class="btn primary-btn">Accedi</button>
-                <div class="message" id="login-message"></div>
-            </form>
-
-            <form id="register-form" class="auth-form">
-                <h2>Registra un nuovo account</h2>
-                <div class="form-group">
-                    <label>Nome Utente:</label>
-                    <input type="text" id="register-username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label>Email:</label>
-                    <input type="email" id="register-email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="register-password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label>Conferma Password:</label>
-                    <input type="password" id="register-confirm-password" name="confirm_password" required>
-                </div>
-                <button type="submit" class="btn primary-btn">Registrati</button>
-                <div class="message" id="register-message"></div>
-            </form>
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
+        <p class="mb-0">&copy; 2025 PGRC. Tutti i diritti riservati.</p>
     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/authUtils.js"></script>
 </body>
 
 </html>

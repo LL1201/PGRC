@@ -4,96 +4,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGRC - Il mio Ricettario</title>
+    <title>PGRC - Dettagli Ricetta</title>
     <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/recipeDetails.css">
     <link rel="stylesheet" href="css/alertBanners.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
-                <span class="logo-text">PGRC</span>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-xl">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo.png" alt="Logo PGRC" class="logo-img">
+                    <span class="logo-text">PGRC</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="recipes.html">Ricette</a>
+                        </li>
+                        <li class="nav-item" id="cookbook-nav-item">
+                            <a class="nav-link" href="cookbook.html">Il mio Ricettario</a>
+                        </li>
+                        <li class="nav-item" id="auth-link">
+                            <a class="nav-link" href="login.html">Login</a>
+                        </li>
+                        <li class="nav-item dropdown" id="profile-dropdown" style="display: none;">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-expanded="false">Il mio profilo</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">I tuoi dati</a></li>
+                                <li><a class="dropdown-item" href="#">Cambia password</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="recipes.html">Ricette</a></li>
-                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
-                <li id="auth-link"><a href="login.html">Login</a></li>
-            </ul>
         </nav>
     </header>
 
-    <main class="recipe-details-container">
-        <div id="recipe-content">
-            <!-- Recipe Container -->
-            <div id="recipe-container" style="display: none;">
-                <h1 id="recipe-title" class="recipe-details-title"></h1>
+    <main class="container-xl flex-grow-1 py-4">
+        <!-- Loading state -->
+        <div id="loading-container" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+            </div>
+            <p class="mt-3 text-muted">Caricamento dettagli ricetta...</p>
+        </div>
 
-                <div class="recipe-details-image">
-                    <img id="recipe-image" src="" alt="">
-                </div>
+        <!-- Error state -->
+        <div id="error-container" class="text-center py-5" style="display: none;">
+            <div class="alert alert-danger" role="alert">
+                <h2 id="error-title" class="h4 mb-3">Errore</h2>
+                <p id="error-message" class="mb-3">Messaggio di errore</p>
+                <a href="recipes.html" class="btn btn-primary">Torna alle Ricette</a>
+            </div>
+        </div>
 
-                <div class="recipe-info">
-                    <div class="ingredients-box">
-                        <h3>Ingredienti</h3>
-                        <ul id="ingredients-list" class="ingredients-list">
-                        </ul>
-                    </div>
-
-                    <div class="recipe-meta">
-                        <h3>Informazioni</h3>
-                        <div class="meta-item">
-                            <span class="meta-label">Categoria:</span>
-                            <span id="recipe-category"></span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Origine:</span>
-                            <span id="recipe-area"></span>
-                        </div>
-                        <div id="youtube-container" class="meta-item" style="display: none;">
-                            <span class="meta-label">Video:</span>
-                            <a id="youtube-link" href="" target="_blank">Guarda su YouTube</a>
-                        </div>
-                        <div id="tags-container" class="meta-item" style="display: none;">
-                            <span class="meta-label">Tags:</span>
-                            <br>
-                            <div id="tags-list" class="tags-list"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="instructions-section">
-                    <h3>Procedimento</h3>
-                    <div id="recipe-instructions" class="instructions-text"></div>
+        <!-- Recipe content -->
+        <div id="recipe-container" class="recipe-details-container" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <h1 id="recipe-title" class="text-center mb-4">Nome Ricetta</h1>
                 </div>
             </div>
 
-            <!-- Error Container -->
-            <div id="error-container" class="error-container" style="display: none;">
-                <h2 id="error-title"></h2>
-                <p id="error-message"></p>
-                <a href="recipes.html" class="btn primary-btn">Torna alle ricette</a>
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <img id="recipe-image" src="" alt="" class="img-fluid rounded shadow recipe-image">
+                </div>
             </div>
 
-            <!-- Loading Container -->
-            <div id="loading-container" class="loading-container">
-                <p>Caricamento ricetta...</p>
+            <div class="row g-4 mb-4">
+                <!-- Ingredients -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title h5 mb-0">Ingredienti</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul id="ingredients-list" class="list-unstyled ingredients-list">
+                                <!-- Ingredients will be populated by JavaScript -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipe Meta -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title h5 mb-0">Informazioni</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <span class="fw-bold me-2">Categoria:</span>
+                                <span id="recipe-category">N/A</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="fw-bold me-2">Origine:</span>
+                                <span id="recipe-area">N/A</span>
+                            </div>
+                            <div id="youtube-container" class="mb-3" style="display: none;">
+                                <span class="fw-bold me-2">Video:</span>
+                                <a id="youtube-link" href="#" target="_blank" class="btn btn-sm btn-outline-danger">
+                                    <i class="fab fa-youtube"></i> Guarda su YouTube
+                                </a>
+                            </div>
+                            <div id="tags-container" style="display: none;">
+                                <span class="fw-bold d-block mb-2">Tags:</span>
+                                <div id="tags-list" class="d-flex flex-wrap gap-1">
+                                    <!-- Tags will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title h5 mb-0">Istruzioni</h3>
+                        </div>
+                        <div class="card-body">
+                            <p id="recipe-instructions" class="instructions-text mb-0">
+                                <!-- Instructions will be populated by JavaScript -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back button -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="recipes.html" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Torna alle Ricette
+                    </a>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer>
-        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
+        <p class="mb-0">&copy; 2025 PGRC. Tutti i diritti riservati.</p>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/alertMsgs.js"></script>
+    <script src="js/authUtils.js"></script>
     <script src="js/main.js"></script>
     <script src="js/recipeDetails.js"></script>
-    <script src="js/authUtils.js"></script>
 </body>
 
 </html>

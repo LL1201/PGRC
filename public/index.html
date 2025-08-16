@@ -6,54 +6,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PGRC - Home</title>
     <link rel="icon" type="image/x-icon" href="favicons/favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/alertBanners.css">
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav>
-            <div class="logo">
-                <a href="index.html"><img src="img/logo.png" alt="Logo PGRC" class="logo-img"></a>
-                <span class="logo-text">PGRC</span>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-xl">
+                <a class="navbar-brand" href="index.html">
+                    <img src="img/logo.png" alt="Logo PGRC" class="logo-img">
+                    <span class="logo-text">PGRC</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="recipes.html">Ricette</a>
+                        </li>
+                        <li class="nav-item" id="cookbook-nav-item">
+                            <a class="nav-link" href="cookbook.html">Il mio Ricettario</a>
+                        </li>
+                        <li class="nav-item" id="auth-link">
+                            <a class="nav-link" href="login.html">Login</a>
+                        </li>
+                        <li class="nav-item dropdown" id="profile-dropdown" style="display: none;">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                aria-expanded="false">Il mio profilo</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">I tuoi dati</a></li>
+                                <li><a class="dropdown-item" href="#">Cambia password</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="recipes.html">Ricette</a></li>
-                <li id="cookbook-nav-item"><a href="cookbook.html">Il mio Ricettario</a></li>
-                <li id="auth-link"><a href="login.html">Login</a></li>
-            </ul>
         </nav>
     </header>
 
-    <main>
-        <section class="description">
-            <h1>Benvenuto in PGRC</h1>
-            <p>Esplora migliaia di ricette deliziose e crea il tuo ricettario personale!</p>
-            <a href="recipes.html" class="btn primary-btn">Esplora Ricette</a>
+    <main class="container-xl flex-grow-1 py-4">
+        <section class="description text-center py-5 mb-4 rounded">
+            <h1 class="display-4 fw-bold mb-3">Benvenuto in PGRC</h1>
+            <p class="lead mb-4">Esplora migliaia di ricette deliziose e crea il tuo ricettario personale!</p>
+            <a href="recipes.html" class="btn btn-lg primary-btn">Esplora Ricette</a>
         </section>
 
         <section class="features">
-            <div class="feature-box">
-                <h2>Ricerca Avanzata</h2>
-                <p>Trova la ricetta perfetta per ogni occasione con la nostra potente funzione di ricerca.</p>
-            </div>
-            <div class="feature-box">
-                <h2>Ricettario Personale</h2>
-                <p>Salva le tue ricette preferite e aggiungi note private.</p>
-            </div>
-            <div class="feature-box">
-                <h2>Condividi e Recensisci</h2>
-                <p>Condividi le tue esperienze culinarie e leggi le recensioni degli altri utenti.</p>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-box h-100 p-4 bg-white border rounded text-center">
+                        <h2 class="h4 mb-3">Ricerca Avanzata</h2>
+                        <p class="mb-0">Trova la ricetta perfetta per ogni occasione con la nostra potente funzione di
+                            ricerca.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-box h-100 p-4 bg-white border rounded text-center">
+                        <h2 class="h4 mb-3">Ricettario Personale</h2>
+                        <p class="mb-0">Salva le tue ricette preferite e aggiungi note private.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-box h-100 p-4 bg-white border rounded text-center">
+                        <h2 class="h4 mb-3">Condividi e Recensisci</h2>
+                        <p class="mb-0">Condividi le tue esperienze culinarie e leggi le recensioni degli altri utenti.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 PGRC. Tutti i diritti riservati.</p>
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
+        <p class="mb-0">&copy; 2025 PGRC. Tutti i diritti riservati.</p>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
     <script src="js/authUtils.js"></script>
 </body>
