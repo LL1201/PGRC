@@ -100,12 +100,42 @@ router.get('/', async (req, res) =>
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
         //.sort per ordinare, in questo caso discendente per data di esecuzione
-        const reviewsResult = await db.collection('reviews')
+        /*const reviewsResult = await db.collection('reviews')
             .find({ mealDbId: mealDbId })
             .sort({ executionDate: -1 })
             .skip(start)
             .limit(offset)
-            .toArray();
+            .toArray();*/
+
+        //TODO - vedere bene come funziona
+        const reviewsResult = await db.collection('reviews').aggregate([
+            { $match: { mealDbId: mealDbId } },
+            { $sort: { executionDate: -1 } },
+            { $skip: start },
+            { $limit: offset },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'authorUserId',
+                    foreignField: '_id',
+                    as: 'author'
+                }
+            },
+            {
+                $unwind: '$author'
+            },
+            {
+                $project: {
+                    _id: 1,
+                    mealDbId: 1,
+                    authorUserId: 1,
+                    difficultyEvaluation: 1,
+                    tasteEvaluation: 1,
+                    executionDate: 1,
+                    username: '$author.username'
+                }
+            }
+        ]).toArray();
 
         const total = await db.collection('reviews').countDocuments({ mealDbId: mealDbId });
 
@@ -116,7 +146,7 @@ router.get('/', async (req, res) =>
             return {
                 reviewId: review._id,
                 mealDbId: review.mealDbId,
-                authorUserId: review.authorUserId,
+                authorUsername: review.username,
                 difficulty: review.difficultyEvaluation,
                 taste: review.tasteEvaluation,
                 executionDate: review.executionDate

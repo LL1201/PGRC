@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         const userId = localStorage.getItem('userId');
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
-        const url = `/pgrc/api/users/${userId}/cookbook?start=${startIndex}&end=${startIndex + itemsPerPageCookbook}`;
+        const url = `/pgrc/api/users/${userId}/cookbook?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
 
         try
         {

@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    // --- Recensioni ---
+    // TODO - sistemare queste variabili a casaccio
     const REVIEWS_PAGE_SIZE = 10;
     let reviewsCurrentStart = 0;
     let reviewsTotal = 0;
@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () =>
         try
         {
             const url = `/pgrc/api/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
-            // Usa fetch "normale" per le recensioni pubbliche, NON authenticatedFetch!
             const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
 
             if (!response) return;
@@ -190,10 +189,10 @@ document.addEventListener('DOMContentLoaded', () =>
         div.innerHTML = `
             <div class="review-meta">
                 <span class="review-rating">Difficoltà: ${review.difficulty} | Gusto: ${review.taste}</span>
-                <span class="review-date float-end">${dateStr ? 'Eseguita il ' + dateStr : ''}</span>
+                <span class="review-date float-end">${dateStr ? 'Realizzata il ' + dateStr : ''}</span>
             </div>
             <div>
-                <span class="text-muted small">Utente: ${review.authorUserId ? review.authorUserId : 'N/A'}</span>
+                <span class="text-muted small">Utente: ${review.authorUsername ? review.authorUsername : 'N/A'}</span>
             </div>
         `;
         return div;
@@ -206,7 +205,11 @@ document.addEventListener('DOMContentLoaded', () =>
         addReviewContainer.style.display = 'block';
 
         const addReviewForm = document.getElementById('add-review-form');
-        addReviewForm.addEventListener('submit', async (e) =>
+
+        // Rimuovi eventuali listener precedenti
+        addReviewForm.onsubmit = null;
+
+        addReviewForm.onsubmit = async (e) =>
         {
             e.preventDefault();
 
@@ -247,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () =>
                         ? window.alertMsgs.showSuccess('Recensione aggiunta!')
                         : alert('Recensione aggiunta!');
                     addReviewForm.reset();
-                    fetchAndDisplayReviews(true);
+                    fetchAndDisplayReviews(true, recipeId);
                 } else
                 {
                     window.alertMsgs && window.alertMsgs.showError
@@ -260,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () =>
                     ? window.alertMsgs.showError('Errore di rete.')
                     : alert('Errore di rete.');
             }
-        });
+        };
     }
 
     // --- Mostra/nascondi form recensione se loggato ---

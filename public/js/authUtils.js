@@ -6,7 +6,7 @@ async function refreshAccessToken()
     {
         const response = await fetch('/pgrc/api/auth/access-token/refresh', {
             method: 'POST',
-            credentials: 'include', // Include cookies            
+            credentials: 'include', //include cookies            
         });
 
         if (response.ok)
@@ -86,7 +86,14 @@ async function authenticatedFetch(url, options = {})
 async function isAuthenticated()
 {
     const token = localStorage.getItem('accessToken');
-    //const userId = localStorage.getItem('userId');    
+    const userId = localStorage.getItem('userId');
+
+    //se non ci sono questi token evita di fare la richiesta
+    //TODO - vedere perché quando li tolgo manualmente dal local storage il refreshToken viene rimosso come cookie
+    if (!token || !userId)
+    {
+        return null;
+    }
 
     try
     {
