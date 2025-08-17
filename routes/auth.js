@@ -3,7 +3,7 @@ const router = express.Router();
 const emailValidator = require("email-validator");
 const bcrypt = require("bcryptjs");
 const { getDb } = require("../db/db.js");
-const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken } = require("../utils/authUtil");
+const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, findRefreshTokenInDb } = require("../utils/authUtil");
 const authenticateToken = require('../middleware/authMiddleware');
 
 router.post("/login", async (req, res) =>
@@ -56,9 +56,23 @@ router.post("/logout", async (req, res) =>
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
 
+    if (!await findRefreshTokenInDb(refreshToken))
+        return res.status(401).json({ message: 'Invalid refresh token.' });
+
     try
     {
         await removeRefreshToken(refreshToken);
+
+        //invalida il cookie refreshToken
+        //TODO - vedere bene i campi inviati (documentazione)
+        res.cookie('refreshToken', 'deleted', {
+            path: '/pgrc/api/auth',
+            expires: new Date(0),
+            httpOnly: true,
+            sameSite: 'strict'
+            //secure: process.env.NODE_ENV === 'production'
+        });
+
         res.status(200).json({ message: 'Logged out successfully.' });
     } catch (e)
     {
@@ -72,9 +86,11 @@ router.post("/access-token/refresh", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
 
-    //TODO - verificare la presenza del refresh token nel db con findRefreshTokenInDb
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
+
+    if (!await findRefreshTokenInDb(refreshToken))
+        return res.status(401).json({ message: 'Invalid refresh token.' });
 
     try
     {

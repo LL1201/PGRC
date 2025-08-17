@@ -1,7 +1,10 @@
-//TODO se in qualche modo l'utente arriva qua da loggato reindirizzarlo alla pagina del mio profilo
-
-document.addEventListener('DOMContentLoaded', () =>
+document.addEventListener('DOMContentLoaded', async () =>
 {
+    /*if (await authUtils.isAuthenticated())
+    {
+        //TODO - cambiare quando ci sarà la pagina con i dati dell'utente
+        window.location.href = 'cookbook.html';
+    }*/
     const loginForm = document.getElementById('login-form-element');
     const registerForm = document.getElementById('register-form-element');
 

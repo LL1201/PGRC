@@ -11,24 +11,24 @@ router.get('/search', async (req, res) =>
     const { q, letter } = req.query;
 
     const start = parseInt(req.query.start);
-    const end = parseInt(req.query.end);
+    const offset = parseInt(req.query.offset);
 
     // Check if parameters are provided
-    if (req.query.start === undefined || req.query.end === undefined)
-        return res.status(400).json({ message: 'Both start and end parameters are required.' });
+    if (req.query.start === undefined || req.query.offset === undefined)
+        return res.status(400).json({ message: 'Both start and offset parameters are required.' });
 
     // Check if parameters are valid numbers
-    if (isNaN(start) || isNaN(end))
-        return res.status(400).json({ message: 'Start and end parameters must be valid numbers.' });
+    if (isNaN(start) || isNaN(offset))
+        return res.status(400).json({ message: 'Start and offset parameters must be valid numbers.' });
 
     if (start < 0)
         return res.status(400).json({ message: 'Start parameter must be >= 0.' });
 
-    if (end < start || end < 0)
-        return res.status(400).json({ message: 'End parameter must be >= start and >= 0.' });
+    if (offset < start || offset < 0)
+        return res.status(400).json({ message: 'offset parameter must be >= start and >= 0.' });
 
-    if (end - start > 12)
-        return res.status(400).json({ message: 'End parameter must be <= start + 12.' });
+    if (offset - start > 12)
+        return res.status(400).json({ message: 'offset parameter must be <= start + 12.' });
 
     let query = {};
 
@@ -67,16 +67,23 @@ router.get('/search', async (req, res) =>
             _id: 0
         };
 
-        const recipes = await db.collection('mealdbRecipes').find(query).project(projection).toArray();
+        const recipes = await db.collection('mealdbRecipes')
+            .find(query)
+            .project(projection)
+            .skip(start)
+            .limit(offset)
+            .toArray();
 
-        //in pratica il range è [start, end)
-        //se end è maggiore della lunghezza dell'array, viene impostato a length
-        const total = recipes.length;
-        const actualEnd = Math.min(end, total);
-        const paginatedRecipes = recipes.slice(start, actualEnd);
+        const total = await db.collection('mealdbRecipes').countDocuments(query);
+
+        //in pratica il range è [start, start+offset)
+        //se offfset è maggiore della lunghezza dell'array, viene impostato a length
+        //const total = recipes.length;
+        //const actualEnd = Math.min(offset, total);
+        //const paginatedRecipes = recipes.slice(start, actualEnd);
 
         res.status(200).json({
-            recipes: paginatedRecipes,
+            recipes: recipes,
             total: total
         });
     } catch (error)

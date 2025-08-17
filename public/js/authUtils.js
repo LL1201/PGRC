@@ -19,7 +19,7 @@ async function refreshAccessToken()
             // Refresh failed, redirect to login
             localStorage.removeItem('accessToken');
             localStorage.removeItem('userId');
-            window.location.href = 'login.html';
+            //window.location.href = 'login.html';
             return null;
         }
     } catch (error)
@@ -27,7 +27,7 @@ async function refreshAccessToken()
         console.error('Error refreshing token:', error);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('userId');
-        window.location.href = 'login.html';
+        //window.location.href = 'login.html';
         return null;
     }
 }
@@ -70,6 +70,7 @@ async function authenticatedFetch(url, options = {})
                 response = await fetch(url, authOptions);
             } else
             {
+                window.location.href = 'login.html';
                 return null;
             }
         }
@@ -101,20 +102,26 @@ async function isAuthenticated()
             const newToken = await refreshAccessToken();
 
             if (!newToken)
-                return null;
+                return false;
             else
                 return true;
         }
+        // Se la risposta è ok (200), l'utente è autenticato
+        if (response.ok)
+            return true;
+        else
+            return false;
     } catch (error)
     {
         console.error('Error during token verification:', error);
+        return false;
     }
 }
 
 //controlla se l'utente è loggato, in caso contrario manda al login
-function requireAuth()
+async function requireAuth()
 {
-    if (!isAuthenticated())
+    if (!await isAuthenticated())
     {
         window.location.href = 'login.html';
         return false;

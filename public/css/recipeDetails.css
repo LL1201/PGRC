@@ -173,6 +173,57 @@ h1 {
     padding: 2rem;
 }
 
+#reviews-section {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--white-color, #fff);
+    border-radius: 8px;
+    padding: 24px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.review-card {
+    border: 1px solid var(--border-color, #eee);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fafbfc;
+}
+
+.review-meta {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.review-rating {
+    font-weight: bold;
+    color: var(--primary-color, #007bff);
+}
+
+.review-date {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+#add-review-container {
+    border-top: 1px solid var(--border-color, #eee);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+#add-review-form .form-label {
+    font-size: 0.95rem;
+}
+
+#add-review-form input[type="number"] {
+    width: 100%;
+}
+
+#load-more-reviews-btn {
+    min-width: 160px;
+}
+
 @media (max-width: 768px) {
     .recipe-info {
         grid-template-columns: 1fr;

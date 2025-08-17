@@ -76,17 +76,24 @@ document.addEventListener('DOMContentLoaded', () =>
             });
 
             //event listener per il bottone per aggiungere al proprio ricettario
-            document.querySelectorAll('.add-to-cookbook-btn').forEach(button =>
+            const addToCookbookButtons = document.querySelectorAll('.add-to-cookbook-btn');
+            authUtils.isAuthenticated().then(isAuth =>
             {
-                if (authUtils.isAuthenticated())
-                    button.addEventListener('click', (event) =>
+                addToCookbookButtons.forEach(button =>
+                {
+                    if (isAuth)
                     {
                         button.disabled = false;
-                        const mealDbId = event.target.dataset.mealid;
-                        addToCookbook(mealDbId);
-                    });
-                else
-                    button.disabled = true;
+                        button.addEventListener('click', (event) =>
+                        {
+                            const mealDbId = event.target.dataset.mealid;
+                            addToCookbook(mealDbId);
+                        });
+                    } else
+                    {
+                        button.disabled = true;
+                    }
+                });
             });
         } else
         {
@@ -102,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         //in pratica il range è [start, end)
         const startIndex = (currentPage - 1) * itemsPerPage;
-        let url = `/pgrc/api/recipes/search?start=${startIndex}&end=${startIndex + itemsPerPage}`;
+        let url = `/pgrc/api/recipes/search?start=${startIndex}&offset=${startIndex + itemsPerPage}`;
 
         if (currentQuery.q)
             url += `&q=${encodeURIComponent(currentQuery.q)}`;

@@ -30,7 +30,7 @@ function authenticateToken(req, res, next)
 
     const decoded = verifyToken(token);
     if (!decoded)
-        return res.status(403).json({ message: 'Invalid or expired access token.' });
+        return res.status(401).json({ message: 'Invalid or expired access token.' });
 
     //req.userId contiene l'id dell'utente associato al JWT passato
     //req.userObjectId contiene l'id associato al JWT in formato ObjectId

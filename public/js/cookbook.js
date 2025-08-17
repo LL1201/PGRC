@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () =>
+document.addEventListener('DOMContentLoaded', async () =>
 {
     const cookbookRecipesContainer = document.getElementById('cookbook-recipes');
     const prevPageBtnCookbook = document.getElementById('prev-page-cookbook');
@@ -221,11 +221,12 @@ document.addEventListener('DOMContentLoaded', () =>
     });
 
     //popolamento della pagina, prima cosa che succede all'apertura 
-    if (authUtils.isAuthenticated())
+    if (await authUtils.isAuthenticated())
     {
         fetchCookbookRecipes();
     } else
     {
+        //TODO - valutare se reindirizzare direttamente al login
         const authCol = document.createElement('div');
         authCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
         authCol.style.minHeight = '300px';

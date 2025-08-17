@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
-    const recipeContent = document.getElementById('recipe-content');
+    //const recipeContent = document.getElementById('recipe-content');
 
     function getRecipeIdFromUrl()
     {
@@ -114,10 +114,186 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
+    // --- Recensioni ---
+    const REVIEWS_PAGE_SIZE = 10;
+    let reviewsCurrentStart = 0;
+    let reviewsTotal = 0;
+    //let recipeId = null;
+
+    async function fetchAndDisplayReviews(reset = false, recipeId)
+    {
+        const reviewsListContainer = document.getElementById('reviews-list-container');
+        const loadMoreBtn = document.getElementById('load-more-reviews-btn');
+
+        if (reset)
+        {
+            reviewsCurrentStart = 0;
+            reviewsListContainer.innerHTML = '';
+        }
+
+        try
+        {
+            const url = `/pgrc/api/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
+            // Usa fetch "normale" per le recensioni pubbliche, NON authenticatedFetch!
+            const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+
+            if (!response) return;
+
+            const data = await response.json();
+            reviewsTotal = data.total || 0;
+
+            if (Array.isArray(data.reviews))
+            {
+                data.reviews.forEach(review =>
+                {
+                    reviewsListContainer.appendChild(renderReviewCard(review));
+                });
+            }
+
+            reviewsCurrentStart += REVIEWS_PAGE_SIZE;
+
+            // Mostra/nascondi bottone "Carica altro"
+            if (reviewsCurrentStart < reviewsTotal)
+            {
+                loadMoreBtn.style.display = '';
+            } else
+            {
+                loadMoreBtn.style.display = 'none';
+            }
+
+            if (reviewsTotal === 0 && reset)
+            {
+                reviewsListContainer.innerHTML = '<p class="text-center text-muted">Nessuna recensione presente.</p>';
+            }
+        } catch (error)
+        {
+            reviewsListContainer.innerHTML = '<p class="text-danger">Errore nel caricamento delle recensioni.</p>';
+        }
+    }
+
+    function renderReviewCard(review)
+    {
+        const div = document.createElement('div');
+        div.className = 'review-card';
+
+        // Format date
+        let dateStr = '';
+        if (review.executionDate)
+        {
+            const d = new Date(review.executionDate);
+            if (!isNaN(d))
+            {
+                dateStr = d.toLocaleDateString('it-IT');
+            }
+        }
+
+        div.innerHTML = `
+            <div class="review-meta">
+                <span class="review-rating">Difficoltà: ${review.difficulty} | Gusto: ${review.taste}</span>
+                <span class="review-date float-end">${dateStr ? 'Eseguita il ' + dateStr : ''}</span>
+            </div>
+            <div>
+                <span class="text-muted small">Utente: ${review.authorUserId ? review.authorUserId : 'N/A'}</span>
+            </div>
+        `;
+        return div;
+    }
+
+    // --- Form inserimento recensione ---
+    function setupAddReviewForm(recipeId)
+    {
+        const addReviewContainer = document.getElementById('add-review-container');
+        addReviewContainer.style.display = 'block';
+
+        const addReviewForm = document.getElementById('add-review-form');
+        addReviewForm.addEventListener('submit', async (e) =>
+        {
+            e.preventDefault();
+
+            const difficulty = addReviewForm.difficultyEvaluation.value;
+            const taste = addReviewForm.tasteEvaluation.value;
+            const executionDate = addReviewForm.executionDate.value;
+
+            if (!difficulty || !taste || !executionDate)
+            {
+                window.alertMsgs && window.alertMsgs.showError
+                    ? window.alertMsgs.showError('Tutti i campi sono obbligatori.')
+                    : alert('Tutti i campi sono obbligatori.');
+                return;
+            }
+
+            try
+            {
+                const response = await window.authUtils.authenticatedFetch(
+                    `/pgrc/api/recipes/${recipeId}/reviews`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            difficultyEvaluation: difficulty,
+                            tasteEvaluation: taste,
+                            executionDate: executionDate
+                        })
+                    }
+                );
+
+                if (!response) return;
+
+                const data = await response.json();
+
+                if (response.ok)
+                {
+                    window.alertMsgs && window.alertMsgs.showSuccess
+                        ? window.alertMsgs.showSuccess('Recensione aggiunta!')
+                        : alert('Recensione aggiunta!');
+                    addReviewForm.reset();
+                    fetchAndDisplayReviews(true);
+                } else
+                {
+                    window.alertMsgs && window.alertMsgs.showError
+                        ? window.alertMsgs.showError(data.message || 'Errore nell\'aggiunta della recensione.')
+                        : alert(data.message || 'Errore nell\'aggiunta della recensione.');
+                }
+            } catch (error)
+            {
+                window.alertMsgs && window.alertMsgs.showError
+                    ? window.alertMsgs.showError('Errore di rete.')
+                    : alert('Errore di rete.');
+            }
+        });
+    }
+
+    // --- Mostra/nascondi form recensione se loggato ---
+    async function checkShowAddReviewForm()
+    {
+        const addReviewContainer = document.getElementById('add-review-container');
+        if (window.authUtils && await window.authUtils.isAuthenticated())
+        {
+            addReviewContainer.style.display = 'block';
+            setupAddReviewForm(recipeId);
+        } else
+        {
+            addReviewContainer.style.display = 'none';
+        }
+    }
+
+    // --- Inizializzazione ---
+    async function initReviewsSection()
+    {
+        // Passa recipeId a fetchAndDisplayReviews
+        await fetchAndDisplayReviews(true, recipeId);
+        await checkShowAddReviewForm();
+
+        // Bottone "Carica altro"
+        const loadMoreBtn = document.getElementById('load-more-reviews-btn');
+        loadMoreBtn.onclick = () => fetchAndDisplayReviews(false, recipeId);
+    }
+
     const recipeId = getRecipeIdFromUrl();
     if (recipeId)
     {
         fetchRecipeDetails(recipeId);
+        initReviewsSection();
     } else
     {
         showError('ID ricetta mancante', 'Nessun ID ricetta specificato nell\'URL.');

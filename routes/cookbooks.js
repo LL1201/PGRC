@@ -83,15 +83,15 @@ router.get('/', authenticateToken, async (req, res) =>
 
     // Extract pagination parameters from query and make them required
     const start = parseInt(req.query.start);
-    const end = parseInt(req.query.end);
+    const offset = parseInt(req.query.offset);
 
     // Check if parameters are provided
-    if (req.query.start === undefined || req.query.end === undefined)
-        return res.status(400).json({ message: 'Both start and end parameters are required.' });
+    if (req.query.start === undefined || req.query.offset === undefined)
+        return res.status(400).json({ message: 'Both start and offset parameters are required.' });
 
     // Check if parameters are valid numbers
-    if (isNaN(start) || isNaN(end))
-        return res.status(400).json({ message: 'Start and end parameters must be valid numbers.' });
+    if (isNaN(start) || isNaN(offset))
+        return res.status(400).json({ message: 'Start and offset parameters must be valid numbers.' });
 
     if (!userObjectId.equals(reqUserObjectId))
         return res.status(403).json({ message: 'You can only view your own cookbook.' });
@@ -100,11 +100,11 @@ router.get('/', authenticateToken, async (req, res) =>
     if (start < 0)
         return res.status(400).json({ message: 'Start parameter must be >= 0.' });
 
-    if (end < start || end < 0)
-        return res.status(400).json({ message: 'End parameter must be >= start and >= 0.' });
+    if (offset < start || offset < 0)
+        return res.status(400).json({ message: 'offset parameter must be >= start and >= 0.' });
 
-    if (end - start > 12)
-        return res.status(400).json({ message: 'End parameter must be <= start + 12.' });
+    if (offset - start > 12)
+        return res.status(400).json({ message: 'offset parameter must be <= start + 12.' });
 
     try
     {
@@ -126,7 +126,18 @@ router.get('/', authenticateToken, async (req, res) =>
             area: 1,
             _id: 0
         };
-        const detailedRecipes = await db.collection('mealdbRecipes').find({ mealDbId: { $in: mealDbIds } }).project(projection).toArray();
+
+
+        const detailedRecipes = await db.collection('mealdbRecipes')
+            .find({ mealDbId: { $in: mealDbIds } })
+            .project(projection)
+            .skip(start)
+            .limit(offset)
+            .toArray();
+
+        //ottimizzato... piuttosto che ottenere tutto e poi paginare
+        //TODO - valutare se queste query sono da mettere in una costante
+        const total = await db.collection('mealdbRecipes').countDocuments({ mealDbId: { $in: mealDbIds } });
 
         //aggiunge le note alle ricette dettagliate
         const recipesWithNotes = detailedRecipes.map((detailedRecipe) =>
@@ -145,14 +156,11 @@ router.get('/', authenticateToken, async (req, res) =>
         });
 
         // Apply pagination
-        //in pratica il range è [start, end)
-        //se end è maggiore della lunghezza dell'array, viene impostato a length
-        const total = recipesWithNotes.length;
-        const actualEnd = Math.min(end, total);
-        const paginatedRecipes = recipesWithNotes.slice(start, actualEnd);
+        //in pratica il range è [start, start+offset)
+        //se offset è maggiore della lunghezza dell'array, viene impostato a length        
 
         res.status(200).json({
-            recipes: paginatedRecipes,
+            recipes: recipesWithNotes,
             total: total
         });
 

@@ -1,24 +1,32 @@
-document.addEventListener('DOMContentLoaded', () =>
+document.addEventListener('DOMContentLoaded', async () =>
 {
     const authLink = document.getElementById('auth-link');
     const profileDropdown = document.getElementById('profile-dropdown');
     const cookbookNavItem = document.getElementById('cookbook-nav-item');
     const logoutBtn = document.getElementById('logout-btn');
 
-    if (authUtils.isAuthenticated())
+    try
     {
-        //nascondi login e mostra dropdown del profilo
-        authLink.style.display = 'none';
-        profileDropdown.style.display = 'block';
-        cookbookNavItem.style.display = 'block';
+        const isAuth = await authUtils.isAuthenticated();
 
-        logoutBtn.addEventListener('click', handleLogout);
-    } else
+        if (isAuth)
+        {
+            //nascondi login e mostra dropdown del profilo
+            authLink.style.display = 'none';
+            profileDropdown.style.display = 'block';
+            cookbookNavItem.style.display = 'block';
+
+            logoutBtn.addEventListener('click', handleLogout);
+        } else
+        {
+            //mostra login e nascondi dropdown profilo
+            authLink.style.display = 'block';
+            profileDropdown.style.display = 'none';
+            cookbookNavItem.style.display = 'none';
+        }
+    } catch (err)
     {
-        //mostra login e nascondi dropdown profilo
-        authLink.style.display = 'block';
-        profileDropdown.style.display = 'none';
-        cookbookNavItem.style.display = 'none';
+        console.error('Errore durante il controllo autenticazione:', err);
     }
 
     async function handleLogout(event)

@@ -76,7 +76,7 @@ router.get('/', async (req, res) =>
     const mealDbId = parseInt(mealDbIdFromParams);
 
     let start = parseInt(req.query.start);
-    let end = parseInt(req.query.end);
+    let offset = parseInt(req.query.offset);
 
     //controlla che mealDbId sia un numero valido
     if (!mealDbIdFromParams || isNaN(mealDbId))
@@ -88,8 +88,8 @@ router.get('/', async (req, res) =>
     if (isNaN(start) || start < 0)
         start = 0;
 
-    if (isNaN(end) || end <= 0)
-        end = 10;
+    if (isNaN(offset) || offset <= 0)
+        offset = 10;
 
     try
     {
@@ -100,13 +100,16 @@ router.get('/', async (req, res) =>
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
         //.sort per ordinare, in questo caso discendente per data di esecuzione
-        const reviewsCursor = db.collection('reviews')
+        const reviewsResult = await db.collection('reviews')
             .find({ mealDbId: mealDbId })
             .sort({ executionDate: -1 })
             .skip(start)
-            .limit(end);
+            .limit(offset)
+            .toArray();
 
-        const reviewsResult = await reviewsCursor.toArray();
+        const total = await db.collection('reviews').countDocuments({ mealDbId: mealDbId });
+
+        //const reviewsResult = await reviewsCursor.toArray();
 
         const reviews = reviewsResult.map(review =>
         {
@@ -116,11 +119,14 @@ router.get('/', async (req, res) =>
                 authorUserId: review.authorUserId,
                 difficulty: review.difficultyEvaluation,
                 taste: review.tasteEvaluation,
-                executionDate: review.executionDate,
+                executionDate: review.executionDate
             };
         });
 
-        res.status(200).json({ reviews: reviews });
+        res.status(200).json({
+            reviews: reviews,
+            total: total
+        });
 
     } catch (error)
     {
