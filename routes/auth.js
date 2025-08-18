@@ -3,8 +3,9 @@ const router = express.Router();
 const emailValidator = require("email-validator");
 const bcrypt = require("bcryptjs");
 const { getDb } = require("../db/db.js");
-const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, findRefreshTokenInDb } = require("../utils/authUtil");
+const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } = require("../utils/authUtil");
 const authenticateToken = require('../middleware/authMiddleware');
+require('dotenv').config();
 
 router.post("/login", async (req, res) =>
 {
@@ -28,11 +29,12 @@ router.post("/login", async (req, res) =>
         const accessToken = generateAccessToken(loginResult._id);
         const refreshToken = await generateRefreshToken(loginResult._id);
 
+        //TODO - vedere se il path è possibile limitarlo... perché senno in user deletion non lo passa e mi tocca includere tutto
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             //secure: process.env.NODE_ENV === 'production', //invia solo su HTTPS in produzione
             sameSite: 'strict',
-            path: '/pgrc/api/auth',
+            path: '/pgrc/api/',
             maxAge: 24 * 60 * 60 * 1000
         });
 
@@ -56,7 +58,7 @@ router.post("/logout", async (req, res) =>
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
 
-    if (!await findRefreshTokenInDb(refreshToken))
+    if (!await verifyRefreshToken(refreshToken))
         return res.status(401).json({ message: 'Invalid refresh token.' });
 
     try

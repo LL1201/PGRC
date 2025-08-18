@@ -3,6 +3,21 @@
     margin-top: 15px;
     font-weight: bold;
     text-align: center;
+    /* Nuovo stile per posizionamento toast */
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    min-width: 300px;
+    max-width: 400px;
+    z-index: 1050;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    opacity: 0.98;
+    transition: opacity 0.3s, transform 0.3s;
+    /* Per evitare che più messaggi si sovrappongano */
+    display: block;
+    pointer-events: auto;
+    /* Permetti click sui messaggi */
 }
 
 .message.error {
@@ -17,136 +32,15 @@
     border: 1px solid #006600;
 }
 
-.alert {
+/* (Opzionale) Per mostrare più messaggi uno sotto l'altro */
+#alert-banner-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    max-width: 300px;
-}
-
-.closebtn {
-    float: right;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    background: none;
-    border: none;
-}
-
-.closebtn:hover {
-    color: #ccc;
-}
-
-.alert-danger {
-    background-color: #ff3333;
-}
-
-.alert-success {
-    background-color: #33cc33;
-}
-
-.alert-warning {
-    background-color: #ff9900;
-}
-
-.alert-info {
-    background-color: #3399ff;
-}
-
-.confirmation-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    text-align: center;
-    padding-top: 200px;
-}
-
-.confirmation-dialog {
-    background: white;
-    border-radius: 5px;
-    width: 300px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.confirmation-content h3 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.confirmation-content p {
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.confirmation-buttons {
-    text-align: center;
-}
-
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin: 5px;
-}
-
-.btn-confirm {
-    background-color: #cc0000;
-    color: white;
-}
-
-.btn-cancel {
-    background-color: #cccccc;
-    color: #333;
-}
-
-.prompt-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    text-align: center;
-    padding-top: 150px;
-}
-
-.prompt-dialog {
-    background: white;
-    border-radius: 5px;
-    width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.prompt-content h3 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.prompt-content p {
-    color: #666;
-    margin-bottom: 15px;
-}
-
-.prompt-input {
-    width: 90%;
-    height: 80px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    margin-bottom: 15px;
-    font-family: inherit;
-}
-
-.prompt-buttons {
-    text-align: center;
+    top: 30px;
+    right: 30px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    pointer-events: none;
 }

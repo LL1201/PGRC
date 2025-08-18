@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
     //const recipeContent = document.getElementById('recipe-content');
+    const REVIEWS_PAGE_SIZE = 10;
+    let reviewsCurrentStart = 0;
+    let reviewsTotal = 0;
 
     function getRecipeIdFromUrl()
     {
@@ -114,12 +117,9 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    // TODO - sistemare queste variabili a casaccio
-    const REVIEWS_PAGE_SIZE = 10;
-    let reviewsCurrentStart = 0;
-    let reviewsTotal = 0;
-    //let recipeId = null;
-
+    //reset è usato per resettare la pagina corrente delle recensioni
+    //viene impostato a true quando carico per la prima volta le recensioni
+    //impostato a false quande quando carico altre recensioni per non pulire l'area già popolata
     async function fetchAndDisplayReviews(reset = false, recipeId)
     {
         const reviewsListContainer = document.getElementById('reviews-list-container');
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
             reviewsCurrentStart += REVIEWS_PAGE_SIZE;
 
-            // Mostra/nascondi bottone "Carica altro"
+            //mostra/nascondi bottone "Carica altro"
             if (reviewsCurrentStart < reviewsTotal)
             {
                 loadMoreBtn.style.display = '';
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () =>
         return div;
     }
 
-    // --- Form inserimento recensione ---
+    //form inserimento recensione
     function setupAddReviewForm(recipeId)
     {
         const addReviewContainer = document.getElementById('add-review-container');
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         const addReviewForm = document.getElementById('add-review-form');
 
-        // Rimuovi eventuali listener precedenti
+        //rimuove eventuali listener precedenti
         addReviewForm.onsubmit = null;
 
         addReviewForm.onsubmit = async (e) =>
@@ -266,11 +266,11 @@ document.addEventListener('DOMContentLoaded', () =>
         };
     }
 
-    // --- Mostra/nascondi form recensione se loggato ---
-    async function checkShowAddReviewForm()
+    //mostra form recensione se autenticato
+    async function checkShowAddReviewForm(recipeId)
     {
         const addReviewContainer = document.getElementById('add-review-container');
-        if (window.authUtils && await window.authUtils.isAuthenticated())
+        if (await authUtils.isAuthenticated())
         {
             addReviewContainer.style.display = 'block';
             setupAddReviewForm(recipeId);
@@ -280,14 +280,12 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    // --- Inizializzazione ---
-    async function initReviewsSection()
+    async function initReviewsSection(recipeId)
     {
-        // Passa recipeId a fetchAndDisplayReviews
         await fetchAndDisplayReviews(true, recipeId);
-        await checkShowAddReviewForm();
+        await checkShowAddReviewForm(recipeId);
 
-        // Bottone "Carica altro"
+        //bottone "Carica altro"
         const loadMoreBtn = document.getElementById('load-more-reviews-btn');
         loadMoreBtn.onclick = () => fetchAndDisplayReviews(false, recipeId);
     }
@@ -296,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () =>
     if (recipeId)
     {
         fetchRecipeDetails(recipeId);
-        initReviewsSection();
+        initReviewsSection(recipeId);
     } else
     {
         showError('ID ricetta mancante', 'Nessun ID ricetta specificato nell\'URL.');

@@ -24,8 +24,8 @@ async function generateRefreshToken(userId)
     await refreshTokensCollection.insertOne({
         userId: userId,
         token: refreshToken,
-        expiration: expiresAt,
-        creation: new Date()
+        expiresAt: expiresAt,
+        createdAt: new Date()
     });
     return refreshToken;
 }
@@ -48,12 +48,19 @@ async function removeRefreshToken(token)
     await refreshTokensCollection.deleteOne({ token: token });
 }
 
-async function findRefreshTokenInDb(token)
+
+async function verifyRefreshToken(token)
 {
-    //TODO - se refresh token vengono salvati in users cambiare
+    //controlla prima la presenza del token nel db e che non sia scaduto
     const db = getDb();
-    const refreshTokensCollection = db.collection('refreshTokens');
-    return await refreshTokensCollection.findOne({ token: token });
+    const tokenDocument = await db.collection('refreshTokens').findOne({ token: token });
+    if (!tokenDocument) return null;
+
+    if (tokenDocument.expiresAt && tokenDocument.expiresAt < new Date())
+        return null;
+
+    //controlla la validità del JWT stesso  
+    return verifyToken(token);
 }
 
 module.exports = {
@@ -61,5 +68,5 @@ module.exports = {
     generateRefreshToken,
     verifyToken,
     removeRefreshToken,
-    findRefreshTokenInDb
+    verifyRefreshToken
 };

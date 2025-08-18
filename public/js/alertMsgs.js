@@ -1,42 +1,68 @@
-//utility per mostrare alert o prompt
+//utility per mostrare alert o prompt usando Bootstrap
 
-//mostra alert a seconda del tipo di messaggio che viene passato
+function ensureAlertBannerContainer()
+{
+    let container = document.getElementById('alert-banner-container');
+    if (!container)
+    {
+        container = document.createElement('div');
+        container.id = 'alert-banner-container';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
 function showAlert(message, type = 'info', duration = 5000)
 {
-    // Remove existing alert if present
     hideAlert();
 
-    // Create alert element
+    // Usa il container in alto a destra
+    const container = ensureAlertBannerContainer();
+
+    // Crea il banner custom
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
+    let typeClass = '';
+    switch (type)
+    {
+        case 'success': typeClass = 'success'; break;
+        case 'danger': typeClass = 'error'; break;
+        case 'error': typeClass = 'error'; break;
+        case 'warning': typeClass = 'warning'; break;
+        default: typeClass = '';
+    }
+    alertDiv.className = `message${typeClass ? ' ' + typeClass : ''}`;
     alertDiv.innerHTML = `
-        <span class="closebtn" onclick="hideAlert()">&times;</span>
-        ${message}
+        <span>${message}</span>
+        <button type="button" class="btn-close" aria-label="Chiudi" style="float:right; margin-left:10px;"></button>
     `;
 
-    // Add to document body
-    document.body.appendChild(alertDiv);
+    // Chiudi manualmente
+    alertDiv.querySelector('.btn-close').onclick = () =>
+    {
+        alertDiv.remove();
+    };
 
-    // Auto-hide after duration
+    container.appendChild(alertDiv);
+
+    // Auto-hide dopo duration
     if (duration > 0)
     {
         setTimeout(() =>
         {
-            hideAlert();
+            alertDiv.remove();
         }, duration);
     }
 }
 
 function hideAlert()
 {
-    const existingAlert = document.querySelector('.alert');
-    if (existingAlert)
+    const container = document.getElementById('alert-banner-container');
+    if (container)
     {
-        existingAlert.remove();
+        container.innerHTML = '';
     }
 }
 
-//funzioni che vengono effettivamente chiamate per mostrare i messaggi
 function showSuccess(message, duration = 5000)
 {
     showAlert(message, 'success', duration);
@@ -59,152 +85,161 @@ function showInfo(message, duration = 5000)
 
 function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Conferma', cancelText = 'Annulla')
 {
-    // Remove existing dialogs
-    hideAlert();
     hideConfirmation();
 
-    // Create confirmation overlay
-    //TODO - vedere cos'è overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'confirmation-overlay';
-
-    // Create confirmation dialog
-    const confirmDialog = document.createElement('div');
-    confirmDialog.className = 'confirmation-dialog';
-    confirmDialog.innerHTML = `
-        <div class="confirmation-content">
-            <h3>Conferma azione</h3>
-            <p>${message}</p>
-            <div class="confirmation-buttons">
-                <button class="btn btn-confirm">${confirmText}</button>
-                <button class="btn btn-cancel">${cancelText}</button>
+    //crea il prompt di conferma
+    let modalDiv = document.getElementById('alertMsgs-confirm-modal');
+    if (!modalDiv)
+    {
+        modalDiv = document.createElement('div');
+        modalDiv.id = 'alertMsgs-confirm-modal';
+        modalDiv.className = 'modal fade';
+        modalDiv.tabIndex = -1;
+        modalDiv.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Conferma azione</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alertMsgs-confirm-message"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="alertMsgs-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" class="btn btn-danger" id="alertMsgs-confirm-btn">${confirmText}</button>
+                    </div>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+        document.body.appendChild(modalDiv);
+    }
 
-    overlay.appendChild(confirmDialog);
-    document.body.appendChild(overlay);
+    //imposta il messaggio e i pulsanti
+    modalDiv.querySelector('#alertMsgs-confirm-message').textContent = message;
+    modalDiv.querySelector('#alertMsgs-confirm-btn').textContent = confirmText;
+    modalDiv.querySelector('#alertMsgs-cancel-btn').textContent = cancelText;
 
-    // Add event listeners
-    const confirmBtn = confirmDialog.querySelector('.btn-confirm');
-    const cancelBtn = confirmDialog.querySelector('.btn-cancel');
-
-    confirmBtn.addEventListener('click', () =>
+    //event listeners
+    const confirmBtn = modalDiv.querySelector('#alertMsgs-confirm-btn');
+    const cancelBtn = modalDiv.querySelector('#alertMsgs-cancel-btn');
+    confirmBtn.onclick = () =>
     {
         hideConfirmation();
         if (onConfirm) onConfirm();
-    });
-
-    cancelBtn.addEventListener('click', () =>
+    };
+    cancelBtn.onclick = () =>
     {
         hideConfirmation();
         if (onCancel) onCancel();
-    });
+    };
 
-    // Close on overlay click
-    overlay.addEventListener('click', (e) =>
+    const bsModal = new bootstrap.Modal(modalDiv);
+    bsModal.show();
+
+    modalDiv.addEventListener('hidden.bs.modal', () =>
     {
-        if (e.target === overlay)
-        {
-            hideConfirmation();
-            if (onCancel) onCancel();
-        }
-    });
+        hideConfirmation();
+        if (onCancel) onCancel();
+    }, { once: true });
 }
 
 function hideConfirmation()
 {
-    const existingConfirmation = document.querySelector('.confirmation-overlay');
-    if (existingConfirmation)
+    const modalDiv = document.getElementById('alertMsgs-confirm-modal');
+    if (modalDiv)
     {
-        existingConfirmation.remove();
+        const modal = bootstrap.Modal.getInstance(modalDiv);
+        if (modal) modal.hide();
+        modalDiv.remove();
     }
 }
 
+//prompt con text box
 function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, confirmText = 'Conferma', cancelText = 'Annulla', placeholder = '')
 {
-    // Remove existing dialogs
-    hideAlert();
-    hideConfirmation();
     hidePrompt();
 
-    // Create prompt overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'prompt-overlay';
-
-    // Create prompt dialog
-    const promptDialog = document.createElement('div');
-    promptDialog.className = 'prompt-dialog';
-    promptDialog.innerHTML = `
-        <div class="prompt-content">
-            <h3>Modifica Nota</h3>
-            <p>${message}</p>
-            <textarea class="prompt-input" placeholder="${placeholder}">${defaultValue}</textarea>
-            <div class="prompt-buttons">
-                <button class="btn btn-confirm">${confirmText}</button>
-                <button class="btn btn-cancel">${cancelText}</button>
-            </div>
-        </div>
-    `;
-
-    overlay.appendChild(promptDialog);
-    document.body.appendChild(overlay);
-
-    // Focus on input
-    const input = promptDialog.querySelector('.prompt-input');
-    input.focus();
-    input.setSelectionRange(input.value.length, input.value.length);
-
-    // Add event listeners
-    const confirmBtn = promptDialog.querySelector('.btn-confirm');
-    const cancelBtn = promptDialog.querySelector('.btn-cancel');
-
-    confirmBtn.addEventListener('click', () =>
+    let modalDiv = document.getElementById('alertMsgs-prompt-modal');
+    if (!modalDiv)
     {
-        const value = input.value;
-        hidePrompt();
-        if (onConfirm) onConfirm(value);
-    });
+        modalDiv = document.createElement('div');
+        modalDiv.id = 'alertMsgs-prompt-modal';
+        modalDiv.className = 'modal fade';
+        modalDiv.tabIndex = -1;
+        modalDiv.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifica Nota</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alertMsgs-prompt-message"></p>
+                        <textarea id="alertMsgs-prompt-input" class="form-control" placeholder="${placeholder}"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="alertMsgs-prompt-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" class="btn btn-primary" id="alertMsgs-prompt-confirm-btn">${confirmText}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+    }
 
-    cancelBtn.addEventListener('click', () =>
+    modalDiv.querySelector('#alertMsgs-prompt-message').textContent = message;
+    const input = modalDiv.querySelector('#alertMsgs-prompt-input');
+    input.value = defaultValue;
+    input.placeholder = placeholder;
+
+    //event listeners
+    modalDiv.querySelector('#alertMsgs-prompt-confirm-btn').onclick = () =>
+    {
+        hidePrompt();
+        if (onConfirm) onConfirm(input.value);
+    };
+    modalDiv.querySelector('#alertMsgs-prompt-cancel-btn').onclick = () =>
     {
         hidePrompt();
         if (onCancel) onCancel();
-    });
+    };
 
-    // Submit on Enter (Ctrl+Enter for multiline)
-    input.addEventListener('keydown', (e) =>
+    input.onkeydown = (e) =>
     {
         if (e.key === 'Enter' && e.ctrlKey)
         {
-            const value = input.value;
             hidePrompt();
-            if (onConfirm) onConfirm(value);
+            if (onConfirm) onConfirm(input.value);
         }
         if (e.key === 'Escape')
         {
             hidePrompt();
             if (onCancel) onCancel();
         }
-    });
+    };
 
-    // Close on overlay click
-    overlay.addEventListener('click', (e) =>
+    const bsModal = new bootstrap.Modal(modalDiv);
+    bsModal.show();
+
+    //focus sull'input e posiziona il cursore alla fine in modo da poter modificare la nota già esistente
+    setTimeout(() => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 300);
+
+    modalDiv.addEventListener('hidden.bs.modal', () =>
     {
-        if (e.target === overlay)
-        {
-            hidePrompt();
-            if (onCancel) onCancel();
-        }
-    });
+        hidePrompt();
+        if (onCancel) onCancel();
+    }, { once: true });
 }
 
 function hidePrompt()
 {
-    const existingPrompt = document.querySelector('.prompt-overlay');
-    if (existingPrompt)
+    const modalDiv = document.getElementById('alertMsgs-prompt-modal');
+    if (modalDiv)
     {
-        existingPrompt.remove();
+        const modal = bootstrap.Modal.getInstance(modalDiv);
+        if (modal) modal.hide();
+        modalDiv.remove();
     }
 }
 

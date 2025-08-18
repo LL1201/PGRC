@@ -14,8 +14,26 @@ document.addEventListener('DOMContentLoaded', async () =>
     //funzione per mostrare/nascondere i messaggi di errore o successo
     function showMessage(element, msg, type)
     {
+        element.className = 'alert';
+
+        //aggiunge la classe Bootstrap appropriata
+        if (type === 'success')
+        {
+            element.classList.add('alert-success');
+        } else if (type === 'error')
+        {
+            element.classList.add('alert-danger');
+        } else if (type === 'warning')
+        {
+            element.classList.add('alert-warning');
+        } else
+        {
+            element.classList.add('alert-info');
+        }
+
         element.textContent = msg;
-        element.className = `message show ${type}`;
+        element.classList.add('show', 'fade');
+
         setTimeout(() =>
         {
             element.classList.remove('show');

@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 async function sendConfirmationMail(mailTo, token)
 {
     const mailOptions = {
-        from: 'info@lloner.it',
+        from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma il tuo account',
         text: `Ciao, \nPer confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?token=${token}`
@@ -37,13 +37,12 @@ async function sendConfirmationMail(mailTo, token)
 function sendPasswordResetMail(mailTo, token)
 {
     const mailOptions = {
-        from: 'info@lloner.it',
+        from: SMTP_USER,
         to: mailTo,
         subject: 'Reimposta la tua password',
         text: `Ciao, \nPer reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/verify-account?token=${verificationToken}`
     };
 
-    // Send the email
     transporter.sendMail(mailOptions, function (error, info)
     {
         if (error)
@@ -56,4 +55,25 @@ function sendPasswordResetMail(mailTo, token)
     });
 }
 
-module.exports = { sendConfirmationMail, sendPasswordResetMail }
+function sendUserDeletionMail(mailTo)
+{
+    const mailOptions = {
+        from: SMTP_USER,
+        to: mailTo,
+        subject: 'Conferma di cancellazione account',
+        text: `Ciao, \nQuesta email ti conferma l'effettiva cancellazione di tutti i dati associati al tuo account PGRC.`
+    };
+
+    transporter.sendMail(mailOptions, function (error, info)
+    {
+        if (error)
+        {
+            console.log('Error:', error);
+        } else
+        {
+            console.log('Email sent:', info.response);
+        }
+    });
+}
+
+module.exports = { sendConfirmationMail, sendPasswordResetMail, sendUserDeletionMail }
