@@ -34,10 +34,11 @@ app.use((err, req, res, next) =>
     next(err);
 });
 
-/*app.all('*', (req, res) =>
+//TODO - verificare funzionamento
+app.use((req, res) =>
 {
-    res.status(404).json({ message: 'Invalid endpoint or HTTP method' })
-});*/
+    res.status(404).json({ message: 'Invalid endpoint or HTTP method' });
+});
 
 connectToDatabase().then(async () =>
 {
