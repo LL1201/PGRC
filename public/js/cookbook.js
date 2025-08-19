@@ -108,14 +108,21 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     function updatePaginationControlsCookbook(totalResults)
     {
+
         const totalPages = totalResults > 0 ? Math.ceil(totalResults / itemsPerPageCookbook) : 1;
         pageInfoSpanCookbook.textContent = `Pagina ${currentPageCookbook} di ${totalPages}`;
         prevPageBtnCookbook.disabled = currentPageCookbook === 1;
         nextPageBtnCookbook.disabled = currentPageCookbook >= totalPages;
+
+        //se un utente si ritrova in una pagina che non esiste durante l'eliminazione di una ricetta viene portato
+        //all'ultima pagina realmente disponibile
+        if (currentPageCookbook > totalPages)
+        {
+            currentPageCookbook = totalPages;
+            fetchCookbookRecipes();
+        }
     }
 
-    //TODO - quando viene rimossa la ricetta bisogna gestire la riduzione del numero di pagine, sennò 
-    //l'utente rischia di trovarsi in una pagina che non esiste...
     async function handleRemoveFromCookbook(event)
     {
         if (!authUtils.requireAuth()) return;
@@ -221,17 +228,9 @@ document.addEventListener('DOMContentLoaded', async () =>
     });
 
     //popolamento della pagina, prima cosa che succede all'apertura 
-    if (await authUtils.isAuthenticated())
-    {
+    //questa pagina richiede auth, in caso di utente non loggato
+    //viene reindirizzato alla pagina di login
+    if (await authUtils.requireAuth())
         fetchCookbookRecipes();
-    } else
-    {
-        //TODO - valutare se reindirizzare direttamente al login
-        const authCol = document.createElement('div');
-        authCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
-        authCol.style.minHeight = '300px';
-        authCol.innerHTML = '<p class="text-center text-muted fs-5">Accedi per visualizzare il tuo ricettario.</p>';
-        cookbookRecipesContainer.appendChild(authCol);
-        updatePaginationControlsCookbook(0);
-    }
+
 });

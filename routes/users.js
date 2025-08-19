@@ -176,7 +176,7 @@ router.patch("/:userId", authenticateToken, async (req, res) =>
         return res.status(403).json({ message: 'You can only update your own account.' });
 
     if (!username && !email)
-        return res.status(400).json({ message: 'At least one field (username or email) must be provided.' });
+        return res.status(400).json({ message: 'At least one populated field (username or email) must be provided.' });
 
     //validazione email se fornita
     if (email && !emailValidator.validate(email))

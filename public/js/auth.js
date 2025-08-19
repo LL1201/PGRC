@@ -1,45 +1,11 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
-    /*if (await authUtils.isAuthenticated())
-    {
-        //TODO - cambiare quando ci sarà la pagina con i dati dell'utente
-        window.location.href = 'cookbook.html';
-    }*/
+    //se l'utente finisce in questa pagina di login quando autenticato viene reindirizzato alla pagina del profilo
+    if (await authUtils.isAuthenticated())
+        window.location.href = 'myProfile.html';
+
     const loginForm = document.getElementById('login-form-element');
     const registerForm = document.getElementById('register-form-element');
-
-    const loginMessage = document.getElementById('login-message');
-    const registerMessage = document.getElementById('register-message');
-
-    //funzione per mostrare/nascondere i messaggi di errore o successo
-    function showMessage(element, msg, type)
-    {
-        element.className = 'alert';
-
-        //aggiunge la classe Bootstrap appropriata
-        if (type === 'success')
-        {
-            element.classList.add('alert-success');
-        } else if (type === 'error')
-        {
-            element.classList.add('alert-danger');
-        } else if (type === 'warning')
-        {
-            element.classList.add('alert-warning');
-        } else
-        {
-            element.classList.add('alert-info');
-        }
-
-        element.textContent = msg;
-        element.classList.add('show', 'fade');
-
-        setTimeout(() =>
-        {
-            element.classList.remove('show');
-            element.textContent = '';
-        }, 10000);
-    }
 
     function isValidEmail(email)
     {
@@ -47,15 +13,15 @@ document.addEventListener('DOMContentLoaded', async () =>
         return emailRegex.test(email);
     }
 
-    //pulisce i messaggi al cambio di pagina
-    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab =>
+    //pulisce le text box al cambio di pagina
+    /*document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab =>
     {
         tab.addEventListener('shown.bs.tab', () =>
         {
-            loginMessage.classList.remove('show');
-            registerMessage.classList.remove('show');
+            loginForm['login-email'].value = '';
+            loginForm['login-password'].value = '';
         });
-    });
+    });*/
 
     loginForm.addEventListener('submit', async (event) =>
     {
@@ -66,12 +32,12 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!email || !password)
         {
-            showMessage(loginMessage, 'Credenziali mancanti.', 'error');
+            alertMsgs.showError('Credenziali mancanti.');
             return;
         }
         if (!isValidEmail(email))
         {
-            showMessage(loginMessage, 'Formato email non valido.', 'error');
+            alertMsgs.showError('Formato email non valido.');
             return;
         }
 
@@ -91,19 +57,19 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 localStorage.setItem('accessToken', data.accessToken);
                 localStorage.setItem('userId', data.userId);
-                showMessage(loginMessage, data.message, 'success');
+                alertMsgs.showSuccess(data.message);
                 setTimeout(() =>
                 {
                     window.location.href = 'index.html';
                 }, 1000);
             } else
             {
-                showMessage(loginMessage, data.message || 'Login failed.', 'error');
+                alertMsgs.showError(data.message || 'Login failed.');
             }
         } catch (error)
         {
             console.error('Error during login:', error);
-            showMessage(loginMessage, 'An error occurred during login. Please try again later.', 'error');
+            alertMsgs.showError('An error occurred during login. Please try again later.');
         }
     });
 
@@ -118,17 +84,17 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!username || !email || !password || !confirmPassword)
         {
-            showMessage(registerMessage, 'Tutti i campi sono obbligatori.', 'error');
+            alertMsgs.showError('Tutti i campi sono obbligatori.');
             return;
         }
         if (!isValidEmail(email))
         {
-            showMessage(registerMessage, 'Formato email non valido.', 'error');
+            alertMsgs.showError('Formato email non valido.');
             return;
         }
         if (password !== confirmPassword)
         {
-            showMessage(registerMessage, 'Le password non coincidono.', 'error');
+            alertMsgs.showError('Le password non coincidono.');
             return;
         }
 
@@ -145,14 +111,14 @@ document.addEventListener('DOMContentLoaded', async () =>
             const data = await response.json();
 
             if (response.ok)
-                showMessage(registerMessage, data.message, 'success');
+                alertMsgs.showSuccess(data.message);
             else
-                showMessage(registerMessage, data.message || 'Registration failed.', 'error');
+                alertMsgs.showError(data.message || 'Registration failed.');
 
         } catch (error)
         {
             console.error('Error during registration:', error);
-            showMessage(registerMessage, 'An error occurred during registration. Please try again later.', 'error');
+            alertMsgs.showError('An error occurred during registration. Please try again later.');
         }
     });
 });

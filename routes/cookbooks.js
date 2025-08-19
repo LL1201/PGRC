@@ -108,11 +108,13 @@ router.get('/', authenticateToken, async (req, res) =>
 
     try
     {
+        /* --------------- OLD METHOD -------------------------
         const personalCookbook = await db.collection('personalCookbooks').findOne({ userId: reqUserObjectId });
 
         if (!personalCookbook || personalCookbook.recipes.length === 0)
             return res.status(200).json({ recipes: [] });
 
+        
         //per ogni elemento in personalCookbook ricava l'id e restituisce l'array di questi id
         //serve per la riga successiva che estrae le info di tutti i questi id
         const mealDbIds = personalCookbook.recipes.map((r) => r.mealDbId);
@@ -135,8 +137,7 @@ router.get('/', authenticateToken, async (req, res) =>
             .limit(offset)
             .toArray();
 
-        //ottimizzato... piuttosto che ottenere tutto e poi paginare
-        //TODO - valutare se queste query sono da mettere in una costante
+        //ottimizzato... piuttosto che ottenere tutto e poi paginare        
         const total = await db.collection('mealdbRecipes').countDocuments({ mealDbId: { $in: mealDbIds } });
 
         //aggiunge le note alle ricette dettagliate
@@ -153,11 +154,64 @@ router.get('/', authenticateToken, async (req, res) =>
                 //verifica con operatore ternario
                 privateNote: cookbookEntry ? cookbookEntry.privateNote : undefined
             };
-        });
+        });*/
 
-        // Apply pagination
-        //in pratica il range è [start, start+offset)
-        //se offset è maggiore della lunghezza dell'array, viene impostato a length        
+        const result = await db.collection('personalCookbooks').aggregate([
+            {
+                $match: { userId: reqUserObjectId }
+            },
+            {
+                $unwind: "$recipes"
+            },
+            {
+                $lookup: {
+                    from: "mealdbRecipes",
+                    localField: "recipes.mealDbId",
+                    foreignField: "mealDbId",
+                    as: "recipeDetails"
+                }
+            },
+            {
+                $unwind: "$recipeDetails"
+            },
+            {
+                //fase 1 calcola il conteggio totale dei documenti che hanno un match
+                $facet: {
+                    //pagination è il nome del primo stage
+                    pagination: [
+                        { $skip: start },
+                        { $limit: offset },
+                        {
+                            $project: {
+                                _id: 0,
+                                cookBookRecipeId: "$recipes._id",
+                                name: "$recipeDetails.name",
+                                category: "$recipeDetails.category",
+                                mealThumb: "$recipeDetails.mealThumb",
+                                mealDbId: "$recipeDetails.mealDbId",
+                                area: "$recipeDetails.area",
+                                privateNote: "$recipes.privateNote"
+                            }
+                        }
+                    ],
+                    //total è il nome del secondo stage
+                    total: [
+                        {
+                            $count: "count"
+                        }
+                    ]
+                }
+            }
+        ]).toArray();
+
+        //devo far così perché il risultato è nel formato 
+        //[ { pagination: [ [Object], [Object] ], total: [ [Object] ] } ]
+        //quindi un array, che in questo caso ha un solo elemento ([0])
+        const recipesWithNotes = result[0].pagination;
+
+        //formato di total: [ { count: 12 } ]
+        //se il count è 0, total è un array vuoto, quindi devo controllare prima di assegnarlo
+        const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
 
         res.status(200).json({
             recipes: recipesWithNotes,

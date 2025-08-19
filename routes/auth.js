@@ -65,8 +65,7 @@ router.post("/logout", async (req, res) =>
     {
         await removeRefreshToken(refreshToken);
 
-        //invalida il cookie refreshToken
-        //TODO - vedere bene i campi inviati (documentazione)
+        //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
         res.cookie('refreshToken', 'deleted', {
             path: '/pgrc/api/auth',
             expires: new Date(0),

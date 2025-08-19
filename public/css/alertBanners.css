@@ -3,10 +3,10 @@
     margin-top: 15px;
     font-weight: bold;
     text-align: center;
-    /* Nuovo stile per posizionamento toast */
-    position: fixed;
-    top: 30px;
-    right: 30px;
+    position: absolute;
+    /* Cambiato da fixed a absolute */
+    top: 12%;
+    right: 1%;
     min-width: 300px;
     max-width: 400px;
     z-index: 1050;
@@ -14,10 +14,8 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     opacity: 0.98;
     transition: opacity 0.3s, transform 0.3s;
-    /* Per evitare che più messaggi si sovrappongano */
     display: block;
     pointer-events: auto;
-    /* Permetti click sui messaggi */
 }
 
 .message.error {
@@ -30,17 +28,4 @@
     background-color: #ccffcc;
     color: #006600;
     border: 1px solid #006600;
-}
-
-/* (Opzionale) Per mostrare più messaggi uno sotto l'altro */
-#alert-banner-container {
-    position: fixed;
-    top: 30px;
-    right: 30px;
-    z-index: 1050;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-    pointer-events: none;
 }

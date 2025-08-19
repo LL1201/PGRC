@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 //custom modules
 const { connectToDatabase } = require("./db/db.js");
 const { populateTheMealDbRecipes } = require('./utils/populateDb.js');
+const htmlProcessor = require('./middleware/htmlProcessor.js');
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
 const recipesRouter = require("./routes/recipes");
@@ -16,6 +17,9 @@ const port = 3003;
 
 app.use(express.json());
 app.use(cookieParser());
+
+//middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
+app.use(htmlProcessor);
 
 app.use('/', express.static('public'))
 app.use("/api/users/:userId/cookbook", cookbooksRouter);
@@ -34,7 +38,7 @@ app.use((err, req, res, next) =>
     next(err);
 });
 
-//TODO - verificare funzionamento
+
 app.use((req, res) =>
 {
     res.status(404).json({ message: 'Invalid endpoint or HTTP method' });
@@ -42,7 +46,7 @@ app.use((req, res) =>
 
 connectToDatabase().then(async () =>
 {
-    //chiamata alla funzione di popolamento dopo la connessione al DB
+    //chiamata alla funzione di popolamento delle ricette dopo la connessione al DB
     await populateTheMealDbRecipes();
     app.listen(port, () =>
     {

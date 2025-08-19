@@ -7,7 +7,7 @@ router.get('/search', async (req, res) =>
     const db = getDb();
     //q contiene la query nel caso di ricerca
     //letter contiene una singola lettera nel caso voglia ottenere un elenco delle ricette che iniziano per A
-    //TODO - utile in caso di ordinamenti
+    //TODO - miglioramento futuro utile in caso di ordinamenti
     const { q, letter } = req.query;
 
     const start = parseInt(req.query.start);
@@ -51,7 +51,7 @@ router.get('/search', async (req, res) =>
             query.name = { $regex: letterRegex };
         } else
         {
-            //TODO - valutare se restituire delle ricette se non specifico parameteri
+            //TODO - miglioramento futuro valutare se restituire delle ricette se non specifico parameteri (miglioramento futuro)
             return res.status(400).json({ message: 'Please provide a search query (q) or a starting letter (letter).' });
         }
 
