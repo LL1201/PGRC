@@ -8,6 +8,39 @@ const { verifyRefreshToken } = require("../utils/authUtil");
 const authenticateToken = require('../middleware/authMiddleware');
 const crypto = require('crypto');
 
+/**
+ * @swagger
+ * /api/v1/users:
+ *   post:
+ *     summary: Register a new user
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: johndoe
+ *               email:
+ *                 type: string
+ *                 example: johndoe@example.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       202:
+ *         description: Verification email sent
+ *       400:
+ *         description: All fields are required or invalid email format
+ *       409:
+ *         description: Email or username already exists
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/", async (req, res) =>
 {
     const db = getDb();
@@ -64,7 +97,56 @@ router.post("/", async (req, res) =>
     }
 });
 
-//per l'eliminazione viene richiesto anche il refresh token (security purpose)
+/**
+ * @swagger
+ * /api/v1/users/{userId}:
+ *   delete:
+ *     summary: Delete the authenticated user's account
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token cookie
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: User successfully deleted
+ *       400:
+ *         description: Refresh token or password is required
+ *       401:
+ *         description: Invalid refresh token or password
+ *       403:
+ *         description: You can only delete your own account
+ *       404:
+ *         description: User not found or already deleted
+ *       500:
+ *         description: Internal server error
+ */
 router.delete("/:userId", authenticateToken, async (req, res) =>
 {
     const db = getDb();
@@ -121,16 +203,59 @@ router.delete("/:userId", authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}:
+ *   get:
+ *     summary: Get authenticated user's profile
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     responses:
+ *       200:
+ *         description: User profile data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 userId:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *       400:
+ *         description: User ID is required
+ *       403:
+ *         description: You can only view your own profile
+ *       404:
+ *         description: User not found in local database
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:userId', authenticateToken, async (req, res) =>
 {
     const db = getDb();
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
-    //solo l'utente può vedere e modificare le proprie info
+    //solo l'utente può vedere le proprie info
     //TODO - miglioramento futuro, permettere ad altri utenti di interagire con altri
     if (!userObjectId.equals(reqUserObjectId))
-        return res.status(403).json({ message: 'You can only view and edit your own profile.' });
+        return res.status(403).json({ message: 'You can only view your own profile.' });
 
 
     if (!reqUserObjectId)
@@ -149,7 +274,7 @@ router.get('/:userId', authenticateToken, async (req, res) =>
         );
 
         if (!user)
-            return res.status(404).json({ message: 'user not found in local database.' });
+            return res.status(404).json({ message: 'User not found in local database.' });
 
         res.status(200).json({
             userId: user._id,
@@ -164,6 +289,51 @@ router.get('/:userId', authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}:
+ *   patch:
+ *     summary: Update authenticated user's username and/or email
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: newusername
+ *               email:
+ *                 type: string
+ *                 example: newemail@example.com
+ *     responses:
+ *       200:
+ *         description: User data updated successfully
+ *       400:
+ *         description: No changes made or user not found, or invalid email format
+ *       403:
+ *         description: You can only update your own account
+ *       409:
+ *         description: Email or username already exists
+ *       500:
+ *         description: Internal server error
+ */
 router.patch("/:userId", authenticateToken, async (req, res) =>
 {
     //TODO - valutare il cambio mail con conferma via email
@@ -218,5 +388,46 @@ router.patch("/:userId", authenticateToken, async (req, res) =>
         res.status(500).json({ message: 'An internal server error occurred during user update.' });
     }
 });
+
+/**
+ * @swagger
+ * /api/auth/access-token/verify-token:
+ *   get:
+ *     summary: Verify if access token is valid
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+router.get("/:userId/access-tokens/verify-token", authenticateToken, async (req, res) =>
+{
+    try
+    {
+        const db = getDb();
+        const user = await db.collection('users').findOne(
+            { _id: req.userObjectId },
+            { projection: { _id: 1, username: 1, email: 1 } } // Seleziona solo i campi che vuoi restituire
+        );
+
+        if (!user)
+        {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        res.status(200).json({
+            message: 'Token is valid.'
+        });
+    } catch (error)
+    {
+        console.error('Error in /verify-token endpoint:', error);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+});*/
 
 module.exports = router;

@@ -4,6 +4,55 @@ const { getDb } = require("../db/db.js");
 const authenticateToken = require('../middleware/authMiddleware.js');
 const { ObjectId } = require('mongodb');
 
+/**
+ * @swagger
+ * /api/v1/recipes/{mealDbId}/reviews:
+ *   post:
+ *     summary: Add a review to a recipe
+ *     tags:
+ *       - Reviews
+ *     parameters:
+ *       - in: path
+ *         name: mealDbId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: TheMealDB recipe ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               difficultyEvaluation:
+ *                 type: integer
+ *                 example: 4
+ *               tasteEvaluation:
+ *                 type: integer
+ *                 example: 5
+ *               executionDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-06-01"
+ *     responses:
+ *       201:
+ *         description: Review added to recipe
+ *       400:
+ *         description: Missing or invalid parameters
+ *       403:
+ *         description: Unauthorized
+ *       404:
+ *         description: Recipe not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/', authenticateToken, async (req, res) =>
 {
     const db = getDb();
@@ -69,6 +118,40 @@ router.post('/', authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/recipes/{mealDbId}/reviews:
+ *   get:
+ *     summary: Get paginated reviews for a recipe
+ *     tags:
+ *       - Reviews
+ *     parameters:
+ *       - in: path
+ *         name: mealDbId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: TheMealDB recipe ID
+ *       - in: query
+ *         name: start
+ *         schema:
+ *           type: integer
+ *         description: Start index for pagination (default 0)
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: Number of reviews to return (default 10)
+ *     responses:
+ *       200:
+ *         description: Paginated reviews and total count
+ *       400:
+ *         description: Invalid or missing parameters
+ *       404:
+ *         description: Recipe not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', async (req, res) =>
 {
     const db = getDb();
@@ -165,6 +248,44 @@ router.get('/', async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/recipes/{mealDbId}/reviews/{reviewId}:
+ *   delete:
+ *     summary: Delete a review from a recipe
+ *     tags:
+ *       - Reviews
+ *     parameters:
+ *       - in: path
+ *         name: mealDbId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: TheMealDB recipe ID
+ *       - in: path
+ *         name: reviewId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Review ID (ObjectId)
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     responses:
+ *       200:
+ *         description: Review removed
+ *       400:
+ *         description: Invalid parameters
+ *       403:
+ *         description: Unauthorized
+ *       404:
+ *         description: Recipe or review not found
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:reviewId', authenticateToken, async (req, res) =>
 {
     const db = getDb();

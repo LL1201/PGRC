@@ -2,6 +2,44 @@ const express = require("express");
 const router = express.Router();
 const { getDb } = require("../db/db.js");
 
+/**
+ * @swagger
+ * /api/v1/recipes/search:
+ *   get:
+ *     summary: Search recipes by keyword or starting letter (paginated)
+ *     tags:
+ *       - Recipes
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search query (name or ingredient)
+ *       - in: query
+ *         name: letter
+ *         schema:
+ *           type: string
+ *         description: Starting letter of recipe name
+ *       - in: query
+ *         name: start
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Start index for pagination (>= 0)
+ *       - in: query
+ *         name: offset
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: End index for pagination (>= start, <= start+12)
+ *     responses:
+ *       200:
+ *         description: Paginated recipes and total count
+ *       400:
+ *         description: Invalid or missing parameters
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/search', async (req, res) =>
 {
     const db = getDb();
@@ -93,6 +131,30 @@ router.get('/search', async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/recipes/{mealDbId}:
+ *   get:
+ *     summary: Get details of a recipe by mealDbId
+ *     tags:
+ *       - Recipes
+ *     parameters:
+ *       - in: path
+ *         name: mealDbId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: TheMealDB recipe ID
+ *     responses:
+ *       200:
+ *         description: Recipe details
+ *       400:
+ *         description: Recipe ID is required
+ *       404:
+ *         description: Recipe not found in local database
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:mealDbId', async (req, res) =>
 {
     const db = getDb();

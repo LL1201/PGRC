@@ -7,6 +7,49 @@ const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyTok
 const authenticateToken = require('../middleware/authMiddleware');
 require('dotenv').config();
 
+/**
+ * @swagger
+ * /api/v1/auth/login:
+ *   post:
+ *     summary: Login using email and password
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 userId:
+ *                   type: string
+ *                 accessToken:
+ *                   type: string
+ *                 accessTokenExpiration:
+ *                   type: integer
+ *       400:
+ *         description: Email and password are required or invalid email format
+ *       401:
+ *         description: Invalid email or password or account not confirmed
+ *       500:
+ *         description: Database error
+ */
 router.post("/login", async (req, res) =>
 {
     const db = getDb();
@@ -34,7 +77,7 @@ router.post("/login", async (req, res) =>
             httpOnly: true,
             //secure: process.env.NODE_ENV === 'production', //invia solo su HTTPS in produzione
             sameSite: 'strict',
-            path: '/pgrc/api/',
+            path: '/pgrc/api/v1/',
             maxAge: 24 * 60 * 60 * 1000
         });
 
@@ -51,6 +94,32 @@ router.post("/login", async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Logout and invalidate refresh token
+ *     tags:
+ *       - Auth
+ *     description: |
+ *       Effettua il logout dell'utente. Richiede il cookie `refreshToken` inviato dal client.
+ *     parameters:
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token cookie
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       400:
+ *         description: Refresh token is required
+ *       401:
+ *         description: Invalid refresh token
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/logout", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
@@ -67,7 +136,7 @@ router.post("/logout", async (req, res) =>
 
         //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
         res.cookie('refreshToken', 'deleted', {
-            path: '/pgrc/api/auth',
+            path: '/pgrc/api/v1/auth',
             expires: new Date(0),
             httpOnly: true,
             sameSite: 'strict'
@@ -82,7 +151,39 @@ router.post("/logout", async (req, res) =>
     }
 });
 
-//di fatto crea una nuova risorsa, quindi POST
+/**
+ * @swagger
+ * /api/v1/auth/access-token/refresh:
+ *   post:
+ *     summary: Refresh access token using refresh token cookie
+ *     tags:
+ *       - Auth
+ *     description: |
+ *       Richiede il cookie `refreshToken` inviato dal client.
+ *     parameters:
+ *       - name: refreshToken
+ *         in: cookie
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token cookie
+ *     responses:
+ *       200:
+ *         description: New access token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *       400:
+ *         description: Refresh token is required
+ *       401:
+ *         description: Invalid refresh token
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/access-token/refresh", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
@@ -108,7 +209,33 @@ router.post("/access-token/refresh", async (req, res) =>
     }
 });
 
-//conferma l'account e crea anche il ricettario personale
+/**
+ * @swagger
+ * /api/v1/auth/confirm-account:
+ *   post:
+ *     summary: Confirm user account with verification token
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: 123456abcdef
+ *     responses:
+ *       200:
+ *         description: Account verified successfully
+ *       400:
+ *         description: Verification token is missing
+ *       404:
+ *         description: Invalid, expired, or already used verification token
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/confirm-account", async (req, res) =>
 {
     const db = getDb();
@@ -167,31 +294,6 @@ router.post("/confirm-account", async (req, res) =>
     {
         console.error("Error during account verification:", e);
         res.status(500).json({ message: 'An internal server error occurred during verification.' });
-    }
-});
-
-router.get("/access-token/verify-token", authenticateToken, async (req, res) =>
-{
-    try
-    {
-        const db = getDb();
-        const user = await db.collection('users').findOne(
-            { _id: req.userObjectId },
-            { projection: { _id: 1, username: 1, email: 1 } } // Seleziona solo i campi che vuoi restituire
-        );
-
-        if (!user)
-        {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        res.status(200).json({
-            message: 'Token is valid.'
-        });
-    } catch (error)
-    {
-        console.error('Error in /verify-token endpoint:', error);
-        res.status(500).json({ message: 'Internal server error.' });
     }
 });
 

@@ -11,7 +11,33 @@ const recipesRouter = require("./routes/recipes");
 const cookbooksRouter = require("./routes/cookbooks");
 const reviewsRouter = require("./routes/reviews");
 
-// server
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
+
+const swaggerOptions = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'PGRC API',
+            version: '1.0.0',
+            description: 'PGRC API documentation',
+            contact: {
+                name: 'Luca Loner'
+            }
+        },
+        servers: [
+            {
+                url: 'https://www.lloner.it/pgrc/api/v1',
+            },
+        ],
+    },
+    apis: ['./routes/*.js']
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+
+
+//server
 const app = express();
 const port = 3003;
 
@@ -22,11 +48,12 @@ app.use(cookieParser());
 app.use(htmlProcessor);
 
 app.use('/', express.static('public'))
-app.use("/api/users/:userId/cookbook", cookbooksRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/recipes/:mealDbId/reviews", reviewsRouter);
-app.use("/api/recipes", recipesRouter);
+app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/api/v1/users/:userId/cookbook", cookbooksRouter);
+app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/recipes/:mealDbId/reviews", reviewsRouter);
+app.use("/api/v1/recipes", recipesRouter);
 
 app.use((err, req, res, next) =>
 {

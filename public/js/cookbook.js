@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         const userId = localStorage.getItem('userId');
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
-        const url = `/pgrc/api/users/${userId}/cookbook?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
+        const url = `/pgrc/api/v1/users/${userId}/cookbook?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
 
         try
         {
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/${cookbookRecipeId}`, {
                         method: 'DELETE'
                     });
 
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/${cookbookRecipeId}`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json'

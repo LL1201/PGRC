@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         try
         {
-            const response = await fetch(`/pgrc/api/recipes/${recipeId}`, {
+            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         try
         {
-            const url = `/pgrc/api/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
+            const url = `/pgrc/api/v1/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
             const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
 
             if (!response) return;
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () =>
             try
             {
                 const response = await window.authUtils.authenticatedFetch(
-                    `/pgrc/api/recipes/${recipeId}/reviews`,
+                    `/pgrc/api/v1/recipes/${recipeId}/reviews`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

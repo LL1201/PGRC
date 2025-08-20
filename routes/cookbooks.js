@@ -4,6 +4,53 @@ const { getDb } = require("../db/db.js");
 const authenticateToken = require('../middleware/authMiddleware');
 const { ObjectId } = require('mongodb');
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook:
+ *   post:
+ *     summary: Add a recipe to the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mealDbId:
+ *                 type: integer
+ *                 example: 52772
+ *               privateNote:
+ *                 type: string
+ *                 example: "Ricetta preferita"
+ *     responses:
+ *       201:
+ *         description: Recipe added to personal cookbook successfully
+ *       400:
+ *         description: mealDbId is required
+ *       403:
+ *         description: You can only add recipes to your own cookbook
+ *       404:
+ *         description: Recipe with the provided mealDbId does not exist in the MealDB database
+ *       409:
+ *         description: Recipe already exists in your personal cookbook
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/', authenticateToken, async (req, res) =>
 {
     const db = getDb();
@@ -75,6 +122,48 @@ router.post('/', authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook:
+ *   get:
+ *     summary: Get paginated recipes from the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *       - in: query
+ *         name: start
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Start index for pagination (>= 0)
+ *       - in: query
+ *         name: offset
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: End index for pagination (>= start, <= start+12)
+ *     responses:
+ *       200:
+ *         description: Paginated recipes and total count
+ *       400:
+ *         description: Invalid or missing pagination parameters
+ *       403:
+ *         description: You can only view your own cookbook
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticateToken, async (req, res) =>
 {
     const db = getDb();
@@ -225,6 +314,44 @@ router.get('/', authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook/{cookbookRecipeId}:
+ *   delete:
+ *     summary: Remove a recipe from the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: path
+ *         name: cookbookRecipeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cookbook recipe ID (ObjectId)
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     responses:
+ *       200:
+ *         description: Recipe removed from personal cookbook successfully
+ *       400:
+ *         description: cookbookRecipeId is required or invalid
+ *       403:
+ *         description: You can only delete recipes from your own cookbook
+ *       404:
+ *         description: Recipe not found in your personal cookbook
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:cookbookRecipeId', authenticateToken, async (req, res) =>
 {
     const db = getDb();
@@ -268,6 +395,52 @@ router.delete('/:cookbookRecipeId', authenticateToken, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook/{cookbookRecipeId}:
+ *   patch:
+ *     summary: Edit or remove the private note of a recipe in the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: path
+ *         name: cookbookRecipeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Cookbook recipe ID (ObjectId)
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               privateNote:
+ *                 type: string
+ *                 example: "Nuova nota privata"
+ *     responses:
+ *       200:
+ *         description: Private note updated successfully
+ *       400:
+ *         description: cookbookRecipeId is required or invalid
+ *       403:
+ *         description: You can only edit notes of your own cookbook
+ *       500:
+ *         description: Internal server error
+ */
 router.patch('/:cookbookRecipeId', authenticateToken, async (req, res) =>
 {
     const db = getDb();

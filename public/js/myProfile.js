@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     {
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}`);
+            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`);
             if (!response) return;
 
             if (response.ok)
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}`, {
+            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email })
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/users/${userId}`, {
+            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password })

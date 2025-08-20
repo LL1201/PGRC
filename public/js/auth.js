@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await fetch('/pgrc/api/auth/login', {
+            const response = await fetch('/pgrc/api/v1/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await fetch('/pgrc/api/users', {
+            const response = await fetch('/pgrc/api/v1/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

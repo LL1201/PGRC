@@ -4,7 +4,7 @@ async function refreshAccessToken()
 {
     try
     {
-        const response = await fetch('/pgrc/api/auth/access-token/refresh', {
+        const response = await fetch('/pgrc/api/v1/auth/access-token/refresh', {
             method: 'POST',
             credentials: 'include', //include cookies            
         });
@@ -97,7 +97,8 @@ async function isAuthenticated()
 
     try
     {
-        let response = await fetch('/pgrc/api/auth/access-token/verify-token', {
+        //uso l'endpoint per ottenere le info dell'utente per capire se l'utente è autenticato
+        let response = await fetch(`/pgrc/api/v1/users/${userId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -140,7 +141,7 @@ async function logout()
 {
     try
     {
-        await fetch('/pgrc/api/auth/logout', {
+        await fetch('/pgrc/api/v1/auth/logout', {
             method: 'POST',
             credentials: 'include' //per includere il cookie che contiene il refresh token
         });

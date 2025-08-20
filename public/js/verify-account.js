@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     try
     {
-        const response = await fetch('/pgrc/api/auth/confirm-account', {
+        const response = await fetch('/pgrc/api/v1/auth/confirm-account', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
