@@ -299,6 +299,31 @@ router.post("/confirm-account", async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/password-lost:
+ *   post:
+ *     summary: Request password reset email
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: If the email exists, a password reset link will be sent
+ *       400:
+ *         description: Email is required
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/password-lost", async (req, res) =>
 {
     const db = getDb();
@@ -351,6 +376,42 @@ router.post("/password-lost", async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/password-reset:
+ *   post:
+ *     summary: Reset password using reset token
+ *     tags:
+ *       - Auth
+ *     parameters:
+ *       - in: query
+ *         name: resetToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token received via email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: nuovaPassword123
+ *     responses:
+ *       200:
+ *         description: Password has been reset successfully
+ *       400:
+ *         description: Reset token and new password are required
+ *       403:
+ *         description: Invalid token
+ *       404:
+ *         description: User not found or token has expired
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/password-reset", async (req, res) =>
 {
     const db = getDb();
