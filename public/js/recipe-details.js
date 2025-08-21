@@ -219,8 +219,8 @@ document.addEventListener('DOMContentLoaded', () =>
 
             if (!difficulty || !taste || !executionDate)
             {
-                window.alertMsgs && window.alertMsgs.showError
-                    ? window.alertMsgs.showError('Tutti i campi sono obbligatori.')
+                window.alertMsgsUtils && window.alertMsgsUtils.showError
+                    ? window.alertMsgsUtils.showError('Tutti i campi sono obbligatori.')
                     : alert('Tutti i campi sono obbligatori.');
                 return;
             }
@@ -246,21 +246,21 @@ document.addEventListener('DOMContentLoaded', () =>
 
                 if (response.ok)
                 {
-                    window.alertMsgs && window.alertMsgs.showSuccess
-                        ? window.alertMsgs.showSuccess('Recensione aggiunta!')
+                    window.alertMsgsUtils && window.alertMsgsUtils.showSuccess
+                        ? window.alertMsgsUtils.showSuccess('Recensione aggiunta!')
                         : alert('Recensione aggiunta!');
                     addReviewForm.reset();
                     fetchAndDisplayReviews(true, recipeId);
                 } else
                 {
-                    window.alertMsgs && window.alertMsgs.showError
-                        ? window.alertMsgs.showError(data.message || 'Errore nell\'aggiunta della recensione.')
+                    window.alertMsgsUtils && window.alertMsgsUtils.showError
+                        ? window.alertMsgsUtils.showError(data.message || 'Errore nell\'aggiunta della recensione.')
                         : alert(data.message || 'Errore nell\'aggiunta della recensione.');
                 }
             } catch (error)
             {
-                window.alertMsgs && window.alertMsgs.showError
-                    ? window.alertMsgs.showError('Errore di rete.')
+                window.alertMsgsUtils && window.alertMsgsUtils.showError
+                    ? window.alertMsgsUtils.showError('Errore di rete.')
                     : alert('Errore di rete.');
             }
         };

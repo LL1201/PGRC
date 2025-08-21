@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
             if (response.ok)
             {
-                //alertMsgs.showError(response.statusText || 'Errore nel caricamento dati utente');
+                //alertMsgsUtils.showError(response.statusText || 'Errore nel caricamento dati utente');
                 const data = await response.json();
                 userIdInput.value = data.userId;
                 usernameInput.value = data.username;
@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', async () =>
             }
             else
             {
-                alertMsgs.showError((await response.json()).message || 'Errore nel caricamento dati utente');
+                alertMsgsUtils.showError((await response.json()).message || 'Errore nel caricamento dati utente');
             }
         }
         catch (e)
         {
-            alertMsgs.showError('Errore di rete');
+            alertMsgsUtils.showError('Errore di rete');
         }
     }
 
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!username || !email)
         {
-            alertMsgs.showError('Username o email sono obbligatori.');
+            alertMsgsUtils.showError('Username o email sono obbligatori.');
             return;
         }
 
@@ -59,16 +59,16 @@ document.addEventListener('DOMContentLoaded', async () =>
             const data = await response.json();
             if (response.ok)
             {
-                alertMsgs.showSuccess('Dati aggiornati con successo!');
+                alertMsgsUtils.showSuccess('Dati aggiornati con successo!');
             }
             else
             {
-                alertMsgs.showError(data.message || 'Errore durante l\'aggiornamento.');
+                alertMsgsUtils.showError(data.message || 'Errore durante l\'aggiornamento.');
             }
         }
         catch (e)
         {
-            alertMsgs.showError('Errore di rete');
+            alertMsgsUtils.showError('Errore di rete');
         }
     });
 
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const password = deletePasswordInput.value;
         if (!password)
         {
-            alertMsgs.showError('Inserisci la password.');
+            alertMsgsUtils.showError('Inserisci la password.');
             return;
         }
         try
@@ -103,12 +103,12 @@ document.addEventListener('DOMContentLoaded', async () =>
             }
             else
             {
-                alertMsgs.showError(data.message || 'Errore durante l\'eliminazione.');
+                alertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione.');
             }
         }
         catch (e)
         {
-            alertMsgs.showError('Errore di rete');
+            alertMsgsUtils.showError('Errore di rete');
         }
     });
 

@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () =>
                 button.addEventListener('click', (event) =>
                 {
                     const mealDbId = event.target.dataset.mealid;
-                    window.open('recipeDetails.html?id=' + mealDbId).focus();
+                    window.open('recipe-details.html?id=' + mealDbId).focus();
                 });
             });
 
@@ -186,10 +186,10 @@ document.addEventListener('DOMContentLoaded', () =>
 
         if (response.ok)
         {
-            alertMsgs.showSuccess(data.message);
+            alertMsgsUtils.showSuccess(data.message);
         } else
         {
-            alertMsgs.showError(data.message);
+            alertMsgsUtils.showError(data.message);
         }
     }
 

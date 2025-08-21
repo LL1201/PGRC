@@ -88,11 +88,11 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
     hideConfirmation();
 
     //crea il prompt di conferma
-    let modalDiv = document.getElementById('alertMsgs-confirm-modal');
+    let modalDiv = document.getElementById('alertMsgsUtils-confirm-modal');
     if (!modalDiv)
     {
         modalDiv = document.createElement('div');
-        modalDiv.id = 'alertMsgs-confirm-modal';
+        modalDiv.id = 'alertMsgsUtils-confirm-modal';
         modalDiv.className = 'modal fade';
         modalDiv.tabIndex = -1;
         modalDiv.innerHTML = `
@@ -103,11 +103,11 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p id="alertMsgs-confirm-message"></p>
+                        <p id="alertMsgsUtils-confirm-message"></p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="alertMsgs-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
-                        <button type="button" class="btn btn-danger" id="alertMsgs-confirm-btn">${confirmText}</button>
+                        <button type="button" class="btn btn-secondary" id="alertMsgsUtils-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" class="btn btn-danger" id="alertMsgsUtils-confirm-btn">${confirmText}</button>
                     </div>
                 </div>
             </div>
@@ -116,13 +116,13 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
     }
 
     //imposta il messaggio e i pulsanti
-    modalDiv.querySelector('#alertMsgs-confirm-message').textContent = message;
-    modalDiv.querySelector('#alertMsgs-confirm-btn').textContent = confirmText;
-    modalDiv.querySelector('#alertMsgs-cancel-btn').textContent = cancelText;
+    modalDiv.querySelector('#alertMsgsUtils-confirm-message').textContent = message;
+    modalDiv.querySelector('#alertMsgsUtils-confirm-btn').textContent = confirmText;
+    modalDiv.querySelector('#alertMsgsUtils-cancel-btn').textContent = cancelText;
 
     //event listeners
-    const confirmBtn = modalDiv.querySelector('#alertMsgs-confirm-btn');
-    const cancelBtn = modalDiv.querySelector('#alertMsgs-cancel-btn');
+    const confirmBtn = modalDiv.querySelector('#alertMsgsUtils-confirm-btn');
+    const cancelBtn = modalDiv.querySelector('#alertMsgsUtils-cancel-btn');
     confirmBtn.onclick = () =>
     {
         hideConfirmation();
@@ -146,7 +146,7 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
 
 function hideConfirmation()
 {
-    const modalDiv = document.getElementById('alertMsgs-confirm-modal');
+    const modalDiv = document.getElementById('alertMsgsUtils-confirm-modal');
     if (modalDiv)
     {
         const modal = bootstrap.Modal.getInstance(modalDiv);
@@ -160,11 +160,11 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
 {
     hidePrompt();
 
-    let modalDiv = document.getElementById('alertMsgs-prompt-modal');
+    let modalDiv = document.getElementById('alertMsgsUtils-prompt-modal');
     if (!modalDiv)
     {
         modalDiv = document.createElement('div');
-        modalDiv.id = 'alertMsgs-prompt-modal';
+        modalDiv.id = 'alertMsgsUtils-prompt-modal';
         modalDiv.className = 'modal fade';
         modalDiv.tabIndex = -1;
         modalDiv.innerHTML = `
@@ -175,12 +175,12 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p id="alertMsgs-prompt-message"></p>
-                        <textarea id="alertMsgs-prompt-input" class="form-control" placeholder="${placeholder}"></textarea>
+                        <p id="alertMsgsUtils-prompt-message"></p>
+                        <textarea id="alertMsgsUtils-prompt-input" class="form-control" placeholder="${placeholder}"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="alertMsgs-prompt-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
-                        <button type="button" class="btn btn-primary" id="alertMsgs-prompt-confirm-btn">${confirmText}</button>
+                        <button type="button" class="btn btn-secondary" id="alertMsgsUtils-prompt-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" class="btn btn-primary" id="alertMsgsUtils-prompt-confirm-btn">${confirmText}</button>
                     </div>
                 </div>
             </div>
@@ -188,18 +188,18 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
         document.body.appendChild(modalDiv);
     }
 
-    modalDiv.querySelector('#alertMsgs-prompt-message').textContent = message;
-    const input = modalDiv.querySelector('#alertMsgs-prompt-input');
+    modalDiv.querySelector('#alertMsgsUtils-prompt-message').textContent = message;
+    const input = modalDiv.querySelector('#alertMsgsUtils-prompt-input');
     input.value = defaultValue;
     input.placeholder = placeholder;
 
     //event listeners
-    modalDiv.querySelector('#alertMsgs-prompt-confirm-btn').onclick = () =>
+    modalDiv.querySelector('#alertMsgsUtils-prompt-confirm-btn').onclick = () =>
     {
         hidePrompt();
         if (onConfirm) onConfirm(input.value);
     };
-    modalDiv.querySelector('#alertMsgs-prompt-cancel-btn').onclick = () =>
+    modalDiv.querySelector('#alertMsgsUtils-prompt-cancel-btn').onclick = () =>
     {
         hidePrompt();
         if (onCancel) onCancel();
@@ -234,7 +234,7 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
 
 function hidePrompt()
 {
-    const modalDiv = document.getElementById('alertMsgs-prompt-modal');
+    const modalDiv = document.getElementById('alertMsgsUtils-prompt-modal');
     if (modalDiv)
     {
         const modal = bootstrap.Modal.getInstance(modalDiv);
@@ -243,7 +243,7 @@ function hidePrompt()
     }
 }
 
-window.alertMsgs = {
+window.alertMsgsUtils = {
     showAlert,
     hideAlert,
     showSuccess,

@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             button.addEventListener('click', (event) =>
             {
                 const mealDbId = event.target.dataset.mealid;
-                window.open('recipeDetails.html?id=' + mealDbId).focus();
+                window.open('recipe-details.html?id=' + mealDbId).focus();
             });
         });
     }
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const cookbookRecipeId = event.target.dataset.cookbookrecipeid;
         const userId = localStorage.getItem('userId');
 
-        alertMsgs.showConfirmation(
+        alertMsgsUtils.showConfirmation(
             'Sei sicuro di voler rimuovere questa ricetta dal tuo ricettario?',
             async () =>
             {
@@ -146,16 +146,16 @@ document.addEventListener('DOMContentLoaded', async () =>
 
                     if (response.ok)
                     {
-                        alertMsgs.showSuccess(data.message);
+                        alertMsgsUtils.showSuccess(data.message);
                         fetchCookbookRecipes();
                     } else
                     {
-                        alertMsgs.showError(data.message || 'Errore durante la rimozione della ricetta.');
+                        alertMsgsUtils.showError(data.message || 'Errore durante la rimozione della ricetta.');
                     }
                 } catch (error)
                 {
                     console.error('Network error removing recipe:', error);
-                    alertMsgs.showError('Si è verificato un errore di rete durante la rimozione.');
+                    alertMsgsUtils.showError('Si è verificato un errore di rete durante la rimozione.');
                 }
             },
             null,
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const currentNote = event.target.dataset.privatenote;
         const userId = localStorage.getItem('userId');
 
-        alertMsgs.showPrompt(
+        alertMsgsUtils.showPrompt(
             'Modifica la tua nota privata per questa ricetta:',
             currentNote,
             async (newNote) =>
@@ -193,16 +193,16 @@ document.addEventListener('DOMContentLoaded', async () =>
 
                     if (response.ok)
                     {
-                        alertMsgs.showSuccess(data.message);
+                        alertMsgsUtils.showSuccess(data.message);
                         fetchCookbookRecipes();
                     } else
                     {
-                        alertMsgs.showError(data.message || 'Errore durante l\'aggiornamento della nota.');
+                        alertMsgsUtils.showError(data.message || 'Errore durante l\'aggiornamento della nota.');
                     }
                 } catch (error)
                 {
                     console.error('Network error updating note:', error);
-                    alertMsgs.showError('Si è verificato un errore di rete durante l\'aggiornamento.');
+                    alertMsgsUtils.showError('Si è verificato un errore di rete durante l\'aggiornamento.');
                 }
             },
             null,

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             //nascondi login e mostra dropdown del profilo
             authLink.style.display = 'none';
             profileDropdown.style.display = 'block';
-            myProfileNavItem.setAttribute('href', 'myProfile.html');
+            myProfileNavItem.setAttribute('href', 'my-profile.html');
             cookbookNavItem.style.display = 'block';
 
             logoutBtn.addEventListener('click', handleLogout);

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 {
     //se l'utente finisce in questa pagina di login quando autenticato viene reindirizzato alla pagina del profilo
     if (await authUtils.isAuthenticated())
-        window.location.href = 'myProfile.html';
+        window.location.href = 'my-profile.html';
 
     const loginForm = document.getElementById('login-form-element');
     const registerForm = document.getElementById('register-form-element');
@@ -32,12 +32,12 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!email || !password)
         {
-            alertMsgs.showError('Credenziali mancanti.');
+            alertMsgsUtils.showError('Credenziali mancanti.');
             return;
         }
         if (!isValidEmail(email))
         {
-            alertMsgs.showError('Formato email non valido.');
+            alertMsgsUtils.showError('Formato email non valido.');
             return;
         }
 
@@ -57,19 +57,19 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 localStorage.setItem('accessToken', data.accessToken);
                 localStorage.setItem('userId', data.userId);
-                alertMsgs.showSuccess(data.message);
+                alertMsgsUtils.showSuccess(data.message);
                 setTimeout(() =>
                 {
                     window.location.href = 'index.html';
                 }, 1000);
             } else
             {
-                alertMsgs.showError(data.message || 'Login failed.');
+                alertMsgsUtils.showError(data.message || 'Login failed.');
             }
         } catch (error)
         {
             console.error('Error during login:', error);
-            alertMsgs.showError('An error occurred during login. Please try again later.');
+            alertMsgsUtils.showError('An error occurred during login. Please try again later.');
         }
     });
 
@@ -84,17 +84,17 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!username || !email || !password || !confirmPassword)
         {
-            alertMsgs.showError('Tutti i campi sono obbligatori.');
+            alertMsgsUtils.showError('Tutti i campi sono obbligatori.');
             return;
         }
         if (!isValidEmail(email))
         {
-            alertMsgs.showError('Formato email non valido.');
+            alertMsgsUtils.showError('Formato email non valido.');
             return;
         }
         if (password !== confirmPassword)
         {
-            alertMsgs.showError('Le password non coincidono.');
+            alertMsgsUtils.showError('Le password non coincidono.');
             return;
         }
 
@@ -111,14 +111,14 @@ document.addEventListener('DOMContentLoaded', async () =>
             const data = await response.json();
 
             if (response.ok)
-                alertMsgs.showSuccess(data.message);
+                alertMsgsUtils.showSuccess(data.message);
             else
-                alertMsgs.showError(data.message || 'Registration failed.');
+                alertMsgsUtils.showError(data.message || 'Registration failed.');
 
         } catch (error)
         {
             console.error('Error during registration:', error);
-            alertMsgs.showError('An error occurred during registration. Please try again later.');
+            alertMsgsUtils.showError('An error occurred during registration. Please try again later.');
         }
     });
 });
