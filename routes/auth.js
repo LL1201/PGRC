@@ -297,4 +297,50 @@ router.post("/confirm-account", async (req, res) =>
     }
 });
 
+router.post("/password-reset", async (req, res) =>
+{
+    const db = getDb();
+    const { email } = req.body;
+
+    if (!email)
+        return res.status(400).json({ message: 'Email is required.' });
+
+    //TODO - bisogna anche controllare che la data di scadenza sia scaduta per procedere ad una nuova richiesta
+    //controllare anche che l'account sia verificato...
+    const user = await db.collection('users').findOne({ email: email, resetPasswordToken: { $exists: false } });
+
+    //prevenzione attacchi di enumerazione email: non informare il client se l'email esiste
+    if (!user)
+        return res.status(200).json({ message: 'If this email is in our system, you will receive a password reset link shortly.' });
+
+    //genera un token
+    //non uso JWT in questo caso per evitare la dipendenza da un token che si autodistrugge
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedResetToken = await bcrypt.hash(resetToken, 10);
+    const resetTokenExpiration = new Date(Date.now() + 3600000); //scadenza tra 1 ora
+
+    try
+    {
+        //aggiorna l'utente con il token e la sua scadenza
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    resetPasswordToken: hashedResetToken,
+                    resetTokenExpiration: resetTokenExpiration,
+                }
+            }
+        );
+
+        await sendPasswordResetMail(email, resetToken);
+
+        res.status(200).json({ message: 'If this email is in our system, you will receive a password reset link shortly.' });
+
+    } catch (e)
+    {
+        console.error("Error during password reset request:", e);
+        res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
+    }
+});
+
 module.exports = router;

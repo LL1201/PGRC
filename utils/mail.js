@@ -40,7 +40,7 @@ function sendPasswordResetMail(mailTo, token)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Reimposta la tua password',
-        text: `Ciao, \nPer reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/verify-account?token=${verificationToken}`
+        text: `Ciao, \nPer reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/verify-account?token=${token}`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
