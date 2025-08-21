@@ -405,29 +405,30 @@ router.patch("/:userId", authenticateToken, async (req, res) =>
  *         description: User not found
  *       500:
  *         description: Internal server error
-router.get("/:userId/access-tokens/verify-token", authenticateToken, async (req, res) =>
-{
-    try
-    {
-        const db = getDb();
-        const user = await db.collection('users').findOne(
-            { _id: req.userObjectId },
-            { projection: { _id: 1, username: 1, email: 1 } } // Seleziona solo i campi che vuoi restituire
-        );
+ */
+// router.get("/:userId/access-tokens/verify-token", authenticateToken, async (req, res) =>
+// {
+//     try
+//     {
+//         const db = getDb();
+//         const user = await db.collection('users').findOne(
+//             { _id: req.userObjectId },
+//             { projection: { _id: 1, username: 1, email: 1 } } // Seleziona solo i campi che vuoi restituire
+//         );
 
-        if (!user)
-        {
-            return res.status(404).json({ message: 'User not found.' });
-        }
+//         if (!user)
+//         {
+//             return res.status(404).json({ message: 'User not found.' });
+//         }
 
-        res.status(200).json({
-            message: 'Token is valid.'
-        });
-    } catch (error)
-    {
-        console.error('Error in /verify-token endpoint:', error);
-        res.status(500).json({ message: 'Internal server error.' });
-    }
-});*/
+//         res.status(200).json({
+//             message: 'Token is valid.'
+//         });
+//     } catch (error)
+//     {
+//         console.error('Error in /verify-token endpoint:', error);
+//         res.status(500).json({ message: 'Internal server error.' });
+//     }
+// });*/
 
 module.exports = router;

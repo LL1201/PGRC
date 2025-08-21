@@ -8,7 +8,6 @@ async function htmlProcessor(req, res, next)
     const filePath = req.path === '/' ? '/index.html' : req.path;
     if (filePath.endsWith('.html'))
     {
-        console.log(`Richiesta per il file HTML: ${filePath}`);
         try
         {
             //legge il contenuto del file HTML richiesto

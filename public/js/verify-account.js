@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
 
+    //TODO - veder se si possono usare gli alert dell'utility
     const loadingSpinner = document.getElementById('loading-spinner');
     const verificationMessage = document.getElementById('verification-message');
     const loginRedirectLink = document.getElementById('login-redirect-link');

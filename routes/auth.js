@@ -4,8 +4,10 @@ const emailValidator = require("email-validator");
 const bcrypt = require("bcryptjs");
 const { getDb } = require("../db/db.js");
 const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } = require("../utils/authUtil");
-const authenticateToken = require('../middleware/authMiddleware');
+const { sendPasswordResetMail } = require('../utils/mail.js');
 require('dotenv').config();
+const crypto = require('crypto');
+
 
 /**
  * @swagger
@@ -297,7 +299,7 @@ router.post("/confirm-account", async (req, res) =>
     }
 });
 
-router.post("/password-reset", async (req, res) =>
+router.post("/password-lost", async (req, res) =>
 {
     const db = getDb();
     const { email } = req.body;
@@ -305,9 +307,15 @@ router.post("/password-reset", async (req, res) =>
     if (!email)
         return res.status(400).json({ message: 'Email is required.' });
 
-    //TODO - bisogna anche controllare che la data di scadenza sia scaduta per procedere ad una nuova richiesta
-    //controllare anche che l'account sia verificato...
-    const user = await db.collection('users').findOne({ email: email, resetPasswordToken: { $exists: false } });
+    //controllo che non ci sia una richiesta valida in corso
+    const user = await db.collection('users').findOne({
+        email: email,
+        $or: [
+            { resetPasswordToken: { $exists: false } },
+            { resetTokenExpiration: { $exists: false } },
+            { resetTokenExpiration: { $lte: new Date() } }
+        ]
+    });
 
     //prevenzione attacchi di enumerazione email: non informare il client se l'email esiste
     if (!user)
@@ -340,6 +348,56 @@ router.post("/password-reset", async (req, res) =>
     {
         console.error("Error during password reset request:", e);
         res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
+    }
+});
+
+router.post("/password-reset", async (req, res) =>
+{
+    const db = getDb();
+    const { password } = req.body;
+    const { resetToken } = req.query;
+
+    if (!resetToken || !password)
+        return res.status(400).json({ message: 'Reset token and new password are required.' });
+
+    try
+    {
+        const user = await db.collection('users').findOne({
+            resetPasswordToken: { $exists: true, $ne: null },
+            resetTokenExpiration: { $gt: new Date() }
+        });
+
+        if (!user)
+            return res.status(404).json({ message: 'User not found or token has expired.' });
+
+        const isMatch = await bcrypt.compare(resetToken, user.resetPasswordToken);
+        if (!isMatch)
+            return res.status(403).json({ message: 'Invalid token.' });
+
+        //hash della nuova password e aggiornamento nel DB
+        //TODO - prendere il salt dal .env
+        const newPasswordHash = await bcrypt.hash(password, 10);
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    hashedPassword: newPasswordHash,
+                },
+                //rimuove il token di reset dal DB per evitare riutilizzi
+                //TODO - miglioramento futuro fare in modo che ci sia uno storico dei password reset
+                $unset: {
+                    resetPasswordToken: "",
+                    resetTokenExpires: ""
+                }
+            }
+        );
+
+        res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
+
+    } catch (e)
+    {
+        console.error("Error resetting password:", e);
+        res.status(500).json({ message: 'An internal server error occurred.' });
     }
 });
 

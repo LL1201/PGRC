@@ -21,7 +21,7 @@ async function sendConfirmationMail(mailTo, token)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma il tuo account',
-        text: `Ciao, \nPer confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?token=${token}`
+        text: `Ciao, \n\nper confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?token=${token}`
     };
 
     try
@@ -40,7 +40,7 @@ function sendPasswordResetMail(mailTo, token)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Reimposta la tua password',
-        text: `Ciao, \nPer reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/verify-account?token=${token}`
+        text: `Ciao, \n\nper reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/password-reset.html?resetToken=${token}`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
@@ -61,7 +61,7 @@ function sendUserDeletionMail(mailTo)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma di cancellazione account',
-        text: `Ciao, \nQuesta email ti conferma l'effettiva cancellazione di tutti i dati associati al tuo account PGRC.`
+        text: `Ciao, \n\nquesta email ti conferma l'effettiva cancellazione di tutti i dati associati al tuo account PGRC.`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
