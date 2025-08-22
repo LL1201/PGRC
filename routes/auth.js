@@ -9,6 +9,7 @@ import crypto from 'crypto';
 dotenv.config();
 
 const router = express.Router();
+const HASH_SALT = process.env.HASH_SALT;
 
 /**
  * @swagger
@@ -350,7 +351,7 @@ router.post("/password-lost", async (req, res) =>
     //genera un token
     //non uso JWT in questo caso per evitare la dipendenza da un token che si autodistrugge
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedResetToken = await bcrypt.hash(resetToken, 10);
+    const hashedResetToken = await bcrypt.hash(resetToken, HASH_SALT);
     const resetTokenExpiration = new Date(Date.now() + 3600000); //scadenza tra 1 ora
 
     try
@@ -437,8 +438,7 @@ router.post("/password-reset", async (req, res) =>
             return res.status(403).json({ message: 'Invalid token.' });
 
         //hash della nuova password e aggiornamento nel DB
-        //TODO - prendere il salt dal .env
-        const newPasswordHash = await bcrypt.hash(password, 10);
+        const newPasswordHash = await bcrypt.hash(password, HASH_SALT);
         await db.collection('users').updateOne(
             { _id: user._id },
             {

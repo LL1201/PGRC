@@ -56,7 +56,7 @@ app.use(cookieParser());
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
 app.use(cors(corsOptions));
-ppp.options('/', cors(corsOptions)); //enable CORS for preflight requests
+app.options('/', cors(corsOptions)); //enable CORS for preflight requests
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

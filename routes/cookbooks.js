@@ -1,6 +1,6 @@
 import express from "express";
 import { getDb } from "../db/db.js";
-import authenticateToken from '../middlewares/authMiddleware.js';
+import authenticateUser from '../middlewares/authMiddleware.js';
 import { ObjectId } from 'mongodb';
 
 const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
@@ -52,7 +52,7 @@ const router = express.Router({ mergeParams: true }); //per ottenere anche il pa
  *       500:
  *         description: Internal server error
  */
-router.post('/', authenticateToken, async (req, res) =>
+router.post('/', authenticateUser, async (req, res) =>
 {
     const db = getDb();
     const { mealDbId, privateNote } = req.body;
@@ -165,7 +165,7 @@ router.post('/', authenticateToken, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.get('/', authenticateToken, async (req, res) =>
+router.get('/', authenticateUser, async (req, res) =>
 {
     const db = getDb();
     const userObjectId = req.userObjectId;
@@ -353,7 +353,7 @@ router.get('/', authenticateToken, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.delete('/:cookbookRecipeId', authenticateToken, async (req, res) =>
+router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
     const db = getDb();
     const userObjectId = req.userObjectId;
@@ -442,7 +442,7 @@ router.delete('/:cookbookRecipeId', authenticateToken, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.patch('/:cookbookRecipeId', authenticateToken, async (req, res) =>
+router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
     const db = getDb();
     //privateNote sarà non presente o una stringa vuota per rimuovere la nota dalla ricetta

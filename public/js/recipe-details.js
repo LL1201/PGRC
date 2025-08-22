@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const REVIEWS_PAGE_SIZE = 10;
     let reviewsCurrentStart = 0;
     let reviewsTotal = 0;
+    let foundOwnReview;
 
     function getRecipeIdFromUrl()
     {
@@ -78,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () =>
         document.getElementById('recipe-instructions').textContent = recipe.instructions;
     }
 
+    //TODO - sostituire con i miei errori
     function showError(title, message)
     {
         const recipeContainer = document.getElementById('recipe-container');
@@ -133,23 +135,50 @@ document.addEventListener('DOMContentLoaded', () =>
             reviewsListContainer.innerHTML = '';
         }
 
+        //resetta il flag ogni volta che ricarichi le recensioni
+        foundOwnReview = false;
+
         try
         {
+            //imposto la richiesta autenticata se sono effettivamente autenticato
+            //in modo da ottenere la mia recensione in cima alle altre e mostrare il pulsante elimina
+            let myUserId = null;
             const url = `/pgrc/api/v1/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
-            const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+            let response = null;
 
-            if (!response) return;
+            if (authUtils.isAuthenticated())
+            {
+                response = await authUtils.authenticatedFetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                myUserId = localStorage.getItem('userId');
+            } else
+            {
+                response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
 
             const data = await response.json();
+
             reviewsTotal = data.total || 0;
 
             if (Array.isArray(data.reviews))
             {
                 data.reviews.forEach(review =>
                 {
-                    reviewsListContainer.appendChild(renderReviewCard(review));
+                    //se la recensione è la propria, aggiunge il pulsante elimina
+                    const isOwn = myUserId && review.authorUserId && review.authorUserId === myUserId;
+                    if (isOwn)
+                        foundOwnReview = true;
+                    reviewsListContainer.appendChild(renderReviewCard(review, isOwn));
                 });
             }
+
+            // Aggiorna la visibilità del form ogni volta che aggiorni le recensioni
+            await checkShowAddReviewForm(recipeId);
 
             reviewsCurrentStart += REVIEWS_PAGE_SIZE;
 
@@ -165,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () =>
             if (reviewsTotal === 0 && reset)
             {
                 reviewsListContainer.innerHTML = '<p class="text-center text-muted">Nessuna recensione presente.</p>';
+                //toggleAddReviewForm(true);
             }
         } catch (error)
         {
@@ -172,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
-    function renderReviewCard(review)
+    function renderReviewCard(review, isOwn = false)
     {
         const div = document.createElement('div');
         div.className = 'review-card';
@@ -195,8 +225,56 @@ document.addEventListener('DOMContentLoaded', () =>
             </div>
             <div>
                 <span class="text-muted small">Utente: ${review.authorUsername ? review.authorUsername : 'N/A'}</span>
+                ${isOwn ? `<button class="btn btn-sm btn-danger ms-2 delete-review-btn" data-reviewid="${review.reviewId}">Elimina</button>` : ''}
             </div>
         `;
+
+        // Se è la propria recensione, aggiungi event listener per il delete
+        if (isOwn)
+        {
+            const btn = div.querySelector('.delete-review-btn');
+            btn.addEventListener('click', async function ()
+            {
+                window.alertMsgsUtils.showConfirmation(
+                    'Sei sicuro di voler eliminare la tua recensione?',
+                    async () =>
+                    {
+                        try
+                        {
+                            const response = await window.authUtils.authenticatedFetch(
+                                `/pgrc/api/v1/recipes/${review.mealDbId}/reviews/${review.reviewId}`,
+                                { method: 'DELETE' }
+                            );
+                            const data = await response.json();
+                            if (response.ok)
+                            {
+                                window.alertMsgsUtils && window.alertMsgsUtils.showSuccess
+                                    ? window.alertMsgsUtils.showSuccess('Recensione eliminata!')
+                                    : alert('Recensione eliminata!');
+                                //ricarica le recensioni e mostra il form di nuovo
+                                fetchAndDisplayReviews(true, review.mealDbId);
+                            }
+                            else
+                            {
+                                window.alertMsgsUtils && window.alertMsgsUtils.showError
+                                    ? window.alertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione della recensione.')
+                                    : alert(data.message || 'Errore durante l\'eliminazione della recensione.');
+                            }
+                        }
+                        catch (err)
+                        {
+                            window.alertMsgsUtils && window.alertMsgsUtils.showError
+                                ? window.alertMsgsUtils.showError('Errore di rete.')
+                                : alert('Errore di rete.');
+                        }
+                    },
+                    null,
+                    'Elimina',
+                    'Annulla'
+                );
+            });
+        }
+
         return div;
     }
 
@@ -268,11 +346,11 @@ document.addEventListener('DOMContentLoaded', () =>
         };
     }
 
-    //mostra form recensione se autenticato
+    //mostra form recensione solo se autenticato e se l'utente non ha già lasciato una recensione
     async function checkShowAddReviewForm(recipeId)
     {
         const addReviewContainer = document.getElementById('add-review-container');
-        if (await authUtils.isAuthenticated())
+        if (await authUtils.isAuthenticated() && !foundOwnReview)
         {
             addReviewContainer.style.display = 'block';
             setupAddReviewForm(recipeId);

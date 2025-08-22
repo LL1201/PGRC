@@ -1,9 +1,16 @@
 import express from "express";
 import { getDb } from "../db/db.js";
-import authenticateToken from '../middlewares/authMiddleware.js';
+import authenticateUser from '../middlewares/authMiddleware.js';
 import { ObjectId } from 'mongodb';
 
 const router = express.Router({ mergeParams: true });
+
+//dal momento che non posso chiamare il middleware indicando
+function authenticateUserOptional(req, res, next)
+{
+    //chiama authenticateUser con authIsOptional = true
+    return authenticateUser(req, res, next, true);
+}
 
 /**
  * @swagger
@@ -54,9 +61,8 @@ const router = express.Router({ mergeParams: true });
  *       500:
  *         description: Internal server error
  */
-router.post('/', authenticateToken, async (req, res) =>
+router.post('/', authenticateUser, async (req, res) =>
 {
-    //TODO - lasciare una sola recensione
     const db = getDb();
     const mealDbId = parseInt(req.params.mealDbId);
     const userObjectId = req.userObjectId;
@@ -86,7 +92,6 @@ router.post('/', authenticateToken, async (req, res) =>
     if (isNaN(parsedExecutionDate.getTime()))
         return res.status(400).json({ message: 'Invalid date format for executionDate. Please use YYYY-MM-DD.' });
 
-
     try
     {
         //verifica se l'id è valido e appartenente agli id di TheMealDB        
@@ -94,6 +99,15 @@ router.post('/', authenticateToken, async (req, res) =>
 
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist in the MealDB database.' });
+
+        //verifica se l'utente ha già recensito questa ricetta
+        const existingReview = await db.collection('reviews').findOne({
+            mealDbId: mealDbId,
+            authorUserId: userObjectId
+        });
+
+        if (existingReview)
+            return res.status(409).json({ message: 'You have already left a review for this recipe.' });
 
         const newReviewDocument = {
             mealDbId: mealDbId,
@@ -154,7 +168,7 @@ router.post('/', authenticateToken, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.get('/', async (req, res) =>
+router.get('/', authenticateUserOptional, async (req, res) =>
 {
     const db = getDb();
     const mealDbIdFromParams = req.params.mealDbId;
@@ -176,6 +190,11 @@ router.get('/', async (req, res) =>
     if (isNaN(offset) || offset <= 0)
         offset = 10;
 
+    //recupera l'userId autenticato se presente (quindi solo se autenticato)
+    let userObjectId = null;
+    if (req.userObjectId)
+        userObjectId = req.userObjectId;
+
     try
     {
         //verifica che la ricetta esista tra le ricette di TheMealDB       
@@ -184,18 +203,20 @@ router.get('/', async (req, res) =>
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
-        //.sort per ordinare, in questo caso discendente per data di esecuzione
-        /*const reviewsResult = await db.collection('reviews')
-            .find({ mealDbId: mealDbId })
-            .sort({ executionDate: -1 })
-            .skip(start)
-            .limit(offset)
-            .toArray();*/
-
-        //TODO - vedere bene come funziona
-        const reviewsResult = await db.collection('reviews').aggregate([
+        //TODO - vedere bene come funge
+        const pipeline = [
             { $match: { mealDbId: mealDbId } },
-            { $sort: { executionDate: -1 } },
+            // Se autenticato, aggiungi un campo "isMine" per ordinare la propria recensione in cima
+            ...(userObjectId ? [
+                {
+                    $addFields: {
+                        isMine: { $cond: [{ $eq: ["$authorUserId", userObjectId] }, 1, 0] }
+                    }
+                },
+                { $sort: { isMine: -1, executionDate: -1 } }
+            ] : [
+                { $sort: { executionDate: -1 } }
+            ]),
             { $skip: start },
             { $limit: offset },
             {
@@ -206,9 +227,7 @@ router.get('/', async (req, res) =>
                     as: 'author'
                 }
             },
-            {
-                $unwind: '$author'
-            },
+            { $unwind: '$author' },
             {
                 $project: {
                     _id: 1,
@@ -220,11 +239,10 @@ router.get('/', async (req, res) =>
                     username: '$author.username'
                 }
             }
-        ]).toArray();
+        ];
 
+        const reviewsResult = await db.collection('reviews').aggregate(pipeline).toArray();
         const total = await db.collection('reviews').countDocuments({ mealDbId: mealDbId });
-
-        //const reviewsResult = await reviewsCursor.toArray();
 
         const reviews = reviewsResult.map(review =>
         {
@@ -232,6 +250,7 @@ router.get('/', async (req, res) =>
                 reviewId: review._id,
                 mealDbId: review.mealDbId,
                 authorUsername: review.username,
+                authorUserId: review.authorUserId,
                 difficulty: review.difficultyEvaluation,
                 taste: review.tasteEvaluation,
                 executionDate: review.executionDate
@@ -288,7 +307,7 @@ router.get('/', async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.delete('/:reviewId', authenticateToken, async (req, res) =>
+router.delete('/:reviewId', authenticateUser, async (req, res) =>
 {
     const db = getDb();
     let objectReviewId;

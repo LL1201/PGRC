@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 dotenv.config();
 
-function authenticateToken(req, res, next)
+//TODO - auth is optional cambiare frontend
+function authenticateUser(req, res, next, authIsOptional = false)
 {
     const authHeader = req.headers['authorization'];
     const { userId } = req.params;
@@ -26,12 +27,17 @@ function authenticateToken(req, res, next)
     if (authHeader && authHeader.startsWith('Bearer '))
         token = authHeader.split(' ')[1];
 
-    if (token == null)
+    //se l'auth è obbligatoria e il token è null restituisce errore
+    //se l'auth è opzionale e il token è null va avanti
+    if (!authIsOptional && !token)
         return res.status(401).json({ message: 'Access token required.' });
+    else if (!token && authIsOptional)
+        return next();
 
     const decoded = verifyToken(token);
     if (!decoded)
         return res.status(401).json({ message: 'Invalid or expired access token.' });
+
 
     //req.userId contiene l'id dell'utente associato al JWT passato
     //req.userObjectId contiene l'id associato al JWT in formato ObjectId
@@ -47,4 +53,4 @@ function authenticateToken(req, res, next)
     next();
 }
 
-export default authenticateToken;
+export default authenticateUser;
