@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
+    //TODO - eliminare recensione
+    //TODO - vedere la propria in cima
     //const recipeContent = document.getElementById('recipe-content');
     const REVIEWS_PAGE_SIZE = 10;
     let reviewsCurrentStart = 0;

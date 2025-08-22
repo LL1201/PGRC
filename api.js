@@ -12,6 +12,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,8 +37,14 @@ const swaggerOptions = {
     apis: ['./routes/*.js']
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
+const corsOptions = {
+    origin: ['https:/www.lloner.it'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    // maxAge: 86400, // Cache the preflight response for 24 hours
+};
 
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 //server
 const app = express();
@@ -48,6 +55,8 @@ app.use(cookieParser());
 
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
+app.use(cors(corsOptions));
+ppp.options('/', cors(corsOptions)); //enable CORS for preflight requests
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
+    //TODO - media punteggi review
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
     const resetButton = document.getElementById('reset-button');
