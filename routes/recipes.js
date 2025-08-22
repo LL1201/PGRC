@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import { getDb } from "../db/db.js";
+
 const router = express.Router();
-const { getDb } = require("../db/db.js");
 
 /**
  * @swagger
@@ -185,4 +186,4 @@ router.get('/:mealDbId', async (req, res) =>
     }
 });
 
-module.exports = router;
+export default router;

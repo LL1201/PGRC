@@ -1,5 +1,9 @@
-const path = require('path');
-const fs = require('fs').promises;
+import path from 'path';
+import { promises as fs } from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function htmlProcessor(req, res, next)
 {
@@ -32,4 +36,4 @@ async function htmlProcessor(req, res, next)
     }
 };
 
-module.exports = htmlProcessor;
+export default htmlProcessor;

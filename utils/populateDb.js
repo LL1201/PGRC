@@ -1,5 +1,5 @@
-const axios = require('axios');
-const { getDb } = require('../db/db.js');
+import axios from 'axios';
+import { getDb } from "../db/db.js";
 
 async function populateTheMealDbRecipes()
 {
@@ -73,4 +73,4 @@ async function populateTheMealDbRecipes()
     console.log(`Dump of TheMealDB completed. Total number of recipes saved: ${totalRecipesSaved}`);
 }
 
-module.exports = { populateTheMealDbRecipes };
+export default populateTheMealDbRecipes;

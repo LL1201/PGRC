@@ -1,13 +1,14 @@
-const express = require("express");
-const router = express.Router();
-const emailValidator = require("email-validator");
-const bcrypt = require("bcryptjs");
-const { getDb } = require("../db/db.js");
-const { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } = require("../utils/authUtil");
-const { sendPasswordResetMail } = require('../utils/mail.js');
-require('dotenv').config();
-const crypto = require('crypto');
+import express from "express";
+import emailValidator from "email-validator";
+import bcrypt from "bcryptjs";
+import { getDb } from "../db/db.js";
+import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } from "../utils/authUtil.js";
+import { sendPasswordResetMail } from '../utils/mail.js';
+import dotenv from 'dotenv';
+import crypto from 'crypto';
+dotenv.config();
 
+const router = express.Router();
 
 /**
  * @swagger
@@ -462,4 +463,4 @@ router.post("/password-reset", async (req, res) =>
     }
 });
 
-module.exports = router;
+export default router;

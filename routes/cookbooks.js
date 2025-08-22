@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import { getDb } from "../db/db.js";
+import authenticateToken from '../middlewares/authMiddleware.js';
+import { ObjectId } from 'mongodb';
+
 const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
-const { getDb } = require("../db/db.js");
-const authenticateToken = require('../middleware/authMiddleware');
-const { ObjectId } = require('mongodb');
 
 /**
  * @swagger
@@ -517,4 +518,4 @@ router.patch('/:cookbookRecipeId', authenticateToken, async (req, res) =>
     }
 });
 
-module.exports = router;
+export default router;

@@ -1,12 +1,13 @@
-const express = require("express");
+import express from "express";
+import emailValidator from "email-validator";
+import bcrypt from 'bcryptjs';
+import { getDb } from '../db/db.js';
+import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mail.js';
+import { verifyRefreshToken } from "../utils/authUtil.js";
+import authenticateToken from '../middlewares/authMiddleware.js';
+import crypto from 'crypto';
+
 const router = express.Router();
-const emailValidator = require("email-validator");
-const bcrypt = require('bcryptjs');
-const { getDb } = require('../db/db.js');
-const { sendConfirmationMail, sendUserDeletionMail } = require('../utils/mail.js');
-const { verifyRefreshToken } = require("../utils/authUtil");
-const authenticateToken = require('../middleware/authMiddleware');
-const crypto = require('crypto');
 
 /**
  * @swagger
@@ -431,4 +432,4 @@ router.patch("/:userId", authenticateToken, async (req, res) =>
 //     }
 // });*/
 
-module.exports = router;
+export default router;

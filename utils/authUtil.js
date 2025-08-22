@@ -1,17 +1,19 @@
-const jwt = require('jsonwebtoken');
-const { getDb } = require('../db/db');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import { getDb } from "../db/db.js";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION;
 const REFRESH_TOKEN_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
 
-function generateAccessToken(userId)
+export function generateAccessToken(userId)
 {
     return jwt.sign({ userId }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRATION });
 }
 
-async function generateRefreshToken(userId)
+export async function generateRefreshToken(userId)
 {
     const refreshToken = jwt.sign({ userId }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRATION });
 
@@ -30,7 +32,7 @@ async function generateRefreshToken(userId)
     return refreshToken;
 }
 
-function verifyToken(token)
+export function verifyToken(token)
 {
     try
     {
@@ -41,7 +43,7 @@ function verifyToken(token)
     }
 }
 
-async function removeRefreshToken(token)
+export async function removeRefreshToken(token)
 {
     const db = getDb();
     const refreshTokensCollection = db.collection('refreshTokens');
@@ -49,7 +51,7 @@ async function removeRefreshToken(token)
 }
 
 
-async function verifyRefreshToken(token)
+export async function verifyRefreshToken(token)
 {
     //controlla prima la presenza del token nel db e che non sia scaduto
     const db = getDb();
@@ -62,11 +64,3 @@ async function verifyRefreshToken(token)
     //controlla la validità del JWT stesso  
     return verifyToken(token);
 }
-
-module.exports = {
-    generateAccessToken,
-    generateRefreshToken,
-    verifyToken,
-    removeRefreshToken,
-    verifyRefreshToken
-};

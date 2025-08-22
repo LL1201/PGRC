@@ -1,5 +1,7 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config()
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const SMTP_USER = process.env.SMTP_USER;
@@ -15,7 +17,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-async function sendConfirmationMail(mailTo, token)
+export async function sendConfirmationMail(mailTo, token)
 {
     const mailOptions = {
         from: SMTP_USER,
@@ -34,7 +36,7 @@ async function sendConfirmationMail(mailTo, token)
     }
 }
 
-function sendPasswordResetMail(mailTo, token)
+export function sendPasswordResetMail(mailTo, token)
 {
     const mailOptions = {
         from: SMTP_USER,
@@ -55,7 +57,7 @@ function sendPasswordResetMail(mailTo, token)
     });
 }
 
-function sendUserDeletionMail(mailTo)
+export function sendUserDeletionMail(mailTo)
 {
     const mailOptions = {
         from: SMTP_USER,
@@ -75,5 +77,3 @@ function sendUserDeletionMail(mailTo)
         }
     });
 }
-
-module.exports = { sendConfirmationMail, sendPasswordResetMail, sendUserDeletionMail }

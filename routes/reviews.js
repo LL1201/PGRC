@@ -1,8 +1,9 @@
-const express = require("express");
-const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
-const { getDb } = require("../db/db.js");
-const authenticateToken = require('../middleware/authMiddleware.js');
-const { ObjectId } = require('mongodb');
+import express from "express";
+import { getDb } from "../db/db.js";
+import authenticateToken from '../middlewares/authMiddleware.js';
+import { ObjectId } from 'mongodb';
+
+const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -346,4 +347,4 @@ router.delete('/:reviewId', authenticateToken, async (req, res) =>
     }
 });
 
-module.exports = router;
+export default router;

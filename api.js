@@ -1,18 +1,20 @@
-const express = require("express");
-const cookieParser = require('cookie-parser');
+import express from "express";
+import cookieParser from "cookie-parser";
+import { connectToDatabase } from "./db/db.js";
+import populateTheMealDbRecipes from './utils/populateDb.js';
+import htmlProcessor from './middlewares/htmlProcessor.js';
+import usersRouter from "./routes/users.js";
+import authRouter from "./routes/auth.js";
+import recipesRouter from "./routes/recipes.js";
+import cookbooksRouter from "./routes/cookbooks.js";
+import reviewsRouter from "./routes/reviews.js";
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsDoc from 'swagger-jsdoc';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-//custom modules
-const { connectToDatabase } = require("./db/db.js");
-const { populateTheMealDbRecipes } = require('./utils/populateDb.js');
-const htmlProcessor = require('./middleware/htmlProcessor.js');
-const usersRouter = require("./routes/users");
-const authRouter = require("./routes/auth");
-const recipesRouter = require("./routes/recipes");
-const cookbooksRouter = require("./routes/cookbooks");
-const reviewsRouter = require("./routes/reviews");
-
-const swaggerUi = require('swagger-ui-express');
-const swaggerJsDoc = require('swagger-jsdoc');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const swaggerOptions = {
     swaggerDefinition: {
@@ -47,7 +49,7 @@ app.use(cookieParser());
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
 
-app.use('/', express.static('public'))
+app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use("/api/v1/users/:userId/cookbook", cookbooksRouter);
 app.use("/api/v1/users", usersRouter);
@@ -64,7 +66,6 @@ app.use((err, req, res, next) =>
     }
     next(err);
 });
-
 
 app.use((req, res) =>
 {
@@ -83,4 +84,3 @@ connectToDatabase().then(async () =>
 {
     console.error("Cannot connect to DB:", err);
 });
-

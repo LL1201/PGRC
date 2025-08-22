@@ -1,5 +1,7 @@
-const { MongoClient } = require("mongodb");
-require('dotenv').config()
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const dbUri = process.env.DB_STRING;
 const dbName = process.env.DB_NAME;
@@ -7,7 +9,7 @@ const client = new MongoClient(dbUri);
 
 let db;
 
-async function connectToDatabase()
+export async function connectToDatabase()
 {
     if (!db)
     {
@@ -18,13 +20,10 @@ async function connectToDatabase()
     return db;
 }
 
-function getDb()
+export function getDb()
 {
     if (!db)
-    {
         throw new Error("Database not connected. Call connectToDatabase first.");
-    }
+
     return db;
 }
-
-module.exports = { connectToDatabase, getDb };

@@ -1,6 +1,7 @@
-const { verifyToken } = require('../utils/authUtil');
-require('dotenv').config();
-const { ObjectId } = require('mongodb');
+import { verifyToken } from '../utils/authUtil.js';
+import dotenv from 'dotenv';
+import { ObjectId } from 'mongodb';
+dotenv.config();
 
 function authenticateToken(req, res, next)
 {
@@ -46,4 +47,4 @@ function authenticateToken(req, res, next)
     next();
 }
 
-module.exports = authenticateToken;
+export default authenticateToken;
