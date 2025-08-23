@@ -72,6 +72,8 @@ router.post('/', authenticateUser, async (req, res) =>
     const difficultyEvaluationNum = parseInt(difficultyEvaluation);
     const tasteEvaluationNum = parseInt(tasteEvaluation);
 
+    console.log(typeof (difficultyEvaluationNum));
+
     if (!mealDbId)
         return res.status(400).json({ message: 'mealDbId is required.' });
 
@@ -112,8 +114,8 @@ router.post('/', authenticateUser, async (req, res) =>
         const newReviewDocument = {
             mealDbId: mealDbId,
             authorUserId: userObjectId,
-            difficultyEvaluation: difficultyEvaluation,
-            tasteEvaluation: tasteEvaluation,
+            difficultyEvaluation: difficultyEvaluationNum,
+            tasteEvaluation: tasteEvaluationNum,
             executionDate: executionDate
         };
 
@@ -203,46 +205,72 @@ router.get('/', authenticateUserOptional, async (req, res) =>
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
-        //TODO - vedere bene come funge
+        //TODO - capire bene
         const pipeline = [
             { $match: { mealDbId: mealDbId } },
-            // Se autenticato, aggiungi un campo "isMine" per ordinare la propria recensione in cima
-            ...(userObjectId ? [
-                {
-                    $addFields: {
-                        isMine: { $cond: [{ $eq: ["$authorUserId", userObjectId] }, 1, 0] }
-                    }
-                },
-                { $sort: { isMine: -1, executionDate: -1 } }
-            ] : [
-                { $sort: { executionDate: -1 } }
-            ]),
-            { $skip: start },
-            { $limit: offset },
             {
-                $lookup: {
-                    from: 'users',
-                    localField: 'authorUserId',
-                    foreignField: '_id',
-                    as: 'author'
-                }
-            },
-            { $unwind: '$author' },
-            {
-                $project: {
-                    _id: 1,
-                    mealDbId: 1,
-                    authorUserId: 1,
-                    difficultyEvaluation: 1,
-                    tasteEvaluation: 1,
-                    executionDate: 1,
-                    username: '$author.username'
+                $facet: {
+                    //pipeline per ottenere le recensioni paginate e ordinate
+                    reviews: [
+                        ...(userObjectId ? [
+                            {
+                                $addFields: {
+                                    isMine: { $cond: [{ $eq: ["$authorUserId", userObjectId] }, 1, 0] }
+                                }
+                            },
+                            { $sort: { isMine: -1, executionDate: -1 } }
+                        ] : [
+                            { $sort: { executionDate: -1 } }
+                        ]),
+                        { $skip: start },
+                        { $limit: offset },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'authorUserId',
+                                foreignField: '_id',
+                                as: 'author'
+                            }
+                        },
+                        { $unwind: '$author' },
+                        {
+                            $project: {
+                                _id: 1,
+                                mealDbId: 1,
+                                authorUserId: 1,
+                                difficultyEvaluation: 1,
+                                tasteEvaluation: 1,
+                                executionDate: 1,
+                                username: '$author.username'
+                            }
+                        }
+                    ],
+                    //pipeline per calcolare le statistiche aggregate
+                    statistics: [
+                        {
+                            $group: {
+                                _id: null,
+                                avgDifficulty: { $avg: "$difficultyEvaluation" },
+                                avgTaste: { $avg: "$tasteEvaluation" }
+                            }
+                        }
+                    ],
+                    //pipeline per contare il totale dei documenti (alternativa a countDocuments)
+                    totalCount: [
+                        {
+                            $count: "count"
+                        }
+                    ]
                 }
             }
         ];
 
-        const reviewsResult = await db.collection('reviews').aggregate(pipeline).toArray();
-        const total = await db.collection('reviews').countDocuments({ mealDbId: mealDbId });
+        const result = await db.collection('reviews').aggregate(pipeline).toArray();
+
+        //controlla che result[0] esista
+        const reviewsResult = result[0]?.reviews || [];
+        const statsAgg = result[0]?.statistics || [];
+        const total = (result[0]?.totalCount?.[0]?.count) || 0;
 
         const reviews = reviewsResult.map(review =>
         {
@@ -257,9 +285,17 @@ router.get('/', authenticateUserOptional, async (req, res) =>
             };
         });
 
+        const statistics = statsAgg.length > 0
+            ? {
+                avgDifficulty: statsAgg[0].avgDifficulty ?? null,
+                avgTaste: statsAgg[0].avgTaste ?? null
+            }
+            : { avgDifficulty: null, avgTaste: null };
+
         res.status(200).json({
-            reviews: reviews,
-            total: total
+            reviews,
+            total,
+            statistics
         });
 
     } catch (error)

@@ -83,6 +83,7 @@ async function authenticatedFetch(url, options = {})
     }
 }
 
+//TODO - verificare refresh
 async function isAuthenticated()
 {
     const token = localStorage.getItem('accessToken');
@@ -91,9 +92,7 @@ async function isAuthenticated()
     //se non ci sono questi token evita di fare la richiesta
     //TODO - vedere perché quando li tolgo manualmente dal local storage il refreshToken viene rimosso come cookie
     if (!token || !userId)
-    {
         return null;
-    }
 
     try
     {

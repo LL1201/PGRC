@@ -140,7 +140,7 @@ router.post("/logout", async (req, res) =>
 
         //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
         res.cookie('refreshToken', 'deleted', {
-            path: '/pgrc/api/v1/auth',
+            path: '/pgrc/api/v1/',
             expires: new Date(0),
             httpOnly: true,
             sameSite: 'strict'

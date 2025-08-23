@@ -1,17 +1,52 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
-    //TODO - eliminare recensione
-    //TODO - vedere la propria in cima
     //const recipeContent = document.getElementById('recipe-content');
     const REVIEWS_PAGE_SIZE = 10;
     let reviewsCurrentStart = 0;
     let reviewsTotal = 0;
     let foundOwnReview;
 
+    const recipeId = getRecipeIdFromUrl();
+    if (recipeId)
+    {
+        fetchRecipeDetails(recipeId);
+        initReviewsSection(recipeId);
+    } else
+    {
+        showError('ID ricetta mancante', 'Nessun ID ricetta specificato nell\'URL.');
+    }
+
     function getRecipeIdFromUrl()
     {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('id');
+    }
+
+    async function fetchRecipeDetails(recipeId)
+    {
+        try
+        {
+            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok)
+            {
+                const recipe = await response.json();
+                displayRecipeDetails(recipe);
+            } else
+            {
+                const errorData = await response.json();
+                showError('Errore nel caricamento della ricetta', errorData.message || 'Ricetta non trovata');
+            }
+        } catch (error)
+        {
+            console.error('Network error fetching recipe:', error);
+            showError('Errore di connessione', 'Si è verificato un errore di rete. Controlla la tua connessione.');
+        }
     }
 
     function displayRecipeDetails(recipe)
@@ -79,46 +114,14 @@ document.addEventListener('DOMContentLoaded', () =>
         document.getElementById('recipe-instructions').textContent = recipe.instructions;
     }
 
-    //TODO - sostituire con i miei errori
-    function showError(title, message)
+    async function initReviewsSection(recipeId)
     {
-        const recipeContainer = document.getElementById('recipe-container');
-        const errorContainer = document.getElementById('error-container');
-        const loadingContainer = document.getElementById('loading-container');
+        await fetchAndDisplayReviews(true, recipeId);
+        await checkShowAddReviewForm(recipeId);
 
-        recipeContainer.style.display = 'none';
-        errorContainer.style.display = 'block';
-        loadingContainer.style.display = 'none';
-
-        document.getElementById('error-title').textContent = title;
-        document.getElementById('error-message').textContent = message;
-    }
-
-    async function fetchRecipeDetails(recipeId)
-    {
-        try
-        {
-            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok)
-            {
-                const recipe = await response.json();
-                displayRecipeDetails(recipe);
-            } else
-            {
-                const errorData = await response.json();
-                showError('Errore nel caricamento della ricetta', errorData.message || 'Ricetta non trovata');
-            }
-        } catch (error)
-        {
-            console.error('Network error fetching recipe:', error);
-            showError('Errore di connessione', 'Si è verificato un errore di rete. Controlla la tua connessione.');
-        }
+        //bottone "Carica altro"
+        const loadMoreBtn = document.getElementById('load-more-reviews-btn');
+        loadMoreBtn.onclick = () => fetchAndDisplayReviews(false, recipeId);
     }
 
     //reset è usato per resettare la pagina corrente delle recensioni
@@ -202,6 +205,20 @@ document.addEventListener('DOMContentLoaded', () =>
         }
     }
 
+    //mostra form recensione solo se autenticato e se l'utente non ha già lasciato una recensione
+    async function checkShowAddReviewForm(recipeId)
+    {
+        const addReviewContainer = document.getElementById('add-review-container');
+        if (await authUtils.isAuthenticated() && !foundOwnReview)
+        {
+            addReviewContainer.style.display = 'block';
+            setupAddReviewForm(recipeId);
+        } else
+        {
+            addReviewContainer.style.display = 'none';
+        }
+    }
+
     function renderReviewCard(review, isOwn = false)
     {
         const div = document.createElement('div');
@@ -229,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () =>
             </div>
         `;
 
-        // Se è la propria recensione, aggiungi event listener per il delete
+        //se è la propria recensione, aggiunge event listener per il delete
         if (isOwn)
         {
             const btn = div.querySelector('.delete-review-btn');
@@ -248,24 +265,16 @@ document.addEventListener('DOMContentLoaded', () =>
                             const data = await response.json();
                             if (response.ok)
                             {
-                                window.alertMsgsUtils && window.alertMsgsUtils.showSuccess
-                                    ? window.alertMsgsUtils.showSuccess('Recensione eliminata!')
-                                    : alert('Recensione eliminata!');
+                                alertMsgsUtils.showSuccess('Recensione eliminata!');
                                 //ricarica le recensioni e mostra il form di nuovo
                                 fetchAndDisplayReviews(true, review.mealDbId);
                             }
                             else
-                            {
-                                window.alertMsgsUtils && window.alertMsgsUtils.showError
-                                    ? window.alertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione della recensione.')
-                                    : alert(data.message || 'Errore durante l\'eliminazione della recensione.');
-                            }
+                                lertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione della recensione.');
                         }
                         catch (err)
                         {
-                            window.alertMsgsUtils && window.alertMsgsUtils.showError
-                                ? window.alertMsgsUtils.showError('Errore di rete.')
-                                : alert('Errore di rete.');
+                            alertMsgsUtils.showError('Errore di rete.');
                         }
                     },
                     null,
@@ -346,37 +355,18 @@ document.addEventListener('DOMContentLoaded', () =>
         };
     }
 
-    //mostra form recensione solo se autenticato e se l'utente non ha già lasciato una recensione
-    async function checkShowAddReviewForm(recipeId)
+    //TODO - sostituire con i miei errori
+    function showError(title, message)
     {
-        const addReviewContainer = document.getElementById('add-review-container');
-        if (await authUtils.isAuthenticated() && !foundOwnReview)
-        {
-            addReviewContainer.style.display = 'block';
-            setupAddReviewForm(recipeId);
-        } else
-        {
-            addReviewContainer.style.display = 'none';
-        }
-    }
+        const recipeContainer = document.getElementById('recipe-container');
+        const errorContainer = document.getElementById('error-container');
+        const loadingContainer = document.getElementById('loading-container');
 
-    async function initReviewsSection(recipeId)
-    {
-        await fetchAndDisplayReviews(true, recipeId);
-        await checkShowAddReviewForm(recipeId);
+        recipeContainer.style.display = 'none';
+        errorContainer.style.display = 'block';
+        loadingContainer.style.display = 'none';
 
-        //bottone "Carica altro"
-        const loadMoreBtn = document.getElementById('load-more-reviews-btn');
-        loadMoreBtn.onclick = () => fetchAndDisplayReviews(false, recipeId);
-    }
-
-    const recipeId = getRecipeIdFromUrl();
-    if (recipeId)
-    {
-        fetchRecipeDetails(recipeId);
-        initReviewsSection(recipeId);
-    } else
-    {
-        showError('ID ricetta mancante', 'Nessun ID ricetta specificato nell\'URL.');
+        document.getElementById('error-title').textContent = title;
+        document.getElementById('error-message').textContent = message;
     }
 });

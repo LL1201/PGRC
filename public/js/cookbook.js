@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     async function fetchCookbookRecipes()
     {
-        if (!authUtils.requireAuth()) return;
+        //if (!authUtils.requireAuth()) return;
 
         const userId = localStorage.getItem('userId');
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
