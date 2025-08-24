@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
-    //se l'utente finisce in questa pagina di login quando autenticato viene reindirizzato alla pagina del profilo
     if (await authUtils.isAuthenticated())
         window.location.href = 'my-profile.html';
 
     const loginForm = document.getElementById('login-form-element');
     const registerForm = document.getElementById('register-form-element');
+    const continueWithGoogleButton = document.getElementById('continue-with-google-button');
 
     function isValidEmail(email)
     {
@@ -120,5 +120,10 @@ document.addEventListener('DOMContentLoaded', async () =>
             console.error('Error during registration:', error);
             alertMsgsUtils.showError('An error occurred during registration. Please try again later.');
         }
+    });
+
+    continueWithGoogleButton.addEventListener('click', () =>
+    {
+        window.location.href = '/pgrc/api/v1/auth/google';
     });
 });

@@ -89,10 +89,13 @@ async function isAuthenticated()
     let token = localStorage.getItem('accessToken');
     let userId = localStorage.getItem('userId');
 
-    //se non ci sono questi token evita di fare la richiesta
+    //se non ci sono questi token prova a fare un refresh
     if (!token || !userId)
     {
         const response = await refreshAccessToken();
+        if (!response)
+            return null;
+
         token = response.accessToken;
         userId = response.userId;
     }

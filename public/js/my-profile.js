@@ -9,10 +9,15 @@ document.addEventListener('DOMContentLoaded', async () =>
     const deleteAccountForm = document.getElementById('delete-account-form');
     const deletePasswordInput = document.getElementById('delete-password');
     const deleteAccountAlert = document.getElementById('delete-account-alert');
-    const userId = localStorage.getItem('userId');
+    let userId = null;
 
     async function loadProfile()
     {
+        //lo devo assegnare qua perché se il controllo precedente isAuthenticaed
+        //dovesse aggiornare l'access token, dichiarandolo come const al caricamento del DOM
+        //qua lo avrei al valore letto in precedenza e non quello aggiornato
+        userId = localStorage.getItem('userId');
+
         try
         {
             const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`);
