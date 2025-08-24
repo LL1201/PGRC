@@ -3,10 +3,12 @@ import emailValidator from "email-validator";
 import bcrypt from "bcryptjs";
 import { getDb } from "../db/db.js";
 import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } from "../utils/authUtil.js";
+//import authenticateUser from '../middlewares/authMiddleware.js';
 import { sendPasswordResetMail } from '../utils/mail.js';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 dotenv.config();
+import passport from '../config/passport.js';
 
 const router = express.Router();
 const HASH_SALT = process.env.HASH_SALT;
@@ -188,24 +190,26 @@ router.post("/logout", async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.post("/access-token/refresh", async (req, res) =>
+router.get("/access-token/refresh", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
 
-    if (!await findRefreshTokenInDb(refreshToken))
-        return res.status(401).json({ message: 'Invalid refresh token.' });
-
     try
     {
-        const tokenData = verifyToken(refreshToken);
+        const tokenData = await verifyRefreshToken(refreshToken);
         if (!tokenData)
             return res.status(401).json({ message: 'Invalid refresh token.' });
 
-        const newAccessToken = generateAccessToken(tokenData.userId);
-        res.status(200).json({ accessToken: newAccessToken });
+        const userId = tokenData.userId;
+
+        const newAccessToken = generateAccessToken(userId);
+        res.status(200).json({
+            userId: userId,
+            accessToken: newAccessToken
+        });
     } catch (e)
     {
         console.error("Error refreshing access token:", e);
@@ -462,5 +466,34 @@ router.post("/password-reset", async (req, res) =>
         res.status(500).json({ message: 'An internal server error occurred.' });
     }
 });
+
+router.get("/google", passport.authenticate("google", {
+    scope: ["https://www.googleapis.com/auth/plus.login", "email"],
+})
+);
+
+router.get("/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login.html", session: false }),
+    async (req, res) =>
+    {
+        // Se l'autenticazione ha successo, Passport ha messo l'utente nell'oggetto req.user
+        // Ora puoi generare i tuoi token JWT e reindirizzare al frontend
+        const userId = req.user._id.toString();
+        const refreshToken = await generateRefreshToken(userId);
+
+        // Reindirizza l'utente alla tua pagina di profilo o a una pagina di benvenuto,
+        // passando i token come parametri dell'URL o in un cookie.
+        // Utilizzare un redirect è standard per OAuth
+        //TODO - vedere se il path è possibile limitarlo... perché senno in user deletion non lo passa e mi tocca includere tutto
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            //secure: process.env.NODE_ENV === 'production', //invia solo su HTTPS in produzione
+            sameSite: 'strict',
+            path: '/pgrc/api/v1/',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+        res.redirect('/pgrc/my-profile.html');
+    }
+);
 
 export default router;

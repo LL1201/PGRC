@@ -13,6 +13,9 @@ import swaggerJsDoc from 'swagger-jsdoc';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
+import passport from './config/passport.js';
+import session from 'express-session';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,10 +56,21 @@ const port = 3003;
 app.use(express.json());
 app.use(cookieParser());
 
+// AGGIUNGI QUESTA RIGA PRIMA DI USARE passport
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'supersecretkey',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // imposta a true solo se usi HTTPS
+}));
+
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
 app.use(cors(corsOptions));
 app.options('/', cors(corsOptions)); //enable CORS for preflight requests
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

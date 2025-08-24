@@ -5,7 +5,7 @@ async function refreshAccessToken()
     try
     {
         const response = await fetch('/pgrc/api/v1/auth/access-token/refresh', {
-            method: 'POST',
+            method: 'GET',
             credentials: 'include', //include cookies            
         });
 
@@ -13,7 +13,8 @@ async function refreshAccessToken()
         {
             const data = await response.json();
             localStorage.setItem('accessToken', data.accessToken);
-            return data.accessToken;
+            localStorage.setItem('userId', data.userId);
+            return { accessToken: data.accessToken, userId: data.userId };
         } else
         {
             // Refresh failed, redirect to login
@@ -83,16 +84,18 @@ async function authenticatedFetch(url, options = {})
     }
 }
 
-//TODO - verificare refresh
 async function isAuthenticated()
 {
-    const token = localStorage.getItem('accessToken');
-    const userId = localStorage.getItem('userId');
+    let token = localStorage.getItem('accessToken');
+    let userId = localStorage.getItem('userId');
 
     //se non ci sono questi token evita di fare la richiesta
-    //TODO - vedere perché quando li tolgo manualmente dal local storage il refreshToken viene rimosso come cookie
     if (!token || !userId)
-        return null;
+    {
+        const response = await refreshAccessToken();
+        token = response.accessToken;
+        userId = response.userId;
+    }
 
     try
     {
@@ -106,14 +109,12 @@ async function isAuthenticated()
 
         if (response.status === 401 || response.status === 403)
         {
-            const newToken = await refreshAccessToken();
-
-            if (!newToken)
+            if (!await refreshAccessToken())
                 return false;
             else
                 return true;
         }
-        // Se la risposta è ok (200), l'utente è autenticato
+
         if (response.ok)
             return true;
         else

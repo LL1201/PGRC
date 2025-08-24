@@ -2,9 +2,10 @@ import { verifyToken } from '../utils/authUtil.js';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 dotenv.config();
+import passport from '../config/passport.js';
 
 //TODO - auth is optional cambiare frontend
-function authenticateUser(req, res, next, authIsOptional = false)
+async function authenticateUser(req, res, next, authIsOptional = false)
 {
     const authHeader = req.headers['authorization'];
     const { userId } = req.params;
@@ -34,7 +35,7 @@ function authenticateUser(req, res, next, authIsOptional = false)
     else if (!token && authIsOptional)
         return next();
 
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded)
         return res.status(401).json({ message: 'Invalid or expired access token.' });
 

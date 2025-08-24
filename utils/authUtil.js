@@ -32,11 +32,11 @@ export async function generateRefreshToken(userId)
     return refreshToken;
 }
 
-export function verifyToken(token)
+export async function verifyToken(token)
 {
     try
     {
-        return jwt.verify(token, JWT_SECRET);
+        return await jwt.verify(token, JWT_SECRET);
     } catch (error)
     {
         return null;
@@ -49,7 +49,6 @@ export async function removeRefreshToken(token)
     const refreshTokensCollection = db.collection('refreshTokens');
     await refreshTokensCollection.deleteOne({ token: token });
 }
-
 
 export async function verifyRefreshToken(token)
 {
