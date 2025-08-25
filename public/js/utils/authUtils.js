@@ -17,7 +17,6 @@ async function refreshAccessToken()
             return { accessToken: data.accessToken, userId: data.userId };
         } else
         {
-            // Refresh failed, redirect to login
             localStorage.removeItem('accessToken');
             localStorage.removeItem('userId');
             //window.location.href = 'login.html';

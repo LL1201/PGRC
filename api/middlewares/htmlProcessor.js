@@ -15,10 +15,10 @@ async function htmlProcessor(req, res, next)
         try
         {
             //legge il contenuto del file HTML richiesto
-            let htmlContent = await fs.readFile(path.join(__dirname, '../public', filePath), 'utf-8');
+            let htmlContent = await fs.readFile(path.join(__dirname, '../../public', filePath), 'utf-8');
 
             //legge il contenuto della navbar
-            const navbarContent = await fs.readFile(path.join(__dirname, '../public', 'navbar.html'), 'utf-8');
+            const navbarContent = await fs.readFile(path.join(__dirname, '../../public', 'navbar.html'), 'utf-8');
 
             //sostituisce il placeholder con il contenuto della navbar
             const updatedHtml = htmlContent.replace('<!-- NAVBAR_PLACEHOLDER -->', navbarContent);

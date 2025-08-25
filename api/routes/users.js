@@ -1,11 +1,18 @@
+//node & express
 import express from "express";
-import emailValidator from "email-validator";
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+//database
 import { getDb } from '../db/db.js';
+
+//utils
+import emailValidator from "email-validator";
 import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mail.js';
 import { verifyRefreshToken } from "../utils/authUtil.js";
+
+//middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
-import crypto from 'crypto';
 
 const router = express.Router();
 const HASH_SALT = process.env.HASH_SALT;

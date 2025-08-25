@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     let currentPageCookbook = 1;
     const itemsPerPageCookbook = 12;
+    let userId = null;
 
     //per visualizzare le ricette nel ricettario
     function displayCookbookRecipes(recipes)
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     {
         //if (!authUtils.requireAuth()) return;
 
-        const userId = localStorage.getItem('userId');
+        userId = localStorage.getItem('userId');
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
         const url = `/pgrc/api/v1/users/${userId}/cookbook?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
 
@@ -128,7 +129,6 @@ document.addEventListener('DOMContentLoaded', async () =>
         if (!authUtils.requireAuth()) return;
 
         const cookbookRecipeId = event.target.dataset.cookbookrecipeid;
-        const userId = localStorage.getItem('userId');
 
         alertMsgsUtils.showConfirmation(
             'Sei sicuro di voler rimuovere questa ricetta dal tuo ricettario?',
@@ -159,6 +159,8 @@ document.addEventListener('DOMContentLoaded', async () =>
                 }
             },
             null,
+            'Conferma rimozione ricetta',
+            'danger',
             'Rimuovi',
             'Annulla'
         );
@@ -170,7 +172,6 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         const cookbookRecipeId = event.target.dataset.cookbookrecipeid;
         const currentNote = event.target.dataset.privatenote;
-        const userId = localStorage.getItem('userId');
 
         alertMsgsUtils.showPrompt(
             'Modifica la tua nota privata per questa ricetta:',

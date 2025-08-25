@@ -1,20 +1,26 @@
+//node & express
 import express from "express";
 import cookieParser from "cookie-parser";
-import { connectToDatabase } from "./db/db.js";
-import populateTheMealDbRecipes from './utils/populateDb.js';
-import htmlProcessor from './middlewares/htmlProcessor.js';
-import usersRouter from "./routes/users.js";
-import authRouter from "./routes/auth.js";
-import recipesRouter from "./routes/recipes.js";
-import cookbooksRouter from "./routes/cookbooks.js";
-import reviewsRouter from "./routes/reviews.js";
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsDoc from 'swagger-jsdoc';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
-import passport from './config/passport.js';
-import session from 'express-session';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsDoc from 'swagger-jsdoc';
+
+//database
+import { connectToDatabase } from "./api/db/db.js";
+import populateTheMealDbRecipes from './api/utils/populateDb.js';
+
+//middlewares
+import htmlProcessor from './api/middlewares/htmlProcessor.js';
+import passport from './api/config/passport.js';
+
+//routers
+import authRouter from "./api/routes/auth.js";
+import usersRouter from "./api/routes/users.js";
+import recipesRouter from "./api/routes/recipes.js";
+import cookbooksRouter from "./api/routes/cookbooks.js";
+import reviewsRouter from "./api/routes/reviews.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,7 +43,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./routes/*.js']
+    apis: ['./api/routes/*.js']
 };
 
 const corsOptions = {
@@ -56,21 +62,14 @@ const port = 3003;
 app.use(express.json());
 app.use(cookieParser());
 
-// AGGIUNGI QUESTA RIGA PRIMA DI USARE passport
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'supersecretkey',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } // imposta a true solo se usi HTTPS
-}));
-
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
 app.use(cors(corsOptions));
-app.options('/', cors(corsOptions)); //enable CORS for preflight requests
+
+//enable CORS for preflight requests
+app.options('/', cors(corsOptions));
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

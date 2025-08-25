@@ -78,24 +78,23 @@ document.addEventListener('DOMContentLoaded', () =>
 
             //event listener per il bottone per aggiungere al proprio ricettario
             const addToCookbookButtons = document.querySelectorAll('.add-to-cookbook-btn');
-            authUtils.isAuthenticated().then(isAuth =>
+            addToCookbookButtons.forEach(button =>
             {
-                addToCookbookButtons.forEach(button =>
+                button.addEventListener('click', async (event) =>
                 {
-                    if (isAuth)
+                    if (await authUtils.isAuthenticated())
                     {
-                        button.disabled = false;
-                        button.addEventListener('click', (event) =>
-                        {
-                            const mealDbId = event.target.dataset.mealid;
-                            addToCookbook(mealDbId);
-                        });
+                        const mealDbId = event.target.dataset.mealid;
+                        addToCookbook(mealDbId);
                     } else
                     {
-                        button.disabled = true;
+                        alertMsgsUtils.showConfirmation("Per aggiungere la ricetta al tuo ricettario devi prima effettuare il login!",
+                            () => { window.location.href = 'login.html'; }, null, 'Accedi per completare l\'operazione', undefined, 'Vai al login', 'Annulla');
                     }
                 });
+
             });
+
         } else
         {
             const noResultsCol = document.createElement('div');

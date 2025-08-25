@@ -1,4 +1,7 @@
+//node & express
 import express from "express";
+
+//database
 import { getDb } from "../db/db.js";
 
 const router = express.Router();

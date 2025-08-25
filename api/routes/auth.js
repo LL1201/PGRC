@@ -1,14 +1,17 @@
+//node & express
 import express from "express";
 import emailValidator from "email-validator";
 import bcrypt from "bcryptjs";
-import { getDb } from "../db/db.js";
-import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyToken, verifyRefreshToken } from "../utils/authUtil.js";
-//import authenticateUser from '../middlewares/authMiddleware.js';
-import { sendPasswordResetMail } from '../utils/mail.js';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-dotenv.config();
 import passport from '../config/passport.js';
+
+//utils
+import { getDb } from "../db/db.js";
+import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtil.js";
+import { sendPasswordResetMail } from '../utils/mail.js';
+
+dotenv.config();
 
 const router = express.Router();
 const HASH_SALT = process.env.HASH_SALT;

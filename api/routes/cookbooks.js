@@ -1,7 +1,12 @@
+//node & express
 import express from "express";
+
+//database
 import { getDb } from "../db/db.js";
-import authenticateUser from '../middlewares/authMiddleware.js';
 import { ObjectId } from 'mongodb';
+
+//middlewares
+import authenticateUser from '../middlewares/authMiddleware.js';
 
 const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
 

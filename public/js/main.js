@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async () =>
     cookbookNavItem.querySelector('a').setAttribute('href', 'cookbook.html');
     authLink.querySelector('a').setAttribute('href', 'login.html');
 
-
     try
     {
         const isAuth = await authUtils.isAuthenticated();

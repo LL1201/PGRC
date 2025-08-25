@@ -117,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
     });
 
-    //TODO - sembra che qualcuno stia accedendo userId prima che sia popolato... controllare
     //richiesta autenticazione obv
     if (await authUtils.requireAuth())
         await loadProfile();

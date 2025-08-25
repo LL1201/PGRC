@@ -83,7 +83,8 @@ function showInfo(message, duration = 5000)
     showAlert(message, 'info', duration);
 }
 
-function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Conferma', cancelText = 'Annulla')
+//TODO - mettere impostazione di colore bottone di conferma
+function showConfirmation(message, onConfirm, onCancel = null, modalTitle, severity = 'info', confirmText = 'Conferma', cancelText = 'Annulla')
 {
     hideConfirmation();
 
@@ -99,7 +100,7 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Conferma azione</h5>
+                        <h5 class="modal-title">${modalTitle}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -107,7 +108,7 @@ function showConfirmation(message, onConfirm, onCancel = null, confirmText = 'Co
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" id="alertMsgsUtils-cancel-btn" data-bs-dismiss="modal">${cancelText}</button>
-                        <button type="button" class="btn btn-danger" id="alertMsgsUtils-confirm-btn">${confirmText}</button>
+                        <button type="button" class="btn btn-${severity !== 'info' ? 'danger' : 'primary'}" id="alertMsgsUtils-confirm-btn">${confirmText}</button>
                     </div>
                 </div>
             </div>

@@ -100,13 +100,3 @@ h1 {
     background-color: #0056b3;
     border-color: #0056b3;
 }
-
-.btn.add-to-cookbook-btn:disabled {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: var(--white-color);
-}
-
-.pagination-controls .btn:disabled {
-    opacity: 0.5;
-}

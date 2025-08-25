@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () =>
             const url = `/pgrc/api/v1/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
             let response = null;
 
-            if (authUtils.isAuthenticated())
+            if (await authUtils.isAuthenticated())
             {
                 response = await authUtils.authenticatedFetch(url, {
                     method: 'GET',
@@ -278,6 +278,8 @@ document.addEventListener('DOMContentLoaded', () =>
                         }
                     },
                     null,
+                    'Conferma rimozione recensione',
+                    'danger',
                     'Elimina',
                     'Annulla'
                 );

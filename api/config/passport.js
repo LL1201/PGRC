@@ -4,13 +4,14 @@ import { getDb } from '../db/db.js';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_OAUTH_CALLBACK_URI = process.env.GOOGLE_OAUTH_CALLBACK_URI;
 
 passport.use(
     new GoogleStrategy(
         {
             clientID: GOOGLE_CLIENT_ID,
             clientSecret: GOOGLE_CLIENT_SECRET,
-            callbackURL: "https://www.lloner.it/pgrc/api/v1/auth/google/callback",
+            callbackURL: GOOGLE_OAUTH_CALLBACK_URI,
         },
         async function (token, tokenSecret, profile, done)
         {

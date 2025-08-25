@@ -1,11 +1,16 @@
+//node & express
 import express from "express";
+
+//database
 import { getDb } from "../db/db.js";
-import authenticateUser from '../middlewares/authMiddleware.js';
 import { ObjectId } from 'mongodb';
+
+//middlewares
+import authenticateUser from '../middlewares/authMiddleware.js';
 
 const router = express.Router({ mergeParams: true });
 
-//dal momento che non posso chiamare il middleware indicando
+//dal momento che non posso chiamare il middleware indicando parametri
 function authenticateUserOptional(req, res, next)
 {
     //chiama authenticateUser con authIsOptional = true

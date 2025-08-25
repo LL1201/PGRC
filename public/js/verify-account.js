@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', async () =>
         loginRedirectLink.style.display = 'block'; // Mostra il link al login
 
         if (response.ok)
-        { // Status 2xx
+        {
             verificationMessage.textContent = data.message || 'Account verificato con successo!';
             verificationMessage.classList.add('message', 'success');
         } else
-        { // Status 4xx, 5xx
+        {
             verificationMessage.textContent = data.message || 'Si è verificato un errore durante la verifica dell\'account.';
             verificationMessage.classList.add('message', 'error');
         }
