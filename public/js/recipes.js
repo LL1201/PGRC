@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () =>
                         <div class="recipe-card-content">
                             <h3>${recipe.name}</h3>
                             <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                            <button class="btn primary-btn view-details-btn w-100 mb-2" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
-                            <button class="btn add-to-cookbook-btn w-100" data-mealid="${recipe.mealDbId}">Aggiungi al tuo ricettario</button>
+                            <button class="btn primary-btn view-details-btn w-100 mb-2" data-mealid="${recipe.mealDbId}">View details</button>
+                            <button class="btn add-to-cookbook-btn w-100" data-mealid="${recipe.mealDbId}">Add to your cookbook</button>
                         </div>
                     </div>
                 `;
@@ -88,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () =>
                         addToCookbook(mealDbId);
                     } else
                     {
-                        alertMsgsUtils.showConfirmation("Per aggiungere la ricetta al tuo ricettario devi prima effettuare il login!",
-                            () => { window.location.href = 'login.html'; }, null, 'Accedi per completare l\'operazione', undefined, 'Vai al login', 'Annulla');
+                        alertMsgsUtils.showConfirmation("To add the recipe to your cookbook you must first log in!",
+                            () => { window.location.href = 'login.html'; }, null, 'Log in to complete the operation', undefined, 'Go to login', 'Cancel');
                     }
                 });
 
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () =>
             const noResultsCol = document.createElement('div');
             noResultsCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
             noResultsCol.style.minHeight = '300px';
-            noResultsCol.innerHTML = '<p class="text-center text-muted fs-5">Nessuna ricetta trovata. Prova una ricerca diversa!</p>';
+            noResultsCol.innerHTML = '<p class="text-center text-muted fs-5">No recipes found. Try a different search!</p>';
             recipesResultsContainer.appendChild(noResultsCol);
         }
     }
@@ -140,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () =>
             {
                 const errorData = await response.json();
                 console.error('Error fetching recipes:', errorData.message);
-                displayRecipes([]); // Mostra array vuoto in caso di errore
-                noResultsMessage.textContent = errorData.message || 'Errore nel recupero delle ricette.';
+                displayRecipes([]);
+                noResultsMessage.textContent = errorData.message || 'Error retrieving recipes.';
                 noResultsMessage.style.display = 'block';
                 updatePaginationControls(0);
             }
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             console.error('Network error fetching recipes:', error);
             displayRecipes([]);
-            noResultsMessage.textContent = 'Si è verificato un errore di rete. Controlla la tua connessione.';
+            noResultsMessage.textContent = 'A network error has occurred. Please check your connection.';
             noResultsMessage.style.display = 'block';
             updatePaginationControls(0);
         }
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () =>
         const welcomeCol = document.createElement('div');
         welcomeCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
         welcomeCol.style.minHeight = '300px';
-        welcomeCol.innerHTML = '<p class="text-center text-muted fs-5">Inizia la tua ricerca per trovare ricette!</p>';
+        welcomeCol.innerHTML = '<p class="text-center text-muted fs-5">Start your search for recipes!</p>';
         recipesResultsContainer.innerHTML = '';
         recipesResultsContainer.appendChild(welcomeCol);
 
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const initialCol = document.createElement('div');
     initialCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
     initialCol.style.minHeight = '300px';
-    initialCol.innerHTML = '<p class="text-center text-muted fs-5">Inizia la tua ricerca per trovare ricette!</p>';
+    initialCol.innerHTML = '<p class="text-center text-muted fs-5">Start your search for recipes!</p>';
     recipesResultsContainer.appendChild(initialCol);
     updatePaginationControls(0);
 });

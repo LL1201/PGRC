@@ -2,7 +2,6 @@ import { verifyToken } from '../utils/authUtil.js';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 dotenv.config();
-import passport from '../config/passport.js';
 
 //TODO - auth is optional cambiare frontend
 async function authenticateUser(req, res, next, authIsOptional = false)
@@ -18,7 +17,7 @@ async function authenticateUser(req, res, next, authIsOptional = false)
         if (!ObjectId.isValid(userId))
             return res.status(400).json({ message: 'Invalid User ID format in URL. Must be a valid ObjectId.' });
 
-        req.reqUserObjectId = new ObjectId(userId);
+        req.reqUserObjectId = ObjectId.createFromHexString(userId);
         req.reqUserId = userId;
     }
 
@@ -44,7 +43,7 @@ async function authenticateUser(req, res, next, authIsOptional = false)
     //req.userObjectId contiene l'id associato al JWT in formato ObjectId
     if (typeof decoded.userId === 'string' && ObjectId.isValid(decoded.userId))
     {
-        req.userObjectId = new ObjectId(decoded.userId);
+        req.userObjectId = ObjectId.createFromHexString(decoded.userId);
         req.userId = decoded.userId;
     } else
     {

@@ -15,7 +15,7 @@ import { verifyRefreshToken } from "../utils/authUtil.js";
 import authenticateUser from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
-const HASH_SALT = process.env.HASH_SALT;
+const HASH_SALT = parseInt(process.env.HASH_SALT);
 
 /**
  * @swagger

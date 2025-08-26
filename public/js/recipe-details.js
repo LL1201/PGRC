@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () =>
         initReviewsSection(recipeId);
     } else
     {
-        showError('ID ricetta mancante', 'Nessun ID ricetta specificato nell\'URL.');
+        showError('Missing recipe ID', 'No recipe ID specified in the URL.');
     }
 
     function getRecipeIdFromUrl()
@@ -37,15 +37,52 @@ document.addEventListener('DOMContentLoaded', () =>
             {
                 const recipe = await response.json();
                 displayRecipeDetails(recipe);
+                //dopo aver mostrato i dettagli, mostra le statistiche delle review
+                await fetchAndDisplayReviewStatistics(recipeId);
             } else
             {
                 const errorData = await response.json();
-                showError('Errore nel caricamento della ricetta', errorData.message || 'Ricetta non trovata');
+                showError('Error loading recipe', errorData.message || 'Recipe not found');
             }
         } catch (error)
         {
             console.error('Network error fetching recipe:', error);
-            showError('Errore di connessione', 'Si è verificato un errore di rete. Controlla la tua connessione.');
+            showError('Connection error', 'A network error has occurred. Please check your connection.');
+        }
+    }
+
+    async function fetchAndDisplayReviewStatistics(recipeId)
+    {
+        try
+        {
+            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}/reviews?start=0&offset=1`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const stats = data.statistics || {};
+            const statsBox = document.getElementById('review-statistics-box');
+            if (!statsBox) return;
+
+            if (stats.avgDifficulty == null && stats.avgTaste == null)
+            {
+                statsBox.innerHTML = `<span class="text-muted">No reviews statistics available.</span>`;
+            }
+            else
+            {
+                statsBox.innerHTML = `
+                    <div class="review-stats-info">
+                        <span class="badge bg-primary me-2">Average difficulty rating: ${stats.avgDifficulty ? stats.avgDifficulty.toFixed(1) : '-'}</span>
+                        <span class="badge bg-success">Average taste rating: ${stats.avgTaste ? stats.avgTaste.toFixed(1) : '-'}</span>
+                    </div>
+                `;
+            }
+        }
+        catch (e)
+        {
+            //silenzia errori di rete per la sezione statistiche
         }
     }
 
@@ -112,6 +149,11 @@ document.addEventListener('DOMContentLoaded', () =>
         }
 
         document.getElementById('recipe-instructions').textContent = recipe.instructions;
+
+        //mostra box statistiche review
+        let statsBox = document.getElementById('review-statistics-box');
+        statsBox.style.display = 'block';
+        statsBox.innerHTML = `<span class="text-muted">Loading reviews statistics...</span>`;
     }
 
     async function initReviewsSection(recipeId)
@@ -180,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () =>
                 });
             }
 
-            // Aggiorna la visibilità del form ogni volta che aggiorni le recensioni
+            //aggiorna la presenza del form ogni volta che aggiorna le recensioni
             await checkShowAddReviewForm(recipeId);
 
             reviewsCurrentStart += REVIEWS_PAGE_SIZE;
@@ -196,12 +238,12 @@ document.addEventListener('DOMContentLoaded', () =>
 
             if (reviewsTotal === 0 && reset)
             {
-                reviewsListContainer.innerHTML = '<p class="text-center text-muted">Nessuna recensione presente.</p>';
+                reviewsListContainer.innerHTML = '<p class="text-center text-muted">No reviews available.</p>';
                 //toggleAddReviewForm(true);
             }
         } catch (error)
         {
-            reviewsListContainer.innerHTML = '<p class="text-danger">Errore nel caricamento delle recensioni.</p>';
+            reviewsListContainer.innerHTML = '<p class="text-danger">Error loading reviews.</p>';
         }
     }
 
@@ -237,12 +279,12 @@ document.addEventListener('DOMContentLoaded', () =>
 
         div.innerHTML = `
             <div class="review-meta">
-                <span class="review-rating">Difficoltà: ${review.difficulty} | Gusto: ${review.taste}</span>
-                <span class="review-date float-end">${dateStr ? 'Realizzata il ' + dateStr : ''}</span>
+                <span class="review-rating">Difficoltà: ${review.difficulty} | Taste: ${review.taste}</span>
+                <span class="review-date float-end">${dateStr ? 'Made on ' + dateStr : ''}</span>
             </div>
             <div>
-                <span class="text-muted small">Utente: ${review.authorUsername ? review.authorUsername : 'N/A'}</span>
-                ${isOwn ? `<button class="btn btn-sm btn-danger ms-2 delete-review-btn" data-reviewid="${review.reviewId}">Elimina</button>` : ''}
+                <span class="text-muted small">Username: ${review.authorUsername ? review.authorUsername : 'N/A'}</span>
+                ${isOwn ? `<button class="btn btn-sm btn-danger ms-2 delete-review-btn" data-reviewid="${review.reviewId}">Delete</button>` : ''}
             </div>
         `;
 
@@ -253,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () =>
             btn.addEventListener('click', async function ()
             {
                 window.alertMsgsUtils.showConfirmation(
-                    'Sei sicuro di voler eliminare la tua recensione?',
+                    'Are you sure to delete your review?',
                     async () =>
                     {
                         try
@@ -265,23 +307,23 @@ document.addEventListener('DOMContentLoaded', () =>
                             const data = await response.json();
                             if (response.ok)
                             {
-                                alertMsgsUtils.showSuccess('Recensione eliminata!');
-                                //ricarica le recensioni e mostra il form di nuovo
+                                alertMsgsUtils.showSuccess('Review deleted successfully!');
+                                // Reload reviews and show the form again
                                 fetchAndDisplayReviews(true, review.mealDbId);
                             }
                             else
-                                lertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione della recensione.');
+                                alertMsgsUtils.showError(data.message || 'Error deleting review.');
                         }
                         catch (err)
                         {
-                            alertMsgsUtils.showError('Errore di rete.');
+                            alertMsgsUtils.showError('Network error.');
                         }
                     },
                     null,
-                    'Conferma rimozione recensione',
+                    'Confirm review removal',
                     'danger',
-                    'Elimina',
-                    'Annulla'
+                    'Delete',
+                    'Cancel'
                 );
             });
         }
@@ -311,8 +353,8 @@ document.addEventListener('DOMContentLoaded', () =>
             if (!difficulty || !taste || !executionDate)
             {
                 window.alertMsgsUtils && window.alertMsgsUtils.showError
-                    ? window.alertMsgsUtils.showError('Tutti i campi sono obbligatori.')
-                    : alert('Tutti i campi sono obbligatori.');
+                    ? window.alertMsgsUtils.showError('All fields are required.')
+                    : alert('All fields are required.');
                 return;
             }
 
@@ -337,22 +379,16 @@ document.addEventListener('DOMContentLoaded', () =>
 
                 if (response.ok)
                 {
-                    window.alertMsgsUtils && window.alertMsgsUtils.showSuccess
-                        ? window.alertMsgsUtils.showSuccess('Recensione aggiunta!')
-                        : alert('Recensione aggiunta!');
+                    window.alertMsgsUtils.showSuccess('Review added successfully!');
                     addReviewForm.reset();
                     fetchAndDisplayReviews(true, recipeId);
                 } else
                 {
-                    window.alertMsgsUtils && window.alertMsgsUtils.showError
-                        ? window.alertMsgsUtils.showError(data.message || 'Errore nell\'aggiunta della recensione.')
-                        : alert(data.message || 'Errore nell\'aggiunta della recensione.');
+                    window.alertMsgsUtils.showError(data.message || 'Error adding review.');
                 }
             } catch (error)
             {
-                window.alertMsgsUtils && window.alertMsgsUtils.showError
-                    ? window.alertMsgsUtils.showError('Errore di rete.')
-                    : alert('Errore di rete.');
+                window.alertMsgsUtils.showError('Network error.');
             }
         };
     }

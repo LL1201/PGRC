@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('resetToken');
+    const userId = urlParams.get('userId');
 
     const loadingSpinner = document.getElementById('loading-spinner');
     const passwordResetForm = document.getElementById('password-reset-form');
@@ -31,19 +32,29 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            let url = `/pgrc/api/v1/auth/password-reset?resetToken=${token}`;
+            let url = `/pgrc/api/v1/auth/password-reset`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ password: password })
+                body: JSON.stringify({
+                    userId: userId,
+                    password: password,
+                    resetToken: token
+                })
             });
 
             const data = await response.json();
 
             if (response.ok)
+            {
                 alertMsgsUtils.showSuccess(data.message || 'Password reimpostata con successo!');
+                setTimeout(() =>
+                {
+                    window.location.href = 'login.html';
+                }, 2000)
+            }
             else
                 alertMsgsUtils.showError(data.message || 'Si è verificato un errore durante la reimpostazione della password.');
 

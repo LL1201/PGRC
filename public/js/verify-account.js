@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     if (!token)
     {
         loadingSpinner.style.display = 'none';
-        verificationMessage.textContent = 'Link di verifica non valido o mancante.';
+        verificationMessage.textContent = 'Verification link is invalid or missing.';
         verificationMessage.classList.add('message', 'error');
         loginRedirectLink.style.display = 'block';
         return;
@@ -34,18 +34,18 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (response.ok)
         {
-            verificationMessage.textContent = data.message || 'Account verificato con successo!';
+            verificationMessage.textContent = data.message || 'Account successfully verified!';
             verificationMessage.classList.add('message', 'success');
         } else
         {
-            verificationMessage.textContent = data.message || 'Si è verificato un errore durante la verifica dell\'account.';
+            verificationMessage.textContent = data.message || 'An error occurred while verifying the account.';
             verificationMessage.classList.add('message', 'error');
         }
     } catch (error)
     {
         console.error('Errore di rete durante la verifica dell\'account:', error);
         loadingSpinner.style.display = 'none';
-        verificationMessage.textContent = 'Si è verificato un errore di rete. Controlla la tua connessione.';
+        verificationMessage.textContent = 'A network error occurred. Check your connection.';
         verificationMessage.classList.add('message', 'error');
         loginRedirectLink.style.display = 'block';
     }

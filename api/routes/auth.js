@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import passport from '../config/passport.js';
+import { ObjectId } from 'mongodb';
 
 //utils
 import { getDb } from "../db/db.js";
@@ -14,7 +15,7 @@ import { sendPasswordResetMail } from '../utils/mail.js';
 dotenv.config();
 
 const router = express.Router();
-const HASH_SALT = process.env.HASH_SALT;
+const HASH_SALT = parseInt(process.env.HASH_SALT);
 
 /**
  * @swagger
@@ -374,7 +375,7 @@ router.post("/password-lost", async (req, res) =>
             }
         );
 
-        await sendPasswordResetMail(email, resetToken);
+        sendPasswordResetMail(email, resetToken, user._id);
 
         res.status(200).json({ message: 'If this email is in our system, you will receive a password reset link shortly.' });
 
@@ -424,15 +425,17 @@ router.post("/password-lost", async (req, res) =>
 router.post("/password-reset", async (req, res) =>
 {
     const db = getDb();
-    const { password } = req.body;
-    const { resetToken } = req.query;
+    const { password, resetToken, userId } = req.body;
 
-    if (!resetToken || !password)
-        return res.status(400).json({ message: 'Reset token and new password are required.' });
+    if (!resetToken || !password || !userId)
+        return res.status(400).json({ message: 'Reset token, new password and user ID are required.' });
+
+    console.log(ObjectId.createFromHexString(userId));
 
     try
     {
         const user = await db.collection('users').findOne({
+            _id: ObjectId.createFromHexString(userId),
             resetPasswordToken: { $exists: true, $ne: null },
             resetTokenExpiration: { $gt: new Date() }
         });

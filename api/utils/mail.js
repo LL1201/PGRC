@@ -36,13 +36,13 @@ export async function sendConfirmationMail(mailTo, token)
     }
 }
 
-export function sendPasswordResetMail(mailTo, token)
+export function sendPasswordResetMail(mailTo, token, userId)
 {
     const mailOptions = {
         from: SMTP_USER,
         to: mailTo,
         subject: 'Reimposta la tua password',
-        text: `Ciao, \n\nper reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/password-reset.html?resetToken=${token}`
+        text: `Ciao, \n\nper reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/password-reset.html?resetToken=${token}&userId=${userId}`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
