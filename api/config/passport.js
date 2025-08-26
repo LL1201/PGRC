@@ -46,7 +46,7 @@ passport.use(
                     //se non esiste l'utente ne crea uno nuovo, in questo caso non serve verifica via mail
                     const newUserDocument = {
                         email: email,
-                        username: profile.displayName || profile.name.givenName || 'Utente Google',
+                        username: profile.displayName || profile.name.givenName || 'GoogleUser',
                         googleId: profile.id,
                         verified: true,
                         createdAt: new Date()

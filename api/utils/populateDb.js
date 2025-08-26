@@ -1,13 +1,13 @@
 import axios from 'axios';
-import { getDb } from "../db/db.js";
+import Recipe from '../models/Recipe.js';
 
 async function populateTheMealDbRecipes()
 {
-    const db = getDb();
-    const recipesCollection = db.collection('mealdbRecipes');
+    //const db = getDb();
+    //const recipesCollection = db.collection('mealdbRecipes');
 
-    // Controlla se la collezione è già popolata
-    const count = await recipesCollection.countDocuments();
+    //controlla se la collezione è già popolata
+    const count = await Recipe.countDocuments();
     if (count > 0)
     {
         console.log("La collezione 'mealdbRecipes' è già popolata. Salto il dump iniziale.");
@@ -61,7 +61,8 @@ async function populateTheMealDbRecipes()
                     });
                 });
 
-                const insertResult = await recipesCollection.insertMany(recipesToInsert);
+                //raw result per ottenere la risposta direttamente di mongodb e avere l'inserted count
+                const insertResult = await Recipe.insertMany(recipesToInsert, { rawResult: true });
                 totalRecipesSaved += insertResult.insertedCount;
             }
         } catch (error)

@@ -8,8 +8,8 @@ import { getDb } from '../db/db.js';
 
 //utils
 import emailValidator from "email-validator";
-import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mail.js';
-import { verifyRefreshToken } from "../utils/authUtil.js";
+import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mailUtils.js';
+import { verifyRefreshToken } from "../utils/authUtils.js";
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';

@@ -1,4 +1,4 @@
-import { verifyToken } from '../utils/authUtil.js';
+import { verifyToken } from '../utils/authUtils.js';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
 dotenv.config();

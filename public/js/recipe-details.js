@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             const li = document.createElement('li');
             li.innerHTML = `
-                <span class="ingredient-name">${ing.ingredient}</span>
+                <span class="ingredient-name">${ing.ingredientName}</span>
                 <span class="ingredient-measure">${ing.measure}</span>
             `;
             ingredientsList.appendChild(li);

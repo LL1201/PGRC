@@ -11,6 +11,8 @@ import swaggerJsDoc from 'swagger-jsdoc';
 import { connectToDatabase } from "./api/db/db.js";
 import populateTheMealDbRecipes from './api/utils/populateDb.js';
 
+import Database from "./api/db/database.js"
+
 //middlewares
 import htmlProcessor from './api/middlewares/htmlProcessor.js';
 import passport from './api/config/passport.js';
@@ -94,10 +96,20 @@ app.use((req, res) =>
     res.status(404).json({ message: 'Invalid endpoint or HTTP method' });
 });
 
-connectToDatabase().then(async () =>
+const db = new Database();
+db.connect().then(async () =>
 {
     //chiamata alla funzione di popolamento delle ricette dopo la connessione al DB
     await populateTheMealDbRecipes();
+
+}).catch(err =>
+{
+    console.error("Cannot connect to DB:", err);
+});
+
+connectToDatabase().then(async () =>
+{
+
     app.listen(port, () =>
     {
         console.log(`Server is listening on http://localhost:${port}`);

@@ -9,8 +9,8 @@ import { ObjectId } from 'mongodb';
 
 //utils
 import { getDb } from "../db/db.js";
-import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtil.js";
-import { sendPasswordResetMail } from '../utils/mail.js';
+import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtils.js";
+import { sendPasswordResetMail } from '../utils/mailUtils.js';
 
 //TODO - enum
 const AuthMethod = {
@@ -487,7 +487,7 @@ router.get("/google", passport.authenticate("google", {
 );
 
 router.get("/google/callback",
-    passport.authenticate("google", { failureRedirect: "/pgrc/login.html" }),
+    passport.authenticate("google", { failureRedirect: "/pgrc/login.html", session: false }),
     async (req, res) =>
     {
         // Se l'autenticazione ha successo, Passport ha messo l'utente nell'oggetto req.user

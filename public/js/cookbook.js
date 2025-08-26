@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () =>
                     <div class="recipe-card-content">
                         <h3>${recipe.name}</h3>
                         <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                        ${recipe.privateNote ? `<p class="private-note-display">Note: ${recipe.privateNote}</p>` : ''}
+                        ${recipe.privateNote ? `<p class="private-note-display">Notes: ${recipe.privateNote}</p>` : ''}
                         <div class="cookbook-card-actions">
                             <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">View Details</button>
                             <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
