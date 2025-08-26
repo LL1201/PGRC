@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', async () =>
             emptyCol.style.minHeight = '300px';
             emptyCol.innerHTML = `
                 <p class="text-center text-muted fs-5">
-                    Il tuo ricettario è vuoto! Inizia ad aggiungere ricette dalla pagina 
-                    <a href="recipes.html" class="fw-bold">Ricette</a>.
+                    Your cookbook is empty! Start adding recipes from the 
+                    <a href="recipes.html" class="fw-bold">Recipes</a> page.
                 </p>
             `;
             cookbookRecipesContainer.appendChild(emptyCol);
@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', async () =>
                     <div class="recipe-card-content">
                         <h3>${recipe.name}</h3>
                         <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                        ${recipe.privateNote ? `<p class="private-note-display">Nota: ${recipe.privateNote}</p>` : ''}
+                        ${recipe.privateNote ? `<p class="private-note-display">Note: ${recipe.privateNote}</p>` : ''}
                         <div class="cookbook-card-actions">
-                            <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">Vedi Dettagli</button>
-                            <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Modifica Nota</button>
-                            <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Rimuovi</button>
+                            <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">View Details</button>
+                            <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
+                            <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Remove from cookbook</button>
                         </div>
                     </div>
                 </div>
@@ -96,13 +96,13 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 const errorData = await response.json();
                 console.error('Error fetching cookbook:', errorData.message);
-                cookbookRecipesContainer.innerHTML = `<p class="message error show">${errorData.message || 'Errore nel recupero del ricettario.'}</p>`;
+                cookbookRecipesContainer.innerHTML = `<p class="message error show">${errorData.message || 'Error during cookbook retrieval.'}</p>`;
                 updatePaginationControlsCookbook(0);
             }
         } catch (error)
         {
             console.error('Network error fetching cookbook:', error);
-            cookbookRecipesContainer.innerHTML = `<p class="message error show">Si è verificato un errore di rete. Controlla la tua connessione.</p>`;
+            cookbookRecipesContainer.innerHTML = `<p class="message error show">A network error occurred. Please check your connection.</p>`;
             updatePaginationControlsCookbook(0);
         }
     }
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const cookbookRecipeId = event.target.dataset.cookbookrecipeid;
 
         alertMsgsUtils.showConfirmation(
-            'Sei sicuro di voler rimuovere questa ricetta dal tuo ricettario?',
+            'Are you sure to remove this recipe from your cookbook?',
             async () =>
             {
                 try
@@ -150,19 +150,19 @@ document.addEventListener('DOMContentLoaded', async () =>
                         fetchCookbookRecipes();
                     } else
                     {
-                        alertMsgsUtils.showError(data.message || 'Errore durante la rimozione della ricetta.');
+                        alertMsgsUtils.showError(data.message || 'Error during recipe removal.');
                     }
                 } catch (error)
                 {
                     console.error('Network error removing recipe:', error);
-                    alertMsgsUtils.showError('Si è verificato un errore di rete durante la rimozione.');
+                    alertMsgsUtils.showError('A network error occurred during removal.');
                 }
             },
             null,
-            'Conferma rimozione ricetta',
+            'Confirm recipe removal',
             'danger',
-            'Rimuovi',
-            'Annulla'
+            'Remove',
+            'Cancel'
         );
     }
 
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const currentNote = event.target.dataset.privatenote;
 
         alertMsgsUtils.showPrompt(
-            'Modifica la tua nota privata per questa ricetta:',
+            'Edit your private note for this recipe:',
             currentNote,
             async (newNote) =>
             {
@@ -198,18 +198,18 @@ document.addEventListener('DOMContentLoaded', async () =>
                         fetchCookbookRecipes();
                     } else
                     {
-                        alertMsgsUtils.showError(data.message || 'Errore durante l\'aggiornamento della nota.');
+                        alertMsgsUtils.showError(data.message || 'Error during note update.');
                     }
                 } catch (error)
                 {
                     console.error('Network error updating note:', error);
-                    alertMsgsUtils.showError('Si è verificato un errore di rete durante l\'aggiornamento.');
+                    alertMsgsUtils.showError('A network error occurred during update.');
                 }
             },
             null,
-            'Salva',
-            'Annulla',
-            'Scrivi qui la tua nota privata... (lascia vuoto per rimuovere)'
+            'Save',
+            'Cancel',
+            'Write your private note here... (leave empty to remove)'
         );
     }
 

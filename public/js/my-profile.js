@@ -33,12 +33,12 @@ document.addEventListener('DOMContentLoaded', async () =>
             }
             else
             {
-                alertMsgsUtils.showError((await response.json()).message || 'Errore nel caricamento dati utente');
+                alertMsgsUtils.showError((await response.json()).message || 'Error loading user data');
             }
         }
         catch (e)
         {
-            alertMsgsUtils.showError('Errore di rete');
+            alertMsgsUtils.showError('Network error');
         }
     }
 
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!username || !email)
         {
-            alertMsgsUtils.showError('Username o email sono obbligatori.');
+            alertMsgsUtils.showError('Username or email are required.');
             return;
         }
 
@@ -64,24 +64,27 @@ document.addEventListener('DOMContentLoaded', async () =>
             const data = await response.json();
             if (response.ok)
             {
-                alertMsgsUtils.showSuccess('Dati aggiornati con successo!');
+                alertMsgsUtils.showSuccess('Data successfully updated!');
             }
             else
             {
-                alertMsgsUtils.showError(data.message || 'Errore durante l\'aggiornamento.');
+                alertMsgsUtils.showError(data.message || 'Error occurred while updating profile.');
             }
         }
         catch (e)
         {
-            alertMsgsUtils.showError('Errore di rete');
+            alertMsgsUtils.showError('Network error');
         }
     });
 
     deleteAccountBtn.addEventListener('click', () =>
     {
-        deletePasswordInput.value = '';
-        deleteAccountAlert.classList.add('d-none');
-        deleteAccountModal.show();
+        if (authUtils.getAuthMethod() !== 'google')
+        {
+            deletePasswordInput.value = '';
+            deleteAccountAlert.classList.add('d-none');
+            deleteAccountModal.show();
+        }
     });
 
     deleteAccountForm.addEventListener('submit', async (e) =>
@@ -90,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         const password = deletePasswordInput.value;
         if (!password)
         {
-            alertMsgsUtils.showError('Inserisci la password.');
+            alertMsgsUtils.showError('Insert your password.');
             return;
         }
         try
@@ -103,17 +106,16 @@ document.addEventListener('DOMContentLoaded', async () =>
             const data = await response.json();
             if (response.ok)
             {
-                // Logout e redirect
                 await authUtils.logout();
             }
             else
             {
-                alertMsgsUtils.showError(data.message || 'Errore durante l\'eliminazione.');
+                alertMsgsUtils.showError(data.message || 'Error occurred while deleting account.');
             }
         }
         catch (e)
         {
-            alertMsgsUtils.showError('Errore di rete');
+            alertMsgsUtils.showError('Network error');
         }
     });
 

@@ -32,12 +32,12 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!email || !password)
         {
-            alertMsgsUtils.showError('Credenziali mancanti.');
+            alertMsgsUtils.showError('Missing credentials.');
             return;
         }
         if (!isValidEmail(email))
         {
-            alertMsgsUtils.showError('Formato email non valido.');
+            alertMsgsUtils.showError('Invalid email format.');
             return;
         }
 
@@ -84,17 +84,17 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!username || !email || !password || !confirmPassword)
         {
-            alertMsgsUtils.showError('Tutti i campi sono obbligatori.');
+            alertMsgsUtils.showError('All fields are required.');
             return;
         }
         if (!isValidEmail(email))
         {
-            alertMsgsUtils.showError('Formato email non valido.');
+            alertMsgsUtils.showError('Invalid email format.');
             return;
         }
         if (password !== confirmPassword)
         {
-            alertMsgsUtils.showError('Le password non coincidono.');
+            alertMsgsUtils.showError('Passwords do not match.');
             return;
         }
 

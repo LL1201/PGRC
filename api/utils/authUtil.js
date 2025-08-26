@@ -8,14 +8,20 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION;
 const REFRESH_TOKEN_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
 
-export function generateAccessToken(userId)
+export function generateAccessToken(userId, authMethod = 'email')
 {
-    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRATION });
+    return jwt.sign({
+        userId: userId,
+        authMethod: authMethod
+    }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRATION });
 }
 
-export async function generateRefreshToken(userId)
+export async function generateRefreshToken(userId, authMethod = 'email')
 {
-    const refreshToken = jwt.sign({ userId }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRATION });
+    const refreshToken = jwt.sign({
+        userId: userId,
+        authMethod: authMethod
+    }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRATION });
 
     const db = getDb();
     const refreshTokensCollection = db.collection('refreshTokens');

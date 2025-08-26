@@ -1,5 +1,28 @@
 //utility per la gestione in comodità delle richieste autenticate
 
+//TODO capire
+function getJwtPayload(token)
+{
+    try
+    {
+        return JSON.parse(atob(token.split('.')[1]))
+    } catch (error)
+    {
+        return undefined
+    }
+}
+
+function getAuthMethod()
+{
+    const token = localStorage.getItem('accessToken');
+    if (!token) return null;
+
+    const payload = getJwtPayload(token);
+    if (!payload || !payload.authMethod) return null;
+
+    return payload.authMethod;
+}
+
 async function refreshAccessToken()
 {
     try
@@ -165,5 +188,6 @@ window.authUtils = {
     authenticatedFetch,
     isAuthenticated,
     requireAuth,
-    logout
+    logout,
+    getAuthMethod
 };

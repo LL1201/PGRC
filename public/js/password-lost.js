@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         if (!email)
         {
-            alertMsgsUtils.showError('Inserisci la tua email.');
+            alertMsgsUtils.showError('Insert your email.');
             return;
         }
 
@@ -26,17 +26,17 @@ document.addEventListener('DOMContentLoaded', () =>
 
             if (response.ok)
             {
-                alertMsgsUtils.showSuccess(data.message || 'Email di recupero inviata. Controlla la tua casella di posta.');
+                alertMsgsUtils.showSuccess(data.message || 'Password recovery email sent. Check your inbox.');
                 form.reset();
             }
             else
             {
-                alertMsgsUtils.showError(data.message || 'Errore durante la richiesta di recupero password.');
+                alertMsgsUtils.showError(data.message || 'Error occurred while requesting password recovery.');
             }
         }
         catch (err)
         {
-            alertMsgsUtils.showError('Errore di rete. Riprova più tardi.');
+            alertMsgsUtils.showError('A network error occurred. Please try again later.');
         }
     });
 });

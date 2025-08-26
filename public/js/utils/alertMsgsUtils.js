@@ -33,7 +33,7 @@ function showAlert(message, type = 'info', duration = 5000)
     alertDiv.className = `message${typeClass ? ' ' + typeClass : ''}`;
     alertDiv.innerHTML = `
         <span>${message}</span>
-        <button type="button" class="btn-close" aria-label="Chiudi" style="float:right; margin-left:10px;"></button>
+        <button type="button" class="btn-close" aria-label="Close" style="float:right; margin-left:10px;"></button>
     `;
 
     // Chiudi manualmente

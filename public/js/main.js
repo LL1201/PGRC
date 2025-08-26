@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
     } catch (err)
     {
-        console.error('Errore durante il controllo autenticazione:', err);
+        console.error('Error during authentication control:', err);
     }
 
     async function handleLogout(event)

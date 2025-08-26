@@ -12,6 +12,12 @@ import { getDb } from "../db/db.js";
 import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtil.js";
 import { sendPasswordResetMail } from '../utils/mail.js';
 
+//TODO - enum
+const AuthMethod = {
+    Google: 'google',
+    Email: 'email'
+};
+
 dotenv.config();
 
 const router = express.Router();
@@ -194,6 +200,7 @@ router.post("/logout", async (req, res) =>
  *       500:
  *         description: Internal server error
  */
+//TODO - vedere se togliere la keyword refresh
 router.get("/access-token/refresh", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
@@ -208,8 +215,9 @@ router.get("/access-token/refresh", async (req, res) =>
             return res.status(401).json({ message: 'Invalid refresh token.' });
 
         const userId = tokenData.userId;
+        const authMethod = tokenData.authMethod;
 
-        const newAccessToken = generateAccessToken(userId);
+        const newAccessToken = generateAccessToken(userId, authMethod);
         res.status(200).json({
             userId: userId,
             accessToken: newAccessToken
@@ -479,13 +487,13 @@ router.get("/google", passport.authenticate("google", {
 );
 
 router.get("/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login.html", session: false }),
+    passport.authenticate("google", { failureRedirect: "/pgrc/login.html" }),
     async (req, res) =>
     {
         // Se l'autenticazione ha successo, Passport ha messo l'utente nell'oggetto req.user
         // Ora puoi generare i tuoi token JWT e reindirizzare al frontend
         const userId = req.user._id.toString();
-        const refreshToken = await generateRefreshToken(userId);
+        const refreshToken = await generateRefreshToken(userId, 'google');
 
         // Reindirizza l'utente alla tua pagina di profilo o a una pagina di benvenuto,
         // passando i token come parametri dell'URL o in un cookie.

@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     {
         loadingSpinner.style.display = 'none';
         //TODO - verificare se è possibile validare il token prima
-        alertMsgsUtils.showError('Link di verifica mancante.');
+        alertMsgsUtils.showError('Missing reset token.');
         return;
     }
 
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         if (!password)
         {
-            alertMsgsUtils.showError('Password mancante.');
+            alertMsgsUtils.showError('Missing password.');
             return;
         }
 
@@ -49,20 +49,20 @@ document.addEventListener('DOMContentLoaded', async () =>
 
             if (response.ok)
             {
-                alertMsgsUtils.showSuccess(data.message || 'Password reimpostata con successo!');
+                alertMsgsUtils.showSuccess(data.message || 'Password successfully reset!');
                 setTimeout(() =>
                 {
                     window.location.href = 'login.html';
                 }, 2000)
             }
             else
-                alertMsgsUtils.showError(data.message || 'Si è verificato un errore durante la reimpostazione della password.');
+                alertMsgsUtils.showError(data.message || 'An error occurred while resetting the password.');
 
         } catch (error)
         {
-            console.error('Errore di rete durante la reimpostazione della password:', error);
+            console.error('Network error while resetting the password:', error);
             loadingSpinner.style.display = 'none';
-            alertMsgsUtils.showError('Si è verificato un errore di rete. Controlla la tua connessione.');
+            alertMsgsUtils.showError('A network error occurred. Please check your connection.');
         }
     });
 });
