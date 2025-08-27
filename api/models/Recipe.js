@@ -22,16 +22,14 @@ const recipeSchema = new mongoose.Schema({
         required: true
     },
     mealThumb: {
-        type: String,
-        required: false
+        type: String
     },
     tags: {
         type: [String],
         required: true
     },
     youtubeLink: {
-        type: String,
-        required: false
+        type: String
     },
     ingredients: {
         type: [{
@@ -48,20 +46,16 @@ const recipeSchema = new mongoose.Schema({
         required: true
     },
     source: {
-        type: String,
-        required: false
+        type: String
     },
     imageSource: {
-        type: String,
-        required: false
+        type: String
     },
     creativeCommonsConfirmed: {
-        type: String,
-        required: false
+        type: String
     },
     dateModified: {
-        type: Date,
-        required: false
+        type: Date
     }
 });
 

@@ -3,6 +3,7 @@ import express from "express";
 
 //database
 import { getDb } from "../db/db.js";
+import Recipe from '../models/Recipe.js';
 
 const router = express.Router();
 
@@ -46,7 +47,6 @@ const router = express.Router();
  */
 router.get('/search', async (req, res) =>
 {
-    const db = getDb();
     //q contiene la query nel caso di ricerca
     //letter contiene una singola lettera nel caso voglia ottenere un elenco delle ricette che iniziano per A
     //TODO - miglioramento futuro utile in caso di ordinamenti
@@ -109,20 +109,29 @@ router.get('/search', async (req, res) =>
             _id: 0
         };
 
-        const recipes = await db.collection('mealdbRecipes')
-            .find(query)
-            .project(projection)
-            .skip(start)
-            .limit(offset)
-            .toArray();
+        const result = await Recipe.aggregate([
+            {
+                $match: query
+            },
+            {
+                $facet: {
+                    pagination: [
+                        { $skip: start },
+                        { $limit: offset },
+                        { $project: projection }
+                    ],
+                    total: [
+                        { $count: "count" }
+                    ]
+                }
+            }
+        ]);
 
-        const total = await db.collection('mealdbRecipes').countDocuments(query);
+        const recipes = result[0].pagination;
+        const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
 
         //in pratica il range è [start, start+offset)
-        //se offfset è maggiore della lunghezza dell'array, viene impostato a length
-        //const total = recipes.length;
-        //const actualEnd = Math.min(offset, total);
-        //const paginatedRecipes = recipes.slice(start, actualEnd);
+        //se offfset è maggiore della lunghezza dell'array, viene impostato a length       
 
         res.status(200).json({
             recipes: recipes,
@@ -165,13 +174,12 @@ router.get('/:mealDbId', async (req, res) =>
     const mealDbIdFromParams = req.params.mealDbId; //id originario di TheMealDB (vedi documentazione per ulteriori dettagli)
     const mealDbId = parseInt(mealDbIdFromParams);
 
-
     if (!mealDbId)
         return res.status(400).json({ message: 'Recipe ID is required.' });
 
     try
     {
-        const recipe = await db.collection('mealdbRecipes').findOne({ mealDbId: mealDbId });
+        const recipe = await Recipe.findOne({ mealDbId: mealDbId });
 
         if (!recipe)
             return res.status(404).json({ message: 'Recipe not found in local database.' });

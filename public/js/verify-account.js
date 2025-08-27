@@ -7,13 +7,14 @@ document.addEventListener('DOMContentLoaded', async () =>
     const loadingSpinner = document.getElementById('loading-spinner');
     const verificationMessage = document.getElementById('verification-message');
     const loginRedirectLink = document.getElementById('login-redirect-link');
+    loginRedirectLink.style.display = 'none';
 
     if (!token)
     {
         loadingSpinner.style.display = 'none';
         verificationMessage.textContent = 'Verification link is invalid or missing.';
         verificationMessage.classList.add('message', 'error');
-        loginRedirectLink.style.display = 'block';
+        //loginRedirectLink.style.display = 'block';
         return;
     }
 
@@ -29,13 +30,13 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         const data = await response.json();
 
-        loadingSpinner.style.display = 'none'; // Nasconde lo spinner
-        loginRedirectLink.style.display = 'block'; // Mostra il link al login
+        loadingSpinner.style.display = 'none';
 
         if (response.ok)
         {
             verificationMessage.textContent = data.message || 'Account successfully verified!';
             verificationMessage.classList.add('message', 'success');
+            loginRedirectLink.style.display = 'block';
         } else
         {
             verificationMessage.textContent = data.message || 'An error occurred while verifying the account.';

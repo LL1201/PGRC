@@ -5,12 +5,17 @@ import bcrypt from "bcryptjs";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import passport from '../config/passport.js';
-import { ObjectId } from 'mongodb';
 
 //utils
 import { getDb } from "../db/db.js";
+import mongoose from 'mongoose';
 import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtils.js";
 import { sendPasswordResetMail } from '../utils/mailUtils.js';
+
+import User from '../models/User.js';
+import Cookbook from '../models/Cookbook.js';
+
+//TODO vedere se si può fare in modo di avere un metodo universale per verifica object id invece di importare mongoose dapperttutto
 
 //TODO - enum
 const AuthMethod = {
@@ -68,7 +73,6 @@ const HASH_SALT = parseInt(process.env.HASH_SALT);
  */
 router.post("/login", async (req, res) =>
 {
-    const db = getDb();
     const user = req.body;
 
     if (!user || !user.email || !user.password)
@@ -80,7 +84,7 @@ router.post("/login", async (req, res) =>
 
     try
     {
-        const loginResult = await db.collection('users').findOne({ email: user.email, verified: true });
+        const loginResult = await User.findOne({ email: user.email, verified: true });
 
         if (!loginResult || !await bcrypt.compare(user.password, loginResult.hashedPassword))
             return res.status(401).json({ message: 'Invalid email or password or you did not confirmed your account' });
@@ -267,21 +271,24 @@ router.post("/confirm-account", async (req, res) =>
     try
     {
         //cerca l'utente con il token di verifica passato e che non sia già verificato
-        const user = await db.collection('users').findOne({
-            verificationToken: token,
+        const user = await User.findOne({
             verified: false,
-            verificationTokenExpiration: { $gt: new Date() } //token non scaduto
+            'verificationData.token': token,
+            'verificationData.expiration': { $gt: new Date() }
         });
 
         if (!user)
             return res.status(404).json({ message: 'Invalid, expired, or already used verification token.' });
 
         //update dell'utente: imposta verified a true e rimuove il token di verifica
-        const updateResult = await db.collection('users').updateOne(
+        const updateResult = await User.updateOne(
             { _id: user._id },
             {
                 $set: { verified: true },
-                $unset: { verificationToken: "", verificationTokenExpires: "" }
+                $unset: {
+                    'verificationData.token': '',
+                    'verificationData.expiration': ''
+                }
             }
         );
 
@@ -291,20 +298,17 @@ router.post("/confirm-account", async (req, res) =>
             return res.status(500).json({ message: 'Failed to update user verification status. Please try again.' });
         }
 
-        //const userCookbook = await db.collection('personalCookbooks').findOne({ userId: user._id });
-
         //creazione del ricettario personale
-        const newCookbookResult = await db.collection('personalCookbooks').insertOne({
-            userId: user._id,
-            recipes: []
-        });
-
-        if (!newCookbookResult.acknowledged)
+        try
         {
-            //se la creazione del ricettario fallisce
-            console.error(`Failed to create personal cookbook for user ${user._id} after verification.`);
+            const newCookbook = new Cookbook({ userId: user._id });
+            await newCookbook.save();
+        } catch (error)
+        {
+            console.error(`Failed to create personal cookbook for user ${user._id} after verification.`, error);
             return res.status(500).json({ message: 'Account verified, but failed to create personal cookbook. Please contact support.' });
         }
+
         console.log(`New personal cookbook created for user ${user._id}.`);
 
         //risposta di conferma positiva
@@ -344,19 +348,17 @@ router.post("/confirm-account", async (req, res) =>
  */
 router.post("/password-lost", async (req, res) =>
 {
-    const db = getDb();
     const { email } = req.body;
 
     if (!email)
         return res.status(400).json({ message: 'Email is required.' });
 
-    //controllo che non ci sia una richiesta valida in corso
-    const user = await db.collection('users').findOne({
+    //controllo l'esistenza dello user    
+    const user = await User.findOne({
         email: email,
         $or: [
-            { resetPasswordToken: { $exists: false } },
-            { resetTokenExpiration: { $exists: false } },
-            { resetTokenExpiration: { $lte: new Date() } }
+            { 'resetPasswordData.expiration': { $exists: false } },
+            { 'resetPasswordData.expiration': { $lte: new Date() } }
         ]
     });
 
@@ -373,12 +375,14 @@ router.post("/password-lost", async (req, res) =>
     try
     {
         //aggiorna l'utente con il token e la sua scadenza
-        await db.collection('users').updateOne(
+        await User.updateOne(
             { _id: user._id },
             {
                 $set: {
-                    resetPasswordToken: hashedResetToken,
-                    resetTokenExpiration: resetTokenExpiration,
+                    resetPasswordData: {
+                        token: hashedResetToken,
+                        expiration: resetTokenExpiration
+                    }
                 }
             }
         );
@@ -393,6 +397,8 @@ router.post("/password-lost", async (req, res) =>
         res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
     }
 });
+
+//TODO controllare che la password cambiata sia diversa da quella presente
 
 /**
  * @swagger
@@ -432,42 +438,38 @@ router.post("/password-lost", async (req, res) =>
  */
 router.post("/password-reset", async (req, res) =>
 {
-    const db = getDb();
     const { password, resetToken, userId } = req.body;
 
     if (!resetToken || !password || !userId)
         return res.status(400).json({ message: 'Reset token, new password and user ID are required.' });
 
-    console.log(ObjectId.createFromHexString(userId));
-
     try
     {
-        const user = await db.collection('users').findOne({
-            _id: ObjectId.createFromHexString(userId),
-            resetPasswordToken: { $exists: true, $ne: null },
-            resetTokenExpiration: { $gt: new Date() }
+        const user = await User.findOne({
+            _id: new mongoose.Types.ObjectId(userId),
+            'resetPasswordData.token': { $exists: true, $ne: null },
+            'resetPasswordData.expiration': { $gt: new Date() }
         });
 
         if (!user)
             return res.status(404).json({ message: 'User not found or token has expired.' });
 
-        const isMatch = await bcrypt.compare(resetToken, user.resetPasswordToken);
+        const isMatch = await bcrypt.compare(resetToken, user.resetPasswordData.token);
         if (!isMatch)
             return res.status(403).json({ message: 'Invalid token.' });
 
         //hash della nuova password e aggiornamento nel DB
         const newPasswordHash = await bcrypt.hash(password, HASH_SALT);
-        await db.collection('users').updateOne(
+
+        //rimuove il token di reset dal DB per evitare riutilizzi
+        //TODO - miglioramento futuro fare in modo che ci sia uno storico dei password reset
+        await User.updateOne(
             { _id: user._id },
             {
-                $set: {
-                    hashedPassword: newPasswordHash,
-                },
-                //rimuove il token di reset dal DB per evitare riutilizzi
-                //TODO - miglioramento futuro fare in modo che ci sia uno storico dei password reset
+                $set: { hashedPassword: newPasswordHash },
                 $unset: {
-                    resetPasswordToken: "",
-                    resetTokenExpires: ""
+                    'resetPasswordData.token': '',
+                    'resetPasswordData.expiration': ''
                 }
             }
         );

@@ -2,11 +2,13 @@
 import express from "express";
 
 //database
-import { getDb } from "../db/db.js";
-import { ObjectId } from 'mongodb';
+import mongoose from "mongoose";
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
+
+import Cookbook from '../models/Cookbook.js';
+import Recipe from '../models/Recipe.js';
 
 const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
 
@@ -59,7 +61,6 @@ const router = express.Router({ mergeParams: true }); //per ottenere anche il pa
  */
 router.post('/', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const { mealDbId, privateNote } = req.body;
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
@@ -73,45 +74,33 @@ router.post('/', authenticateUser, async (req, res) =>
     try
     {
         //verifica se l'id è valido e appartenente agli id di TheMealDB        
-        const existingMealDbRecipe = await db.collection('mealdbRecipes').findOne({ mealDbId: mealDbId });
+        const existingMealDbRecipe = await Recipe.findOne({ mealDbId: mealDbId });
 
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist in the MealDB database.' });
 
         //trova il ricettario personale dell'utente specificato (già creato in fase di registrazione)
-        let personalCookbook = await db.collection('personalCookbooks').findOne({ userId: reqUserObjectId });
+        let personalCookbook = await Cookbook.findOne({ userId: reqUserObjectId });
+
+        //verifica se il ricettario esiste
+        if (!personalCookbook)
+            return res.status(404).json({ message: 'Personal cookbook not found.' });
 
         //verifica se la ricetta è già presente nel ricettario
         const recipeExists = personalCookbook.recipes.some(r => r.mealDbId === mealDbId);
         if (recipeExists)
             return res.status(409).json({ message: 'Recipe already exists in your personal cookbook.' });
 
-        //crea il documento da inserire nella collection
-        /*const newRecipeDocument = {
-            mealDbId: mealDbId,
-            addedAt: new Date(),
-            ...(privateNote && { privateNote: privateNote }) // Aggiunge privateNote solo se fornita
-        };*/
-
-        //inserito con un id numerico casuale di 4 cifre
-        /*const newRecipeDocument = {
-            cookbookRecipeId: Math.floor(1000 + Math.random() * 9000),
-            mealDbId: mealDbId,
-            addedAt: new Date()
-        };*/
-
         const newRecipeDocument = {
-            _id: new ObjectId(),
-            mealDbId: mealDbId,
-            addedAt: new Date()
+            mealDbId: mealDbId
         };
 
-        //verifica se la nota è stata specificata 
+        //verifica se la nota è stata specificata
         if (privateNote)
             newRecipeDocument.privateNote = privateNote;
 
-        //fa l'update del ricettario già presente, aggiungendo le ricette
-        const updateResult = await db.collection('personalCookbooks').updateOne(
+        //fa l'update del ricettario aggiungendo la ricetta
+        const updateResult = await Cookbook.updateOne(
             { userId: reqUserObjectId },
             { $push: { recipes: newRecipeDocument } }
         );
@@ -172,7 +161,6 @@ router.post('/', authenticateUser, async (req, res) =>
  */
 router.get('/', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
@@ -251,7 +239,7 @@ router.get('/', authenticateUser, async (req, res) =>
             };
         });*/
 
-        const result = await db.collection('personalCookbooks').aggregate([
+        const result = await Cookbook.aggregate([
             {
                 $match: { userId: reqUserObjectId }
             },
@@ -270,9 +258,7 @@ router.get('/', authenticateUser, async (req, res) =>
                 $unwind: "$recipeDetails"
             },
             {
-                //fase 1 calcola il conteggio totale dei documenti che hanno un match
                 $facet: {
-                    //pagination è il nome del primo stage
                     pagination: [
                         { $skip: start },
                         { $limit: offset },
@@ -289,7 +275,6 @@ router.get('/', authenticateUser, async (req, res) =>
                             }
                         }
                     ],
-                    //total è il nome del secondo stage
                     total: [
                         {
                             $count: "count"
@@ -297,7 +282,7 @@ router.get('/', authenticateUser, async (req, res) =>
                     ]
                 }
             }
-        ]).toArray();
+        ]);
 
         //devo far così perché il risultato è nel formato 
         //[ { pagination: [ [Object], [Object] ], total: [ [Object] ] } ]
@@ -360,7 +345,6 @@ router.get('/', authenticateUser, async (req, res) =>
  */
 router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
     const cookbookRecipeIdFromParams = req.params.cookbookRecipeId;
@@ -373,8 +357,8 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
     if (!cookbookRecipeIdFromParams)
         return res.status(400).json({ message: 'cookbookRecipeId is required.' });
 
-    if (typeof cookbookRecipeIdFromParams === 'string' && ObjectId.isValid(cookbookRecipeIdFromParams))
-        objectCookbookRecipeId = new ObjectId(cookbookRecipeIdFromParams);
+    if (typeof cookbookRecipeIdFromParams === 'string' && mongoose.Types.ObjectId.isValid(cookbookRecipeIdFromParams))
+        objectCookbookRecipeId = new mongoose.Types.ObjectId(cookbookRecipeIdFromParams);
     else
     {
         console.error(`CookbookRecipeId is not a valid ObjectId string: ${cookbookRecipeIdFromParams}`);
@@ -383,10 +367,11 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 
     try
     {
-        const updateResult = await db.collection('personalCookbooks').updateOne(
+        const updateResult = await Cookbook.updateOne(
             { userId: reqUserObjectId },
             { $pull: { recipes: { _id: objectCookbookRecipeId } } }
         );
+
 
         //se non è stato modificato nessun documento significa che la ricetta in questione non era presente nel ricettario
         if (updateResult.modifiedCount === 0)
@@ -449,7 +434,6 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
  */
 router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     //privateNote sarà non presente o una stringa vuota per rimuovere la nota dalla ricetta
     const { privateNote } = req.body;
     const userObjectId = req.userObjectId;
@@ -464,8 +448,8 @@ router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
     if (!cookbookRecipeIdFromParams)
         return res.status(400).json({ message: 'cookbookRecipeId is required.' });
 
-    if (typeof cookbookRecipeIdFromParams === 'string' && ObjectId.isValid(cookbookRecipeIdFromParams))
-        objectCookbookRecipeId = new ObjectId(cookbookRecipeIdFromParams);
+    if (typeof cookbookRecipeIdFromParams === 'string' && mongoose.Types.ObjectId.isValid(cookbookRecipeIdFromParams))
+        objectCookbookRecipeId = new mongoose.Types.ObjectId(cookbookRecipeIdFromParams);
     else
     {
         console.error(`cookbookRecipeId is not a valid ObjectId string: ${cookbookRecipeIdFromParams}`);
@@ -490,7 +474,7 @@ router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
         //db.collection.updateOne(
         //    <filter>,
         //    <update>,
-        const updateResult = await db.collection('personalCookbooks').updateOne(
+        const updateResult = await Cookbook.updateOne(
             {
                 userId: reqUserObjectId,
                 "recipes._id": objectCookbookRecipeId

@@ -11,6 +11,8 @@ import emailValidator from "email-validator";
 import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mailUtils.js';
 import { verifyRefreshToken } from "../utils/authUtils.js";
 
+import User from '../models/User.js';
+
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
 
@@ -52,7 +54,6 @@ const HASH_SALT = parseInt(process.env.HASH_SALT);
  */
 router.post("/", async (req, res) =>
 {
-    const db = getDb();
     const user = req.body;
 
     if (!user || !user.email || !user.username || !user.password)
@@ -62,7 +63,7 @@ router.post("/", async (req, res) =>
         return res.status(400).json({ message: 'Invalid email format' });
 
     //check if username or email already exists on db
-    const existingUser = await db.collection('users').findOne({
+    const existingUser = await User.findOne({
         $or: [
             { email: user.email },
             { username: user.username }
@@ -84,21 +85,23 @@ router.post("/", async (req, res) =>
         email: user.email,
         username: user.username,
         hashedPassword: pswHash,
-        //piattiPreferiti: [],
         verified: false,
-        createdAt: new Date(),
-        verificationToken: emailVerificationToken,
-        verificationTokenExpiration: emailVerificationTokenExpiration
+        verificationData: {
+            token: emailVerificationToken,
+            expiration: emailVerificationTokenExpiration
+        }
     };
+
+    const newUser = new User(newUserDocument);
 
     try
     {
-        const result = await db.collection('users').insertOne(newUserDocument);
-        console.log(`User registered successfully. ID: ${result.insertedId}`);
+        const result = await newUser.save();
+        console.log(`User registered successfully. ID: ${result._id}`);
 
         await sendConfirmationMail(newUserDocument.email, emailVerificationToken);
 
-        res.status(202).json({ message: 'Verification email sent. Please check your inbox and spam folder.', userId: result.insertedId });
+        res.status(202).json({ message: 'Verification email sent. Please check your inbox and spam folder.', userId: result._id });
     } catch (e)
     {
         console.error("Database or email error during user registration:", e);
@@ -181,19 +184,20 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
             return res.status(403).json({ message: 'You can only delete your own account.' });
 
         //estraggo l'utente con tale id e verifico che la password inserita sia corretta
-        const user = await db.collection('users').findOne({ _id: userObjectId });
+        const user = await User.findOne({ _id: userObjectId });
         if (!user || !await bcrypt.compare(password, user.hashedPassword))
             return res.status(401).json({
                 message: 'Cannot delete account. Invalid password or user not found.'
             });
 
         //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review
+        //TODO models per refresh tokens e reviews
         await db.collection('refreshTokens').deleteMany({ userId: userObjectId });
-        await db.collection('personalCookbooks').deleteOne({ userId: userObjectId });
+        await Cookbook.deleteOne({ userId: userObjectId });
         await db.collection('reviews').deleteMany({ authorUserId: userObjectId });
 
         //eliminazione effettiva dell'utente
-        const deleteUserResult = await db.collection('users').deleteOne({ _id: userObjectId });
+        const deleteUserResult = await User.deleteOne({ _id: userObjectId });
 
         //controlla che l'operazione di eliminazione abbia avuto esito positivo
         if (deleteUserResult.deletedCount === 0)
@@ -257,7 +261,6 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
  */
 router.get('/:userId', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
@@ -265,7 +268,6 @@ router.get('/:userId', authenticateUser, async (req, res) =>
     //TODO - miglioramento futuro, permettere ad altri utenti di interagire con altri
     if (!userObjectId.equals(reqUserObjectId))
         return res.status(403).json({ message: 'You can only view your own profile.' });
-
 
     if (!reqUserObjectId)
         return res.status(400).json({ message: 'User ID is required.' });
@@ -277,9 +279,9 @@ router.get('/:userId', authenticateUser, async (req, res) =>
             username: 1
         };
 
-        const user = await db.collection('users').findOne(
+        const user = await User.findOne(
             { _id: reqUserObjectId },
-            { projection }
+            projection
         );
 
         if (!user)
@@ -345,8 +347,7 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  */
 router.patch("/:userId", authenticateUser, async (req, res) =>
 {
-    //TODO - valutare il cambio mail con conferma via email
-    const db = getDb();
+    //TODO - valutare il cambio mail con conferma via email    
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
     const { username, email } = req.body;
@@ -363,11 +364,15 @@ router.patch("/:userId", authenticateUser, async (req, res) =>
 
     //controllo unicità username/email se forniti
     const query = [];
-    if (username) query.push({ username });
-    if (email) query.push({ email });
+    if (username)
+        query.push({ username });
+
+    if (email)
+        query.push({ email });
+
     if (query.length > 0)
     {
-        const existing = await db.collection('users').findOne({
+        const existing = await User.findOne({
             $or: query,
             _id: { $ne: userObjectId }
         });
@@ -375,14 +380,19 @@ router.patch("/:userId", authenticateUser, async (req, res) =>
             return res.status(409).json({ message: 'Email or username already exists.' });
     }
 
+    console.log(query);
+
     //costruisce la query per l'update
     const updateFields = {};
-    if (username) updateFields.username = username;
-    if (email) updateFields.email = email;
+    if (username)
+        updateFields.username = username;
+
+    if (email)
+        updateFields.email = email;
 
     try
     {
-        const updateResult = await db.collection('users').updateOne(
+        const updateResult = await User.updateOne(
             { _id: userObjectId },
             { $set: updateFields }
         );
