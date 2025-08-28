@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 //database
-import { getDb } from '../db/db.js';
 
 //utils
 import emailValidator from "email-validator";
@@ -12,6 +11,8 @@ import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mailUtils.j
 import { verifyRefreshToken } from "../utils/authUtils.js";
 
 import User from '../models/User.js';
+import RefreshToken from "../models/RefreshToken.js";
+import Review from "../models/Review.js";
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
@@ -161,7 +162,6 @@ router.post("/", async (req, res) =>
  */
 router.delete("/:userId", authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
@@ -190,11 +190,13 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
                 message: 'Cannot delete account. Invalid password or user not found.'
             });
 
-        //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review
-        //TODO models per refresh tokens e reviews
-        await db.collection('refreshTokens').deleteMany({ userId: userObjectId });
-        await Cookbook.deleteOne({ userId: userObjectId });
-        await db.collection('reviews').deleteMany({ authorUserId: userObjectId });
+        //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
+        const refreshTokenDeleteResult = await RefreshToken.deleteMany({ userId: userObjectId });
+        const cookbookDeleteResult = await Cookbook.deleteOne({ userId: userObjectId });
+        const reviewDeleteResult = await Review.deleteMany({ authorUserId: userObjectId });
+
+        if (refreshTokenDeleteResult.deletedCount === 0 && cookbookDeleteResult.deletedCount === 0 && reviewDeleteResult.deletedCount === 0)
+            console.warn(`No associated data found for user ID ${userObjectId}.`);
 
         //eliminazione effettiva dell'utente
         const deleteUserResult = await User.deleteOne({ _id: userObjectId });

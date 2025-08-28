@@ -282,6 +282,9 @@ document.addEventListener('DOMContentLoaded', () =>
                 <span class="review-rating">Difficoltà: ${review.difficulty} | Taste: ${review.taste}</span>
                 <span class="review-date float-end">${dateStr ? 'Made on ' + dateStr : ''}</span>
             </div>
+            <div class="review-notes"${!review.notes ? ' style="display:none;"' : ''}>
+                <div class="review-note">${review.notes ? review.notes : ''}</div>
+            </div>
             <div>
                 <span class="text-muted small">Username: ${review.authorUsername ? review.authorUsername : 'N/A'}</span>
                 ${isOwn ? `<button class="btn btn-sm btn-danger ms-2 delete-review-btn" data-reviewid="${review.reviewId}">Delete</button>` : ''}
@@ -349,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () =>
             const difficulty = addReviewForm.difficultyEvaluation.value;
             const taste = addReviewForm.tasteEvaluation.value;
             const executionDate = addReviewForm.executionDate.value;
+            const notes = addReviewForm.notes.value;
 
             if (!difficulty || !taste || !executionDate)
             {
@@ -368,7 +372,8 @@ document.addEventListener('DOMContentLoaded', () =>
                         body: JSON.stringify({
                             difficultyEvaluation: difficulty,
                             tasteEvaluation: taste,
-                            executionDate: executionDate
+                            executionDate: executionDate,
+                            notes: !notes ? '' : notes
                         })
                     }
                 );

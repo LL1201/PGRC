@@ -2,7 +2,7 @@
 import express from "express";
 
 //database
-import mongoose from "mongoose";
+import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
@@ -357,8 +357,8 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
     if (!cookbookRecipeIdFromParams)
         return res.status(400).json({ message: 'cookbookRecipeId is required.' });
 
-    if (typeof cookbookRecipeIdFromParams === 'string' && mongoose.Types.ObjectId.isValid(cookbookRecipeIdFromParams))
-        objectCookbookRecipeId = new mongoose.Types.ObjectId(cookbookRecipeIdFromParams);
+    if (typeof cookbookRecipeIdFromParams === 'string' && isValidObjectId(cookbookRecipeIdFromParams))
+        objectCookbookRecipeId = createObjectId(cookbookRecipeIdFromParams);
     else
     {
         console.error(`CookbookRecipeId is not a valid ObjectId string: ${cookbookRecipeIdFromParams}`);
@@ -448,8 +448,8 @@ router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
     if (!cookbookRecipeIdFromParams)
         return res.status(400).json({ message: 'cookbookRecipeId is required.' });
 
-    if (typeof cookbookRecipeIdFromParams === 'string' && mongoose.Types.ObjectId.isValid(cookbookRecipeIdFromParams))
-        objectCookbookRecipeId = new mongoose.Types.ObjectId(cookbookRecipeIdFromParams);
+    if (typeof cookbookRecipeIdFromParams === 'string' && isValidObjectId(cookbookRecipeIdFromParams))
+        objectCookbookRecipeId = createObjectId(cookbookRecipeIdFromParams);
     else
     {
         console.error(`cookbookRecipeId is not a valid ObjectId string: ${cookbookRecipeIdFromParams}`);

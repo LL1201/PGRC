@@ -2,7 +2,6 @@
 import express from "express";
 
 //database
-import { getDb } from "../db/db.js";
 import Recipe from '../models/Recipe.js';
 
 const router = express.Router();
@@ -170,7 +169,6 @@ router.get('/search', async (req, res) =>
  */
 router.get('/:mealDbId', async (req, res) =>
 {
-    const db = getDb();
     const mealDbIdFromParams = req.params.mealDbId; //id originario di TheMealDB (vedi documentazione per ulteriori dettagli)
     const mealDbId = parseInt(mealDbIdFromParams);
 
@@ -183,10 +181,6 @@ router.get('/:mealDbId', async (req, res) =>
 
         if (!recipe)
             return res.status(404).json({ message: 'Recipe not found in local database.' });
-
-        //find delle recensioni associate alla ricetta richiesta
-        //aggiungo le recensioni all'oggetto restituito in precedenza sotto un'altra keyword
-        recipe.userReviews = await db.collection('reviews').find({ recipeId: mealDbId }).toArray();
 
         res.json(recipe);
 

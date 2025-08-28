@@ -2,8 +2,10 @@
 import express from "express";
 
 //database
-import { getDb } from "../db/db.js";
-import { ObjectId } from 'mongodb';
+import { createObjectId, isValidObjectId } from '../utils/objectId.js';
+
+import Review from '../models/Review.js';
+import Recipe from '../models/Recipe.js';
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
@@ -68,16 +70,13 @@ function authenticateUserOptional(req, res, next)
  */
 router.post('/', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     const mealDbId = parseInt(req.params.mealDbId);
     const userObjectId = req.userObjectId;
 
-    const { difficultyEvaluation, tasteEvaluation, executionDate } = req.body;
+    const { difficultyEvaluation, tasteEvaluation, executionDate, notes } = req.body;
 
     const difficultyEvaluationNum = parseInt(difficultyEvaluation);
     const tasteEvaluationNum = parseInt(tasteEvaluation);
-
-    console.log(typeof (difficultyEvaluationNum));
 
     if (!mealDbId)
         return res.status(400).json({ message: 'mealDbId is required.' });
@@ -91,8 +90,6 @@ router.post('/', authenticateUser, async (req, res) =>
     if (difficultyEvaluationNum < 1 || difficultyEvaluationNum > 5 || tasteEvaluationNum < 1 || tasteEvaluationNum > 5)
         return res.status(400).json({ message: 'Difficulty and taste evaluations must be between 1 and 5.' });
 
-    if (difficultyEvaluation < 1 || difficultyEvaluation > 5 || tasteEvaluation < 1 || tasteEvaluation > 5)
-        return res.status(400).json({ message: 'Difficulty and taste evaluations must be between 1 and 5.' });
 
     const parsedExecutionDate = new Date(executionDate);
 
@@ -102,13 +99,13 @@ router.post('/', authenticateUser, async (req, res) =>
     try
     {
         //verifica se l'id è valido e appartenente agli id di TheMealDB        
-        const existingMealDbRecipe = await db.collection('mealdbRecipes').findOne({ mealDbId: mealDbId });
+        const existingMealDbRecipe = await Recipe.findOne({ mealDbId: mealDbId });
 
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist in the MealDB database.' });
 
         //verifica se l'utente ha già recensito questa ricetta
-        const existingReview = await db.collection('reviews').findOne({
+        const existingReview = await Review.findOne({
             mealDbId: mealDbId,
             authorUserId: userObjectId
         });
@@ -116,23 +113,26 @@ router.post('/', authenticateUser, async (req, res) =>
         if (existingReview)
             return res.status(409).json({ message: 'You have already left a review for this recipe.' });
 
-        const newReviewDocument = {
+        const newReview = new Review({
             mealDbId: mealDbId,
             authorUserId: userObjectId,
             difficultyEvaluation: difficultyEvaluationNum,
             tasteEvaluation: tasteEvaluationNum,
-            executionDate: executionDate
-        };
+            executionDate: executionDate,
+            notes: !notes ? "" : notes
+        });
 
-        const result = await db.collection('reviews').insertOne(newReviewDocument);
 
-        if (!result.acknowledged)
+        try
         {
-            console.error('Failed to acknowledge review insertion.');
+            await newReview.save();
+        } catch (error)
+        {
+            console.error('Failed to insert review:', error);
             return res.status(500).json({ message: 'Failed to add review to recipe.' });
         }
 
-        res.status(201).json({ message: 'Review added to recipe.', reviewId: result.insertedId });
+        res.status(201).json({ message: 'Review added to recipe.', reviewId: newReview._id });
 
     } catch (error)
     {
@@ -177,7 +177,6 @@ router.post('/', authenticateUser, async (req, res) =>
  */
 router.get('/', authenticateUserOptional, async (req, res) =>
 {
-    const db = getDb();
     const mealDbIdFromParams = req.params.mealDbId;
     const mealDbId = parseInt(mealDbIdFromParams);
 
@@ -205,7 +204,7 @@ router.get('/', authenticateUserOptional, async (req, res) =>
     try
     {
         //verifica che la ricetta esista tra le ricette di TheMealDB       
-        const existingMealDbRecipe = await db.collection('mealdbRecipes').findOne({ mealDbId: mealDbId });
+        const existingMealDbRecipe = await Recipe.findOne({ mealDbId });
 
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
@@ -246,6 +245,7 @@ router.get('/', authenticateUserOptional, async (req, res) =>
                                 difficultyEvaluation: 1,
                                 tasteEvaluation: 1,
                                 executionDate: 1,
+                                notes: 1,
                                 username: '$author.username'
                             }
                         }
@@ -270,7 +270,7 @@ router.get('/', authenticateUserOptional, async (req, res) =>
             }
         ];
 
-        const result = await db.collection('reviews').aggregate(pipeline).toArray();
+        const result = await Review.aggregate(pipeline);
 
         //controlla che result[0] esista
         const reviewsResult = result[0]?.reviews || [];
@@ -286,6 +286,7 @@ router.get('/', authenticateUserOptional, async (req, res) =>
                 authorUserId: review.authorUserId,
                 difficulty: review.difficultyEvaluation,
                 taste: review.tasteEvaluation,
+                notes: review.notes,
                 executionDate: review.executionDate
             };
         });
@@ -350,7 +351,6 @@ router.get('/', authenticateUserOptional, async (req, res) =>
  */
 router.delete('/:reviewId', authenticateUser, async (req, res) =>
 {
-    const db = getDb();
     let objectReviewId;
     const userObjectId = req.userObjectId;
     const reviewIdFromParams = req.params.reviewId;
@@ -365,8 +365,8 @@ router.delete('/:reviewId', authenticateUser, async (req, res) =>
     if (!reviewIdFromParams)
         return res.status(400).json({ message: 'A reviewId is required in the URL path.' });
 
-    if (typeof reviewIdFromParams === 'string' && ObjectId.isValid(reviewIdFromParams))
-        objectReviewId = new ObjectId(reviewIdFromParams);
+    if (typeof reviewIdFromParams === 'string' && isValidObjectId(reviewIdFromParams))
+        objectReviewId = createObjectId(reviewIdFromParams);
     else
     {
         console.error(`reviewId is not a valid ObjectId string: ${reviewIdFromParams}`);
@@ -376,12 +376,12 @@ router.delete('/:reviewId', authenticateUser, async (req, res) =>
     try
     {
         //verifica che la ricetta esista tra le ricette di TheMealDB
-        const existingMealDbRecipe = await db.collection('mealdbRecipes').findOne({ mealDbId: mealDbId });
+        const existingMealDbRecipe = await Recipe.findOne({ mealDbId });
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
         //verifica che la recensione esista tra le ricette di TheMealDB
-        const existingReview = await db.collection('reviews').findOne({ _id: objectReviewId });
+        const existingReview = await Review.findOne({ _id: objectReviewId });
         if (!existingReview)
             return res.status(404).json({ message: 'Review with the provided reviewId does not exist.' });
 
@@ -389,8 +389,7 @@ router.delete('/:reviewId', authenticateUser, async (req, res) =>
         if (!existingReview.authorUserId.equals(userObjectId))
             return res.status(403).json({ message: 'You are not authorized to delete this review.' });
 
-
-        const deleteReviewResult = await db.collection('reviews').deleteOne({ _id: objectReviewId });
+        const deleteReviewResult = await Review.deleteOne({ _id: objectReviewId });
 
         if (deleteReviewResult.deletedCount === 0)
         {

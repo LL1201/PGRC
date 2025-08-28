@@ -27,7 +27,7 @@ async function refreshAccessToken()
 {
     try
     {
-        const response = await fetch('/pgrc/api/v1/auth/access-token/refresh', {
+        const response = await fetch('/pgrc/api/v1/auth/access-token', {
             method: 'GET',
             credentials: 'include', //include cookies            
         });

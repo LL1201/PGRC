@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { getDb } from "../db/db.js";
 import dotenv from 'dotenv';
-
 dotenv.config();
+
+import RefreshToken from '../models/RefreshToken.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION;
@@ -23,18 +23,25 @@ export async function generateRefreshToken(userId, authMethod = 'email')
         authMethod: authMethod
     }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRATION });
 
-    const db = getDb();
-    const refreshTokensCollection = db.collection('refreshTokens');
-
     //.exp dentro il JWT è espresso in secondi, Date lo vuole in millisecondi
     const expiresAt = new Date(jwt.decode(refreshToken).exp * 1000);
 
-    await refreshTokensCollection.insertOne({
+    const tokenData = new RefreshToken({
         userId: userId,
         token: refreshToken,
         expiresAt: expiresAt,
         createdAt: new Date()
     });
+
+    try
+    {
+        await tokenData.save();
+    } catch (error)
+    {
+        console.error('Failed to insert refresh token:', error);
+        return res.status(500).json({ message: 'Failed to create refresh token.' });
+    }
+
     return refreshToken;
 }
 
@@ -51,16 +58,20 @@ export async function verifyToken(token)
 
 export async function removeRefreshToken(token)
 {
-    const db = getDb();
-    const refreshTokensCollection = db.collection('refreshTokens');
-    await refreshTokensCollection.deleteOne({ token: token });
+    const deleteTokenResult = await RefreshToken.deleteOne({ token });
+
+    if (deleteTokenResult.deletedCount === 0)
+    {
+        console.warn(`Refresh token with ID ${token} was found but not deleted.`);
+        return false;
+    }
+    return true;
 }
 
 export async function verifyRefreshToken(token)
 {
     //controlla prima la presenza del token nel db e che non sia scaduto
-    const db = getDb();
-    const tokenDocument = await db.collection('refreshTokens').findOne({ token: token });
+    const tokenDocument = await RefreshToken.findOne({ token });
     if (!tokenDocument) return null;
 
     if (tokenDocument.expiresAt && tokenDocument.expiresAt < new Date())

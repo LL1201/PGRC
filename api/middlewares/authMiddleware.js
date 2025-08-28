@@ -1,9 +1,8 @@
 import { verifyToken } from '../utils/authUtils.js';
 import dotenv from 'dotenv';
-import { ObjectId } from 'mongodb';
+import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 dotenv.config();
 
-//TODO - auth is optional cambiare frontend
 async function authenticateUser(req, res, next, authIsOptional = false)
 {
     const authHeader = req.headers['authorization'];
@@ -14,13 +13,12 @@ async function authenticateUser(req, res, next, authIsOptional = false)
     //req.reqUserObjectId contiene l'id di tipo ObjectID dell'utente specificato nell'URL
     if (userId)
     {
-        if (!ObjectId.isValid(userId))
+        if (!isValidObjectId(userId))
             return res.status(400).json({ message: 'Invalid User ID format in URL. Must be a valid ObjectId.' });
 
-        req.reqUserObjectId = ObjectId.createFromHexString(userId);
+        req.reqUserObjectId = createObjectId(userId);
         req.reqUserId = userId;
     }
-
     let token;
 
     //controllo che sia presente un auth header e che sia nel formato Bearer ...
@@ -38,12 +36,11 @@ async function authenticateUser(req, res, next, authIsOptional = false)
     if (!decoded)
         return res.status(401).json({ message: 'Invalid or expired access token.' });
 
-
     //req.userId contiene l'id dell'utente associato al JWT passato
     //req.userObjectId contiene l'id associato al JWT in formato ObjectId
-    if (typeof decoded.userId === 'string' && ObjectId.isValid(decoded.userId))
+    if (typeof decoded.userId === 'string' && isValidObjectId(decoded.userId))
     {
-        req.userObjectId = ObjectId.createFromHexString(decoded.userId);
+        req.userObjectId = createObjectId(decoded.userId);
         req.userId = decoded.userId;
     } else
     {

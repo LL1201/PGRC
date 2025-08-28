@@ -8,9 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 
 //database
-import { connectToDatabase } from "./api/db/db.js";
 import populateTheMealDbRecipes from './api/utils/populateDb.js';
-
 import Database from "./api/db/database.js"
 
 //middlewares
@@ -101,15 +99,6 @@ db.connect().then(async () =>
 {
     //chiamata alla funzione di popolamento delle ricette dopo la connessione al DB
     await populateTheMealDbRecipes();
-
-}).catch(err =>
-{
-    console.error("Cannot connect to DB:", err);
-});
-
-connectToDatabase().then(async () =>
-{
-
     app.listen(port, () =>
     {
         console.log(`Server is listening on http://localhost:${port}`);

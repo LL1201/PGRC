@@ -1,6 +1,7 @@
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { getDb } from '../db/db.js';
+
+import User from '../models/User.js';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -23,9 +24,7 @@ passport.use(
                 if (!email)
                     return done(new Error('Email non trovata nel profilo Google'), null);
 
-                const db = getDb();
-                const usersCollection = db.collection('users');
-                let user = await usersCollection.findOne({ email: email });
+                let user = await User.findOne({ email: email });
 
                 if (user)
                 {

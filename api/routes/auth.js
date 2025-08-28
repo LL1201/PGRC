@@ -7,15 +7,12 @@ import crypto from 'crypto';
 import passport from '../config/passport.js';
 
 //utils
-import { getDb } from "../db/db.js";
-import mongoose from 'mongoose';
 import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtils.js";
 import { sendPasswordResetMail } from '../utils/mailUtils.js';
+import { createObjectId } from '../utils/objectId.js';
 
 import User from '../models/User.js';
 import Cookbook from '../models/Cookbook.js';
-
-//TODO vedere se si può fare in modo di avere un metodo universale per verifica object id invece di importare mongoose dapperttutto
 
 //TODO - enum
 const AuthMethod = {
@@ -152,18 +149,23 @@ router.post("/logout", async (req, res) =>
 
     try
     {
-        await removeRefreshToken(refreshToken);
+        if (await removeRefreshToken(refreshToken))
+        {
 
-        //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
-        res.cookie('refreshToken', 'deleted', {
-            path: '/pgrc/api/v1/',
-            expires: new Date(0),
-            httpOnly: true,
-            sameSite: 'strict'
-            //secure: process.env.NODE_ENV === 'production'
-        });
+            //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
+            res.cookie('refreshToken', 'deleted', {
+                path: '/pgrc/api/v1/',
+                expires: new Date(0),
+                httpOnly: true,
+                sameSite: 'strict'
+                //secure: process.env.NODE_ENV === 'production'
+            });
 
-        res.status(200).json({ message: 'Logged out successfully.' });
+            res.status(200).json({ message: 'Logged out successfully.' });
+        } else
+        {
+            res.status(500).json({ message: 'Internal server error.' });
+        }
     } catch (e)
     {
         console.error("Logout error:", e);
@@ -204,8 +206,7 @@ router.post("/logout", async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-//TODO - vedere se togliere la keyword refresh
-router.get("/access-token/refresh", async (req, res) =>
+router.get("/access-token", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
 
@@ -262,7 +263,6 @@ router.get("/access-token/refresh", async (req, res) =>
  */
 router.post("/confirm-account", async (req, res) =>
 {
-    const db = getDb();
     const { token } = req.body;
 
     if (!token)
@@ -299,9 +299,9 @@ router.post("/confirm-account", async (req, res) =>
         }
 
         //creazione del ricettario personale
+        const newCookbook = new Cookbook({ userId: user._id });
         try
         {
-            const newCookbook = new Cookbook({ userId: user._id });
             await newCookbook.save();
         } catch (error)
         {
@@ -398,8 +398,6 @@ router.post("/password-lost", async (req, res) =>
     }
 });
 
-//TODO controllare che la password cambiata sia diversa da quella presente
-
 /**
  * @swagger
  * /api/v1/auth/password-reset:
@@ -446,7 +444,7 @@ router.post("/password-reset", async (req, res) =>
     try
     {
         const user = await User.findOne({
-            _id: new mongoose.Types.ObjectId(userId),
+            _id: createObjectId(userId),
             'resetPasswordData.token': { $exists: true, $ne: null },
             'resetPasswordData.expiration': { $gt: new Date() }
         });
@@ -457,6 +455,9 @@ router.post("/password-reset", async (req, res) =>
         const isMatch = await bcrypt.compare(resetToken, user.resetPasswordData.token);
         if (!isMatch)
             return res.status(403).json({ message: 'Invalid token.' });
+
+        if (await bcrypt.compare(password, user.hashedPassword))
+            return res.status(400).json({ message: 'New password must be different from the old password.' });
 
         //hash della nuova password e aggiornamento nel DB
         const newPasswordHash = await bcrypt.hash(password, HASH_SALT);

@@ -196,6 +196,16 @@ h1 {
     margin-bottom: 6px;
 }
 
+.review-notes {
+    font-size: 0.95rem;
+    color: black;
+    margin-bottom: 6px;
+}
+
+.review-note {
+    padding: 10px;
+}
+
 .review-rating {
     font-weight: bold;
     color: var(--primary-color, #007bff);

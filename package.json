@@ -19,7 +19,6 @@
     "email-validator": "^2.0.4",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.17.0",
     "mongoose": "^8.18.0",
     "nodemailer": "^7.0.5",
     "passport": "^0.7.0",

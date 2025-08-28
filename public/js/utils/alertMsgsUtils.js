@@ -83,7 +83,6 @@ function showInfo(message, duration = 5000)
     showAlert(message, 'info', duration);
 }
 
-//TODO - mettere impostazione di colore bottone di conferma
 function showConfirmation(message, onConfirm, onCancel = null, modalTitle, severity = 'info', confirmText = 'Conferma', cancelText = 'Annulla')
 {
     hideConfirmation();
