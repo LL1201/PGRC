@@ -1,8 +1,7 @@
-//utility per la gestione in comodità delle richieste autenticate
-
-//TODO capire
 function getJwtPayload(token)
 {
+    //essendo il JWT codificato in base64, atob decodifica base64
+    //formato JWT: header.payload.signature quindi prendo solo il payload con [1]
     try
     {
         return JSON.parse(atob(token.split('.')[1]))

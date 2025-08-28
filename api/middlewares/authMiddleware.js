@@ -42,6 +42,7 @@ async function authenticateUser(req, res, next, authIsOptional = false)
     {
         req.userObjectId = createObjectId(decoded.userId);
         req.userId = decoded.userId;
+        req.authMethod = decoded.authMethod;
     } else
     {
         console.error(`Decoded userId is not a valid ObjectId string: ${decoded.userId}`);

@@ -77,14 +77,26 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
     });
 
-    deleteAccountBtn.addEventListener('click', () =>
+    deleteAccountBtn.addEventListener('click', async () =>
     {
-        if (authUtils.getAuthMethod() !== 'google')
+        if (authUtils.getAuthMethod() === 'email')
         {
             deletePasswordInput.value = '';
             deleteAccountAlert.classList.add('d-none');
             deleteAccountModal.show();
+        } else
+        {
+            alertMsgsUtils.showConfirmation(
+                'Are you sure you want to delete your account? This action is irreversible.',
+                deleteAccountRequest,
+                null,
+                'Confirm account deletion',
+                'danger',
+                'Confirm',
+                'Cancel'
+            );
         }
+
     });
 
     deleteAccountForm.addEventListener('submit', async (e) =>
@@ -96,17 +108,32 @@ document.addEventListener('DOMContentLoaded', async () =>
             alertMsgsUtils.showError('Insert your password.');
             return;
         }
+        await deleteAccountRequest(password);
+
+    });
+
+    async function deleteAccountRequest(password)
+    {
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, {
+            const options = {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-            });
+            };
+
+            if (authUtils.getAuthMethod() === 'email')
+                options.body = JSON.stringify({ password });
+
+            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, options);
             const data = await response.json();
             if (response.ok)
             {
-                await authUtils.logout();
+                alertMsgsUtils.showSuccess(data.message || 'Confirmation email sent.');
+
+                setTimeout(async () =>
+                {
+                    await authUtils.logout();
+                }, 2000);
             }
             else
             {
@@ -117,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         {
             alertMsgsUtils.showError('Network error');
         }
-    });
+    }
 
     //richiesta autenticazione obv
     if (await authUtils.requireAuth())

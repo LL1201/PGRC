@@ -57,7 +57,28 @@ export function sendPasswordResetMail(mailTo, token, userId)
     });
 }
 
-export function sendUserDeletionMail(mailTo)
+export function sendAccountDeletionEmail(mailTo, token, userId)
+{
+    const mailOptions = {
+        from: SMTP_USER,
+        to: mailTo,
+        subject: 'Conferma di cancellazione account',
+        text: `Ciao, \n\nper confermare la cancellazione del tuo account PGRC visita il seguente link: ${FRONTEND_URL}/account-deletion.html?deleteToken=${token}&userId=${userId}`
+    };
+
+    transporter.sendMail(mailOptions, function (error, info)
+    {
+        if (error)
+        {
+            console.log('Error:', error);
+        } else
+        {
+            console.log('Email sent:', info.response);
+        }
+    });
+}
+
+export function sendAccountDeletionConfirmationEmail(mailTo)
 {
     const mailOptions = {
         from: SMTP_USER,

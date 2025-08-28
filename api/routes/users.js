@@ -7,12 +7,13 @@ import crypto from 'crypto';
 
 //utils
 import emailValidator from "email-validator";
-import { sendConfirmationMail, sendUserDeletionMail } from '../utils/mailUtils.js';
-import { verifyRefreshToken } from "../utils/authUtils.js";
+import { sendConfirmationMail, sendAccountDeletionEmail, sendAccountDeletionConfirmationEmail } from '../utils/mailUtils.js';
+import { AuthMethod, verifyRefreshToken } from "../utils/authUtils.js";
 
 import User from '../models/User.js';
 import RefreshToken from "../models/RefreshToken.js";
 import Review from "../models/Review.js";
+import Cookbook from "../models/Cookbook.js";
 
 //middlewares
 import authenticateUser from '../middlewares/authMiddleware.js';
@@ -165,30 +166,83 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
-    const password = req.body && req.body.password;
     const refreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken)
-        return res.status(400).json({ message: 'Refresh token is required.' });
+    //il body può essere vuoto... quindi il middleware express.json non fa il parse se non c'è content-type specificato
+    let password = null;
+    let deleteToken = null;
+
+    if (req.body)
+    {
+        ({ password, deleteToken } = req.body);
+    }
+
+    const authMethod = req.authMethod;
+
+    if (!refreshToken && !await verifyRefreshToken(refreshToken))
+        return res.status(400).json({ message: 'A valid refresh token is required.' });
 
     if (!await verifyRefreshToken(refreshToken))
         return res.status(401).json({ message: 'Invalid refresh token.' });
 
-    //controlla che la password sia presente
-    if (!password)
+    //controlla che la password sia presente solo se l'eliminazione è da account loggato con email
+    if (!password && authMethod === AuthMethod.Email)
         return res.status(400).json({ message: 'Password is required.' });
+
+    if (!userObjectId.equals(reqUserObjectId))
+        return res.status(403).json({ message: 'You can only delete your own account.' });
+
+    //TODO fare pagina di conferma eliminazione
 
     try
     {
-        if (!userObjectId.equals(reqUserObjectId))
-            return res.status(403).json({ message: 'You can only delete your own account.' });
-
         //estraggo l'utente con tale id e verifico che la password inserita sia corretta
-        const user = await User.findOne({ _id: userObjectId });
-        if (!user || !await bcrypt.compare(password, user.hashedPassword))
-            return res.status(401).json({
-                message: 'Cannot delete account. Invalid password or user not found.'
-            });
+        let user = null;
+        //user = await User.findOne({ _id: userObjectId });
+
+        user = await User.findOne({
+            _id: userObjectId,
+            $or: [
+                { 'deleteAccountData.expiration': { $exists: false } },
+                { 'deleteAccountData.expiration': { $lte: new Date() } }
+            ]
+        });
+
+        if (!user)
+            return res.status(404).json({ message: 'User not found or already marked for deletion. Please try again later.' });
+
+        if (authMethod === AuthMethod.Email)
+        {
+            if (!user || !await bcrypt.compare(password, user.hashedPassword))
+                return res.status(401).json({
+                    message: 'Cannot delete account. Invalid password or user not found.'
+                });
+        }
+
+        if (!deleteToken)
+        {
+            //genera un token
+            //non uso JWT in questo caso per evitare la dipendenza da un token che si autodistrugge
+            const deleteToken = crypto.randomBytes(32).toString('hex');
+            const hashedDeleteToken = await bcrypt.hash(deleteToken, HASH_SALT);
+            const deleteTokenExpiration = new Date(Date.now() + 3600000); //scadenza tra 1 ora
+
+            await User.updateOne(
+                { _id: user._id },
+                {
+                    $set: {
+                        deleteAccountData: {
+                            token: hashedDeleteToken,
+                            expiration: deleteTokenExpiration
+                        }
+                    }
+                }
+            );
+
+            sendAccountDeletionEmail(user.email, deleteToken, user._id);
+            return res.status(202).json({ message: 'Deletion confirmation email sent. Please check your inbox and spam folder.' });
+        }
+
 
         //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
         const refreshTokenDeleteResult = await RefreshToken.deleteMany({ userId: userObjectId });
@@ -208,7 +262,7 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
             return res.status(404).json({ message: 'User not found or already deleted.' });
         }
 
-        sendUserDeletionMail(user.email);
+        sendAccountDeletionConfirmationEmail(user.email);
         console.log(`User with ID: ${userObjectId} deleted successfully.`);
         res.status(200).json({ message: 'User successfully deleted.' });
     } catch (e)

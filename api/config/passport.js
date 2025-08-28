@@ -1,7 +1,9 @@
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import crypto from 'crypto';
 
 import User from '../models/User.js';
+import Cookbook from '../models/Cookbook.js';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -31,7 +33,7 @@ passport.use(
                     //se l'utente esiste ma non ha il googleId aggiorna il documento
                     if (!user.googleId)
                     {
-                        await usersCollection.updateOne(
+                        await User.updateOne(
                             { _id: user._id },
                             { $set: { googleId: profile.id } }
                         );
@@ -43,18 +45,18 @@ passport.use(
                 else
                 {
                     //se non esiste l'utente ne crea uno nuovo, in questo caso non serve verifica via mail
-                    const newUserDocument = {
+                    const newUser = new User({
                         email: email,
-                        username: profile.displayName || profile.name.givenName || 'GoogleUser',
+                        username: profile.displayName || profile.name.givenName || 'GoogleUser' + profile.id,
                         googleId: profile.id,
                         verified: true,
                         createdAt: new Date()
-                    };
-                    const result = await usersCollection.insertOne(newUserDocument);
-                    const newUser = { ...newUserDocument, _id: result.insertedId };
+                    });
+
+                    await newUser.save();
 
                     //crea anche il ricettario personale
-                    await db.collection('personalCookbooks').insertOne({ userId: newUser._id, recipes: [] });
+                    await Cookbook.create({ userId: newUser._id, recipes: [] });
 
                     return done(null, newUser);
                 }

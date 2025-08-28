@@ -8,7 +8,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION;
 const REFRESH_TOKEN_EXPIRATION = process.env.JWT_REFRESH_TOKEN_EXPIRATION;
 
-export function generateAccessToken(userId, authMethod = 'email')
+export const AuthMethod = {
+    Google: 'google',
+    Email: 'email'
+};
+
+export function generateAccessToken(userId, authMethod = AuthMethod.Email)
 {
     return jwt.sign({
         userId: userId,
@@ -16,7 +21,7 @@ export function generateAccessToken(userId, authMethod = 'email')
     }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRATION });
 }
 
-export async function generateRefreshToken(userId, authMethod = 'email')
+export async function generateRefreshToken(userId, authMethod = AuthMethod.Email)
 {
     const refreshToken = jwt.sign({
         userId: userId,

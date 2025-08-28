@@ -7,18 +7,12 @@ import crypto from 'crypto';
 import passport from '../config/passport.js';
 
 //utils
-import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken } from "../utils/authUtils.js";
+import { generateAccessToken, generateRefreshToken, removeRefreshToken, verifyRefreshToken, AuthMethod } from "../utils/authUtils.js";
 import { sendPasswordResetMail } from '../utils/mailUtils.js';
 import { createObjectId } from '../utils/objectId.js';
 
 import User from '../models/User.js';
 import Cookbook from '../models/Cookbook.js';
-
-//TODO - enum
-const AuthMethod = {
-    Google: 'google',
-    Email: 'email'
-};
 
 dotenv.config();
 
@@ -496,7 +490,7 @@ router.get("/google/callback",
         // Se l'autenticazione ha successo, Passport ha messo l'utente nell'oggetto req.user
         // Ora puoi generare i tuoi token JWT e reindirizzare al frontend
         const userId = req.user._id.toString();
-        const refreshToken = await generateRefreshToken(userId, 'google');
+        const refreshToken = await generateRefreshToken(userId, AuthMethod.Google);
 
         // Reindirizza l'utente alla tua pagina di profilo o a una pagina di benvenuto,
         // passando i token come parametri dell'URL o in un cookie.

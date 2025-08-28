@@ -36,6 +36,17 @@ const userSchema = new mongoose.Schema({
         expiration: {
             type: Date
         },
+    },
+    deleteAccountData: {
+        token: {
+            type: String
+        },
+        expiration: {
+            type: Date
+        },
+    },
+    googleId: {
+        type: String
     }
 });
 
