@@ -24,7 +24,7 @@ class Database
                 dbName: DB_NAME,
             });
             this.connection = connection;
-            console.log("Connected to MongoDB mongoose");
+            console.log("Connected to MongoDB");
         }
         catch (e)
         {

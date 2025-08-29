@@ -5,7 +5,7 @@ import express from "express";
 import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 
 //middlewares
-import authenticateUser from '../middlewares/authMiddleware.js';
+import { authenticateUser } from '../middlewares/authMiddleware.js';
 
 import Cookbook from '../models/Cookbook.js';
 import Recipe from '../models/Recipe.js';

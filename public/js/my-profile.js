@@ -118,11 +118,10 @@ document.addEventListener('DOMContentLoaded', async () =>
         {
             const options = {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
             };
 
             if (authUtils.getAuthMethod() === 'email')
-                options.body = JSON.stringify({ password });
+                options.headers['X-User-Password'] = password;
 
             const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, options);
             const data = await response.json();

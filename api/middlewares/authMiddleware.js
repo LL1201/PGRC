@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 dotenv.config();
 
-async function authenticateUser(req, res, next, authIsOptional = false)
+export async function authenticateUser(req, res, next, authIsOptional = false)
 {
     const authHeader = req.headers['authorization'];
     const { userId } = req.params;
@@ -51,4 +51,7 @@ async function authenticateUser(req, res, next, authIsOptional = false)
     next();
 }
 
-export default authenticateUser;
+export function authenticateUserOptionally(req, res, next)
+{
+    return authenticateUser(req, res, next, true);
+}

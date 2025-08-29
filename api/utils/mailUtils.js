@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
+const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 
 const transporter = nodemailer.createTransport({
-    host: 'smtps.aruba.it',
+    host: SMTP_HOST,
     port: 465,
     secure: true, // SSL
     auth: {

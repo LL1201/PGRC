@@ -8,16 +8,9 @@ import Review from '../models/Review.js';
 import Recipe from '../models/Recipe.js';
 
 //middlewares
-import authenticateUser from '../middlewares/authMiddleware.js';
+import { authenticateUser, authenticateUserOptionally } from '../middlewares/authMiddleware.js';
 
 const router = express.Router({ mergeParams: true });
-
-//dal momento che non posso chiamare il middleware indicando parametri
-function authenticateUserOptional(req, res, next)
-{
-    //chiama authenticateUser con authIsOptional = true
-    return authenticateUser(req, res, next, true);
-}
 
 /**
  * @swagger
@@ -175,7 +168,7 @@ router.post('/', authenticateUser, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.get('/', authenticateUserOptional, async (req, res) =>
+router.get('/', authenticateUserOptionally, async (req, res) =>
 {
     const mealDbIdFromParams = req.params.mealDbId;
     const mealDbId = parseInt(mealDbIdFromParams);

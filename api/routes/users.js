@@ -16,7 +16,7 @@ import Review from "../models/Review.js";
 import Cookbook from "../models/Cookbook.js";
 
 //middlewares
-import authenticateUser from '../middlewares/authMiddleware.js';
+import { authenticateUser, authenticateUserOptionally } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 const HASH_SALT = parseInt(process.env.HASH_SALT);
@@ -161,71 +161,50 @@ router.post("/", async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.delete("/:userId", authenticateUser, async (req, res) =>
+router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
 {
-    const userObjectId = req.userObjectId;
+    //l'auth è opzionale perché quando richiedo l'eliminazione account faccio un logout allo user e quindi quando clicca il link
+    //via mail non ci sono più le informazioni sul local storage
     const reqUserObjectId = req.reqUserObjectId;
-
-    const refreshToken = req.cookies.refreshToken;
-
-    //il body può essere vuoto... quindi il middleware express.json non fa il parse se non c'è content-type specificato
-    let password = null;
-    let deleteToken = null;
-
-    if (req.body)
-    {
-        ({ password, deleteToken } = req.body);
-    }
-
     const authMethod = req.authMethod;
 
-    if (!refreshToken && !await verifyRefreshToken(refreshToken))
-        return res.status(400).json({ message: 'A valid refresh token is required.' });
+    if (req.userObjectId)
+    {
+        if (!req.userObjectId.equals(reqUserObjectId))
+            return res.status(403).json({ message: 'You can only delete your own account.' });
+    }
 
-    if (!await verifyRefreshToken(refreshToken))
-        return res.status(401).json({ message: 'Invalid refresh token.' });
-
-    //controlla che la password sia presente solo se l'eliminazione è da account loggato con email
-    if (!password && authMethod === AuthMethod.Email)
-        return res.status(400).json({ message: 'Password is required.' });
-
-    if (!userObjectId.equals(reqUserObjectId))
-        return res.status(403).json({ message: 'You can only delete your own account.' });
-
-    //TODO fare pagina di conferma eliminazione
+    const password = req.header('X-User-Password');
+    const deleteToken = req.header('X-User-Delete-Token');
 
     try
     {
-        //estraggo l'utente con tale id e verifico che la password inserita sia corretta
-        let user = null;
-        //user = await User.findOne({ _id: userObjectId });
-
-        user = await User.findOne({
-            _id: userObjectId,
-            $or: [
-                { 'deleteAccountData.expiration': { $exists: false } },
-                { 'deleteAccountData.expiration': { $lte: new Date() } }
-            ]
-        });
+        //estraggo l'utente con tale id
+        let user = await User.findById(reqUserObjectId);
 
         if (!user)
-            return res.status(404).json({ message: 'User not found or already marked for deletion. Please try again later.' });
+            return res.status(404).json({ message: 'User not found or already deleted.' });
 
-        if (authMethod === AuthMethod.Email)
+        if (password || authMethod === AuthMethod.Google)
         {
-            if (!user || !await bcrypt.compare(password, user.hashedPassword))
-                return res.status(401).json({
-                    message: 'Cannot delete account. Invalid password or user not found.'
-                });
-        }
+            if (deleteToken)
+                return res.status(400).json({ message: 'Cannot provide both password and delete token.' });
 
-        if (!deleteToken)
-        {
+            if (authMethod === AuthMethod.Email)
+            {
+                if (!password)
+                    return res.status(400).json({ message: 'Password is required for email-authenticated users.' });
+
+                if (!await bcrypt.compare(password, user.hashedPassword))
+                    return res.status(401).json({ message: 'Invalid password.' });
+            }
+
             //genera un token
             //non uso JWT in questo caso per evitare la dipendenza da un token che si autodistrugge
-            const deleteToken = crypto.randomBytes(32).toString('hex');
-            const hashedDeleteToken = await bcrypt.hash(deleteToken, HASH_SALT);
-            const deleteTokenExpiration = new Date(Date.now() + 3600000); //scadenza tra 1 ora
+            const newDeleteToken = crypto.randomBytes(32).toString('hex');
+            const hashedDeleteToken = await bcrypt.hash(newDeleteToken, HASH_SALT);
+            const deleteTokenExpiration = new Date(Date.now() + 3600000); //1 ora 
+            //TODO .env le scadenze dei token
 
             await User.updateOne(
                 { _id: user._id },
@@ -239,32 +218,46 @@ router.delete("/:userId", authenticateUser, async (req, res) =>
                 }
             );
 
-            sendAccountDeletionEmail(user.email, deleteToken, user._id);
-            return res.status(202).json({ message: 'Deletion confirmation email sent. Please check your inbox and spam folder.' });
-        }
+            //TODO vedere di errori invio mail
+            sendAccountDeletionEmail(user.email, newDeleteToken, user._id);
+            console.log(`Deletion confirmation email sent for user ID: ${reqUserObjectId}`);
 
-
-        //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
-        const refreshTokenDeleteResult = await RefreshToken.deleteMany({ userId: userObjectId });
-        const cookbookDeleteResult = await Cookbook.deleteOne({ userId: userObjectId });
-        const reviewDeleteResult = await Review.deleteMany({ authorUserId: userObjectId });
-
-        if (refreshTokenDeleteResult.deletedCount === 0 && cookbookDeleteResult.deletedCount === 0 && reviewDeleteResult.deletedCount === 0)
-            console.warn(`No associated data found for user ID ${userObjectId}.`);
-
-        //eliminazione effettiva dell'utente
-        const deleteUserResult = await User.deleteOne({ _id: userObjectId });
-
-        //controlla che l'operazione di eliminazione abbia avuto esito positivo
-        if (deleteUserResult.deletedCount === 0)
+            return res.status(202).json({ message: 'Deletion confirmation email sent. Please check your inbox to confirm.' });
+        } else if (deleteToken)
         {
-            console.warn(`User with ID ${userObjectId} was found but not deleted.`);
-            return res.status(404).json({ message: 'User not found or already deleted.' });
+            if (!user.deleteAccountData || !user.deleteAccountData.token || !user.deleteAccountData.expiration)
+                return res.status(400).json({ message: 'Invalid or expired delete token. Please restart the deletion process.' });
+
+            if (!await bcrypt.compare(deleteToken, user.deleteAccountData.token) || user.deleteAccountData.expiration < new Date())
+            {
+                //invalida refresh per prevenire utilizzi futuri
+                await User.updateOne(
+                    { _id: user._id },
+                    { $unset: { deleteAccountData: "" } }
+                );
+                return res.status(401).json({ message: 'Invalid or expired delete token. Please restart the deletion process.' });
+            }
+
+            //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
+            await RefreshToken.deleteMany({ userId: reqUserObjectId });
+            await Cookbook.deleteOne({ userId: reqUserObjectId });
+            await Review.deleteMany({ authorUserId: reqUserObjectId });
+            const deleteUserResult = await User.deleteOne({ _id: reqUserObjectId });
+
+            if (deleteUserResult.deletedCount === 0)
+            {
+                console.warn(`User with ID ${reqUserObjectId} was found but not deleted.`);
+                return res.status(404).json({ message: 'User not found or already deleted.' });
+            }
+
+            sendAccountDeletionConfirmationEmail(user.email);
+            console.log(`User with ID: ${reqUserObjectId} deleted successfully.`);
+
+            return res.status(200).json({ message: 'User and all associated data successfully deleted.' });
         }
 
-        sendAccountDeletionConfirmationEmail(user.email);
-        console.log(`User with ID: ${userObjectId} deleted successfully.`);
-        res.status(200).json({ message: 'User successfully deleted.' });
+        //default se non sono stati forniti né token né password
+        return res.status(400).json({ message: 'Password or a valid delete token is required.' });
     } catch (e)
     {
         console.error("Error during user removal.", e);
