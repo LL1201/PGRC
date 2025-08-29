@@ -18,13 +18,13 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export async function sendConfirmationMail(mailTo, token)
+export async function sendConfirmationMail(mailTo, token, userId)
 {
     const mailOptions = {
         from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma il tuo account',
-        text: `Ciao, \n\nper confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?token=${token}`
+        text: `Ciao, \n\nper confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?confirmationToken=${token}&userId=${userId}`
     };
 
     try

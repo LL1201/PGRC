@@ -32,16 +32,15 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            let url = `/pgrc/api/v1/auth/password-reset`;
+            let url = `/pgrc/api/v1/auth/users/${userId}`;
             const response = await fetch(url, {
-                method: 'POST',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    userId: userId,
                     password: password,
-                    resetToken: token
+                    resetPasswordToken: token
                 })
             });
 

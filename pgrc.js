@@ -75,9 +75,9 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use("/api/v1/users/:userId/cookbook", cookbooksRouter);
 app.use("/api/v1/users", usersRouter);
-app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/recipes/:mealDbId/reviews", reviewsRouter);
 app.use("/api/v1/recipes", recipesRouter);
+app.use("/api/v1", authRouter);
 
 app.use((err, req, res, next) =>
 {

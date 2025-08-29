@@ -8,7 +8,7 @@ import crypto from 'crypto';
 //utils
 import emailValidator from "email-validator";
 import { sendConfirmationMail, sendAccountDeletionEmail, sendAccountDeletionConfirmationEmail } from '../utils/mailUtils.js';
-import { AuthMethod, verifyRefreshToken } from "../utils/authUtils.js";
+import { AuthMethod, verifyRefreshToken, generateAccessToken, removeRefreshToken } from "../utils/authUtils.js";
 
 import User from '../models/User.js';
 import RefreshToken from "../models/RefreshToken.js";
@@ -20,6 +20,7 @@ import { authenticateUser, authenticateUserOptionally } from '../middlewares/aut
 
 const router = express.Router();
 const HASH_SALT = parseInt(process.env.HASH_SALT);
+const ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION = parseInt(process.env.ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION);
 
 /**
  * @swagger
@@ -203,7 +204,7 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
             //non uso JWT in questo caso per evitare la dipendenza da un token che si autodistrugge
             const newDeleteToken = crypto.randomBytes(32).toString('hex');
             const hashedDeleteToken = await bcrypt.hash(newDeleteToken, HASH_SALT);
-            const deleteTokenExpiration = new Date(Date.now() + 3600000); //1 ora 
+            const deleteTokenExpiration = new Date(Date.now() + ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION);
             //TODO .env le scadenze dei token
 
             await User.updateOne(
@@ -394,67 +395,303 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.patch("/:userId", authenticateUser, async (req, res) =>
+router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 {
-    //TODO - valutare il cambio mail con conferma via email    
-    const userObjectId = req.userObjectId;
+    //TODO - valutare il cambio mail con conferma via email      
     const reqUserObjectId = req.reqUserObjectId;
-    const { username, email } = req.body;
+    const { username, email, confirmed, confirmationToken, password, resetPasswordToken } = req.body;
 
-    if (!userObjectId.equals(reqUserObjectId))
-        return res.status(403).json({ message: 'You can only update your own account.' });
+    if (username || email)
+        if (!req.userObjectId)
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
 
-    if (!username && !email)
-        return res.status(400).json({ message: 'At least one populated field (username or email) must be provided.' });
+    if (confirmed && !confirmationToken)
+        return res.status(400).json({ message: 'Confirmation token and confirmation value are both required when confirming account.' });
 
-    //validazione email se fornita
+    if (password && !resetPasswordToken)
+        return res.status(400).json({ message: 'Reset token and password are both required when resetting password.' });
+
+    if (username || email)
+        if (!req.userObjectId)
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        else
+            if (!req.userObjectId.equals(reqUserObjectId))
+                return res.status(403).json({ message: 'You can only edit your own account.' });
+
+
     if (email && !emailValidator.validate(email))
         return res.status(400).json({ message: 'Invalid email format.' });
 
-    //controllo unicità username/email se forniti
-    const query = [];
-    if (username)
-        query.push({ username });
-
-    if (email)
-        query.push({ email });
-
-    if (query.length > 0)
+    let query = [];
+    let updateFields = {};
+    if (username || email)
     {
-        const existing = await User.findOne({
-            $or: query,
-            _id: { $ne: userObjectId }
+        //controllo unicità username/email se forniti        
+        if (username)
+            query.push({ username });
+
+        if (email)
+            query.push({ email });
+
+        if (query.length > 0)
+        {
+            const existing = await User.findOne({
+                $or: query,
+                _id: { $ne: reqUserObjectId }
+            });
+            if (existing)
+                return res.status(409).json({ message: 'Email or username already exists.' });
+        }
+
+        //costruisce la query per l'update
+        if (username)
+            updateFields.username = username;
+
+        if (email)
+            updateFields.email = email;
+
+        if (await updateUser(reqUserObjectId, updateFields))
+        {
+            return res.status(200).json({ message: 'User information updated successfully.' });
+        }
+    } else if (confirmed && confirmationToken)
+    {
+        const user = await User.findOne({
+            _id: reqUserObjectId,
+            verified: false,
+            'verificationData.token': confirmationToken,
+            'verificationData.expiration': { $gt: new Date() }
         });
-        if (existing)
-            return res.status(409).json({ message: 'Email or username already exists.' });
+
+        if (!user)
+            return res.status(404).json({ message: 'Invalid, expired, or already used verification token.' });
+
+
+        if (await updateUser(reqUserObjectId, { verified: true },
+            {
+                'verificationData.token': '',
+                'verificationData.expiration': ''
+            }))
+        {
+            //creazione del ricettario personale
+            const newCookbook = new Cookbook({ userId: user._id });
+            try
+            {
+                await newCookbook.save();
+            } catch (error)
+            {
+                console.error(`Failed to create personal cookbook for user ${user._id} after verification.`, error);
+                return res.status(500).json({ message: 'Account verified, but failed to create personal cookbook. Please contact support.' });
+            }
+
+            console.log(`New personal cookbook created for user ${user._id}.`);
+
+            //risposta di conferma positiva
+            console.log(`User ${user.email} verified successfully.`);
+            return res.status(200).json({ status: 'OK', message: 'Account verified successfully! You can now log in.' });
+        }
+
+    } else if (password && resetPasswordToken)
+    {
+        if (!resetPasswordToken || !password || !reqUserObjectId)
+            return res.status(400).json({ message: 'Reset token, new password and user ID are required.' });
+
+        try
+        {
+            const user = await User.findOne({
+                _id: reqUserObjectId,
+                'resetPasswordData.token': { $exists: true, $ne: null },
+                'resetPasswordData.expiration': { $gt: new Date() }
+            });
+
+            if (!user)
+                return res.status(404).json({ message: 'User not found or token has expired.' });
+
+            const isMatch = await bcrypt.compare(resetToken, user.resetPasswordData.token);
+            if (!isMatch)
+                return res.status(403).json({ message: 'Invalid token.' });
+
+            if (await bcrypt.compare(password, user.hashedPassword))
+                return res.status(400).json({ message: 'New password must be different from the old password.' });
+
+            //hash della nuova password e aggiornamento nel DB
+            const newPasswordHash = await bcrypt.hash(password, HASH_SALT);
+
+            //rimuove il token di reset dal DB per evitare riutilizzi
+            if (await updateUser(reqUserObjectId, { hashedPassword: newPasswordHash },
+                {
+                    'resetPasswordData.token': '',
+                    'resetPasswordData.expiration': ''
+                }))
+            {
+                console.log(`User ${user.email} reset password successfully.`);
+                return res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
+            }
+            //TODO controllare comportamento in caso di ritorno null della funzione updateUser
+            //TODO - miglioramento futuro fare in modo che ci sia uno storico dei password reset
+        } catch (e)
+        {
+            console.error("Error resetting password:", e);
+            res.status(500).json({ message: 'An internal server error occurred.' });
+        }
     }
 
-    console.log(query);
+    async function updateUser(userObjectId, updateFields, unsetFields = {})
+    {
+        try
+        {
+            let updateQuery = {};
+            if (Object.keys(updateFields).length > 0)
+                updateQuery.$set = updateFields;
+            if (Object.keys(unsetFields).length > 0)
+                updateQuery.$unset = unsetFields;
 
-    //costruisce la query per l'update
-    const updateFields = {};
-    if (username)
-        updateFields.username = username;
+            const updateResult = await User.updateOne(
+                { _id: userObjectId },
+                updateQuery
+            );
 
-    if (email)
-        updateFields.email = email;
+            if (updateResult.modifiedCount === 0)
+            {
+                res.status(400).json({ message: 'No changes made or user not found.' });
+                return null;
+            } else
+            {
+                return true;
+            }
+        } catch (e)
+        {
+            console.error("Error updating user data:", e);
+            res.status(500).json({ message: 'An internal server error occurred during user update.' });
+            return null;
+        }
+    }
+});
+
+//TODO vedere se salvare access token nel db
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Logout and invalidate refresh token
+ *     tags:
+ *       - Auth
+ *     description: |
+ *       Effettua il logout dell'utente. Richiede il cookie `refreshToken` inviato dal client.
+ *     parameters:
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token cookie
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       400:
+ *         description: Refresh token is required
+ *       401:
+ *         description: Invalid refresh token
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/:userId/access-token", async (req, res) =>
+{
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken)
+        return res.status(400).json({ message: 'Refresh token is required.' });
+
+    if (!await verifyRefreshToken(refreshToken))
+        return res.status(401).json({ message: 'Invalid refresh token.' });
 
     try
     {
-        const updateResult = await User.updateOne(
-            { _id: userObjectId },
-            { $set: updateFields }
-        );
+        if (await removeRefreshToken(refreshToken))
+        {
 
-        if (updateResult.modifiedCount === 0)
-            return res.status(400).json({ message: 'No changes made or user not found.' });
+            //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
+            res.cookie('refreshToken', 'deleted', {
+                path: '/pgrc/api/v1/',
+                expires: new Date(0),
+                httpOnly: true,
+                sameSite: 'strict'
+                //secure: process.env.NODE_ENV === 'production'
+            });
 
-        res.status(200).json({ message: 'User data updated successfully.' });
+            res.status(200).json({ message: 'Logged out successfully.' });
+        } else
+        {
+            res.status(500).json({ message: 'Internal server error.' });
+        }
     } catch (e)
     {
-        console.error("Error updating user data:", e);
-        res.status(500).json({ message: 'An internal server error occurred during user update.' });
+        console.error("Logout error:", e);
+        res.status(500).json({ message: 'Internal server error.' });
     }
 });
+
+/**
+ * @swagger
+ * /api/v1/auth/access-token/refresh:
+ *   post:
+ *     summary: Refresh access token using refresh token cookie
+ *     tags:
+ *       - Auth
+ *     description: |
+ *       Richiede il cookie `refreshToken` inviato dal client.
+ *     parameters:
+ *       - name: refreshToken
+ *         in: cookie
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token cookie
+ *     responses:
+ *       200:
+ *         description: New access token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *       400:
+ *         description: Refresh token is required
+ *       401:
+ *         description: Invalid refresh token
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/:userId/access-token", async (req, res) =>
+{
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken)
+        return res.status(400).json({ message: 'Refresh token is required.' });
+
+    try
+    {
+        const tokenData = await verifyRefreshToken(refreshToken);
+        if (!tokenData)
+            return res.status(401).json({ message: 'Invalid refresh token.' });
+
+        const userId = tokenData.userId;
+        const authMethod = tokenData.authMethod;
+
+        const newAccessToken = generateAccessToken(userId, authMethod);
+        res.status(200).json({
+            userId: userId,
+            accessToken: newAccessToken
+        });
+    } catch (e)
+    {
+        console.error("Error refreshing access token:", e);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+});
+
+
 
 export default router;

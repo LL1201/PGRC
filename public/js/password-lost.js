@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
         try
         {
-            const response = await fetch('/pgrc/api/v1/auth/password-lost', {
+            const response = await fetch('/pgrc/api/v1/password-lost-tokens', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })

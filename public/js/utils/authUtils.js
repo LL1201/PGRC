@@ -24,9 +24,14 @@ function getAuthMethod()
 
 async function refreshAccessToken()
 {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId)
+        return null;
+
     try
     {
-        const response = await fetch('/pgrc/api/v1/auth/access-token', {
+        const response = await fetch(`/pgrc/api/v1/users/${userId}/access-token`, {
             method: 'GET',
             credentials: 'include', //include cookies            
         });
@@ -163,10 +168,11 @@ async function requireAuth()
 
 async function logout()
 {
+    const userId = localStorage.getItem('userId');
     try
     {
-        await fetch('/pgrc/api/v1/auth/logout', {
-            method: 'POST',
+        await fetch(`/pgrc/api/v1/users/${userId}/access-token`, {
+            method: 'DELETE',
             credentials: 'include' //per includere il cookie che contiene il refresh token
         });
     } catch (error)

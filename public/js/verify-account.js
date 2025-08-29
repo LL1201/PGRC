@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const token = urlParams.get('confirmationToken');
+    const userId = urlParams.get('userId');
 
     //TODO - veder se si possono usare gli alert dell'utility
     const loadingSpinner = document.getElementById('loading-spinner');
@@ -20,12 +21,15 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     try
     {
-        const response = await fetch('/pgrc/api/v1/auth/confirm-account', {
-            method: 'POST',
+        const response = await fetch(`/pgrc/api/v1/users/${userId}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ token: token })
+            body: JSON.stringify({
+                confirmed: true,
+                confirmationToken: token
+            })
         });
 
         const data = await response.json();
