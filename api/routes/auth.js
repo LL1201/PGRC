@@ -4,7 +4,6 @@ import emailValidator from "email-validator";
 import bcrypt from "bcryptjs";
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-import passport from '../config/passport.js';
 
 import { google } from 'googleapis';
 
@@ -203,9 +202,9 @@ router.post("/password-lost-tokens", async (req, res) =>
     }
 });
 
-router.get("/auth/google", passport.authenticate("google", {
+/*router.get("/auth/google", passport.authenticate("google", {
     scope: ["https://www.googleapis.com/auth/plus.login", "email"],
-}));
+}));*/
 
 
 router.get("/auth/google/callback", async (req, res) =>

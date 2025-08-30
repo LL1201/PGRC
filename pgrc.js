@@ -13,7 +13,6 @@ import Database from "./api/db/database.js"
 
 //middlewares
 import htmlProcessor from './api/middlewares/htmlProcessor.js';
-import passport from './api/config/passport.js';
 
 //routers
 import authRouter from "./api/routes/auth.js";
@@ -68,8 +67,6 @@ app.use(cors(corsOptions));
 
 //enable CORS for preflight requests
 app.options('/', cors(corsOptions));
-
-app.use(passport.initialize());
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
