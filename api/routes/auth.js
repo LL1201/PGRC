@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import crypto from 'crypto';
 import passport from '../config/passport.js';
 
+import { google } from 'googleapis';
 
 //utils
 import { generateAccessToken, generateRefreshToken, AuthMethod } from "../utils/authUtils.js";
@@ -18,6 +19,12 @@ dotenv.config();
 const router = express.Router();
 const HASH_SALT = parseInt(process.env.HASH_SALT);
 const PASSWORD_RESET_TOKEN_EXPIRATION = parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRATION);
+
+const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_OAUTH_CALLBACK_URI
+);
 
 /**
  * @swagger
@@ -64,20 +71,35 @@ const PASSWORD_RESET_TOKEN_EXPIRATION = parseInt(process.env.PASSWORD_RESET_TOKE
  */
 router.post("/access-tokens", async (req, res) =>
 {
-    const user = req.body;
+    const loginData = req.body;
 
-    if (!user || !user.email || !user.password)
+    if (!loginData)
+        return res.status(400).json({ message: 'Email and password are required' });
+    else if (loginData.authProvider && loginData.authProvider === AuthMethod.Google)
+    {
+        const url = oauth2Client.generateAuthUrl({
+            access_type: "offline",
+            scope: ["email", "profile"],
+            prompt: "consent"
+        });
+
+        return res.status(200).json({
+            redirectUrl: url
+        });
+    }
+
+    if (!loginData.email || !loginData.password)
         return res.status(400).json({ message: 'Email and password are required' });
 
     //prevent possible nosql injection on email field
-    if (!emailValidator.validate(user.email))
+    if (!emailValidator.validate(loginData.email))
         return res.status(400).json({ message: 'Invalid email format' });
 
     try
     {
-        const loginResult = await User.findOne({ email: user.email, verified: true });
+        const loginResult = await User.findOne({ email: loginData.email, verified: true });
 
-        if (!loginResult || !await bcrypt.compare(user.password, loginResult.hashedPassword))
+        if (!loginResult || !await bcrypt.compare(loginData.password, loginResult.hashedPassword))
             return res.status(401).json({ message: 'Invalid email or password or you did not confirmed your account' });
 
         const accessToken = generateAccessToken(loginResult._id);
@@ -181,23 +203,60 @@ router.post("/password-lost-tokens", async (req, res) =>
     }
 });
 
-router.get("/google", passport.authenticate("google", {
+router.get("/auth/google", passport.authenticate("google", {
     scope: ["https://www.googleapis.com/auth/plus.login", "email"],
-})
-);
+}));
 
-router.get("/google/callback",
-    passport.authenticate("google", { failureRedirect: "/pgrc/login.html", session: false }),
-    async (req, res) =>
+
+router.get("/auth/google/callback", async (req, res) =>
+{
+    const { code, state } = req.query;
+
+    if (!code) return res.status(400).send("Missing code");
+
+    try
     {
-        // Se l'autenticazione ha successo, Passport ha messo l'utente nell'oggetto req.user
-        // Ora puoi generare i tuoi token JWT e reindirizzare al frontend
-        const userId = req.user._id.toString();
-        const refreshToken = await generateRefreshToken(userId, AuthMethod.Google);
+        const { tokens } = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(tokens);
 
-        // Reindirizza l'utente alla tua pagina di profilo o a una pagina di benvenuto,
-        // passando i token come parametri dell'URL o in un cookie.
-        // Utilizzare un redirect è standard per OAuth        
+        //recupero info utente
+        const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+        const { data: profile } = await oauth2.userinfo.get();
+
+        const email = profile.email;
+        if (!email) throw new Error("Email non trovata nel profilo Google");
+
+        let user = await User.findOne({ email });
+
+        if (user)
+        {
+            //se l'utente esiste ma non ha il googleId aggiorna il documento
+            if (!user.googleId)
+            {
+                user.googleId = profile.id;
+                await user.save();
+            }
+        } else
+        {
+            //se non esiste l'utente ne crea uno nuovo, in questo caso non serve verifica via mail
+            user = new User({
+                email,
+                username: profile.name || profile.given_name || `GoogleUser${profile.id}`,
+                googleId: profile.id,
+                verified: true,
+                createdAt: new Date()
+            });
+            await user.save();
+
+            //crea anche il ricettario personale
+            await Cookbook.create({ userId: user._id, recipes: [] });
+        }
+
+        const userId = user._id.toString();
+
+        const refreshToken = await generateRefreshToken(userId, AuthMethod.Google);
+        const accessToken = generateAccessToken(userId);
+
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -205,8 +264,20 @@ router.get("/google/callback",
             path: `/pgrc/api/v1/users/${userId}`,
             maxAge: 24 * 60 * 60 * 1000
         });
-        res.redirect('/pgrc/my-profile.html');
+
+        /*res.status(200).json({
+            message: 'Successful login',
+            userId: userId,
+            accessToken: accessToken,
+            accessTokenExpiration: 1000 * 60 * 60
+        });*/
+
+        res.redirect(`/pgrc/google-callback.html?userId=${userId}`);
+    } catch (err)
+    {
+        console.error(err);
+        res.redirect("/pgrc/login.html");
     }
-);
+});
 
 export default router;

@@ -122,8 +122,14 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
     });
 
-    continueWithGoogleButton.addEventListener('click', () =>
+    continueWithGoogleButton.addEventListener('click', async () =>
     {
-        window.location.href = '/pgrc/api/v1/auth/google';
+        const res = await fetch("/pgrc/api/v1/access-tokens", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ authProvider: "google" })
+        });
+        const data = await res.json();
+        window.location.href = data.redirectUrl;
     });
 });

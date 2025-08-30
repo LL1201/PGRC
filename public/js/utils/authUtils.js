@@ -32,7 +32,7 @@ async function refreshAccessToken()
     try
     {
         const response = await fetch(`/pgrc/api/v1/users/${userId}/access-token`, {
-            method: 'GET',
+            method: 'POST',
             credentials: 'include', //include cookies            
         });
 

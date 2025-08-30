@@ -1,7 +1,3 @@
-/* public/css/verify-account.css */
-
-/* Custom styling overrides Bootstrap defaults */
-
 .card-title {
     color: var(--primary-color);
 }
@@ -10,7 +6,6 @@
     color: var(--primary-color) !important;
 }
 
-/* Custom message styling for verification states */
 .verification-success {
     color: var(--success-color);
     font-weight: 500;
@@ -21,7 +16,6 @@
     font-weight: 500;
 }
 
-/* Ensure proper spacing for the card */
 .card {
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
