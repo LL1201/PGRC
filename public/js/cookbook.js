@@ -4,13 +4,24 @@ document.addEventListener('DOMContentLoaded', async () =>
     const prevPageBtnCookbook = document.getElementById('prev-page-cookbook');
     const nextPageBtnCookbook = document.getElementById('next-page-cookbook');
     const pageInfoSpanCookbook = document.getElementById('page-info-cookbook');
+    const shareCookbookBtn = document.getElementById('share-cookbook-btn');
+    const shareLinkInput = document.getElementById('share-cookbook-link');
+
+    let shareUrl = null;
 
     let currentPageCookbook = 1;
     const itemsPerPageCookbook = 12;
     let userId = null;
+    let otherUserCookbook = false;
+
+    function getUserIdFromUrl()
+    {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('userId');
+    }
 
     //per visualizzare le ricette nel ricettario
-    function displayCookbookRecipes(recipes)
+    function displayCookbookRecipes(recipes, cookbookData = null)
     {
         cookbookRecipesContainer.innerHTML = '';
 
@@ -19,15 +30,44 @@ document.addEventListener('DOMContentLoaded', async () =>
             const emptyCol = document.createElement('div');
             emptyCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
             emptyCol.style.minHeight = '300px';
-            emptyCol.innerHTML = `
-                <p class="text-center text-muted fs-5">
-                    Your cookbook is empty! Start adding recipes from the 
-                    <a href="recipes.html" class="fw-bold">Recipes</a> page.
-                </p>
-            `;
+            if (!otherUserCookbook)
+            {
+                emptyCol.innerHTML = `
+                    <p class="text-center text-muted fs-5">
+                        Your cookbook is empty! Start adding recipes from the
+                        <a href="recipes.html" class="fw-bold">Recipes</a> page.
+                    </p>
+                `;
+            } else
+            {
+                emptyCol.innerHTML = `
+                    <p class="text-center text-muted fs-5">
+                        This user's cookbook is empty!
+                    </p>
+                `;
+            }
             cookbookRecipesContainer.appendChild(emptyCol);
             updatePaginationControlsCookbook(0);
             return;
+        }
+
+        //aggiorna bottone e link in base allo stato attuale
+        if (cookbookData && cookbookData.publicVisible)
+        {
+            shareCookbookBtn.innerHTML = 'Unshare Cookbook';
+            shareLinkInput.value = shareUrl;
+            shareLinkInput.style.display = 'block';
+        } else
+        {
+            shareCookbookBtn.innerHTML = 'Share Cookbook';
+            shareLinkInput.value = '';
+            shareLinkInput.style.display = 'none';
+        }
+
+        if (otherUserCookbook)
+        {
+            shareCookbookBtn.style.display = 'none';
+            shareLinkInput.style.display = 'none';
         }
 
         recipes.forEach(recipe =>
@@ -40,28 +80,77 @@ document.addEventListener('DOMContentLoaded', async () =>
                     <div class="recipe-card-content">
                         <h3>${recipe.name}</h3>
                         <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                        ${recipe.privateNote ? `<p class="private-note-display">Notes: ${recipe.privateNote}</p>` : ''}
-                        <div class="cookbook-card-actions">
+                        ${recipe.privateNote ? `<p class="private-note-display">Notes: ${recipe.privateNote}</p>` : ''}                        
+                            <div class="cookbook-card-actions">
                             <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">View Details</button>
-                            <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
-                            <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Remove from cookbook</button>
-                        </div>
+                            ${otherUserCookbook ? '' : `                                
+                                <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
+                                <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Remove from cookbook</button>
+                            `}
+                            </div>                        
                     </div>
                 </div>
             `;
             cookbookRecipesContainer.appendChild(recipeCard);
         });
 
-        //event listeners
-        document.querySelectorAll('.remove-btn').forEach(button =>
+        if (!otherUserCookbook)
         {
-            button.addEventListener('click', handleRemoveFromCookbook);
-        });
+            //event listeners
+            document.querySelectorAll('.remove-btn').forEach(button =>
+            {
+                button.addEventListener('click', handleRemoveFromCookbook);
+            });
 
-        document.querySelectorAll('.edit-note-btn').forEach(button =>
-        {
-            button.addEventListener('click', handleEditNote);
-        });
+            document.querySelectorAll('.edit-note-btn').forEach(button =>
+            {
+                button.addEventListener('click', handleEditNote);
+            });
+
+            //rimuove eventuali listener precedenti per evitare duplicazioni
+            const newShareBtn = shareCookbookBtn.cloneNode(true);
+            shareCookbookBtn.parentNode.replaceChild(newShareBtn, shareCookbookBtn);
+
+            newShareBtn.addEventListener('click', async () =>
+            {
+                const wantToShare = !cookbookData.publicVisible;
+                alertMsgsUtils.showConfirmation(
+                    `Do you want to ${wantToShare ? 'share' : 'unshare'} your cookbook?`,
+                    async () =>
+                    {
+                        const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ publicVisible: wantToShare })
+                        });
+
+                        if (response.ok)
+                        {
+                            alertMsgsUtils.showSuccess('Cookbook updated successfully!');
+                            //aggiorna UI
+                            cookbookData.publicVisible = wantToShare;
+                            if (wantToShare)
+                            {
+                                newShareBtn.innerHTML = 'Unshare Cookbook';
+                                shareLinkInput.value = shareUrl;
+                                shareLinkInput.style.display = 'block';
+                            }
+                            else
+                            {
+                                newShareBtn.innerHTML = 'Share Cookbook';
+                                shareLinkInput.value = '';
+                                shareLinkInput.style.display = 'none';
+                            }
+                        }
+                    },
+                    null,
+                    wantToShare ? "Share your cookbook" : "Unshare your cookbook",
+                    undefined,
+                    "Yes",
+                    "Cancel"
+                );
+            });
+        }
 
         document.querySelectorAll('.view-details-btn').forEach(button =>
         {
@@ -71,34 +160,69 @@ document.addEventListener('DOMContentLoaded', async () =>
                 window.open('recipe-details.html?id=' + mealDbId).focus();
             });
         });
+
     }
 
     async function fetchCookbookRecipes()
     {
-        //if (!authUtils.requireAuth()) return;
+        let recipesResponse = null;
+        let cookbookDataResponse = null;
+        const cookbookDataUrl = `/pgrc/api/v1/users/${userId}/cookbook`;
 
-        userId = localStorage.getItem('userId');
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
-        const url = `/pgrc/api/v1/users/${userId}/cookbook?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
+        const recipesUrl = `/pgrc/api/v1/users/${userId}/cookbook/recipes?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
 
         try
         {
-            const response = await authUtils.authenticatedFetch(url);
-
-            if (!response) return; // Authentication failed, user redirected
-
-            if (response.ok)
+            if (!otherUserCookbook)
             {
-                const data = await response.json();
-                displayCookbookRecipes(data.recipes);
-                updatePaginationControlsCookbook(data.total);
+                recipesResponse = await authUtils.authenticatedFetch(recipesUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                cookbookDataResponse = await authUtils.authenticatedFetch(cookbookDataUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!recipesResponse || !cookbookDataResponse) return;
             } else
             {
-                const errorData = await response.json();
+                recipesResponse = await fetch(recipesUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
+            if (recipesResponse.ok)
+            {
+                const recipesData = await recipesResponse.json();
+                if (cookbookDataResponse && cookbookDataResponse.ok && !otherUserCookbook)
+                {
+                    const cookbookData = await cookbookDataResponse.json();
+                    displayCookbookRecipes(recipesData.recipes, cookbookData);
+                    updatePaginationControlsCookbook(recipesData.total);
+                } else if (otherUserCookbook)
+                {
+                    displayCookbookRecipes(recipesData.recipes);
+                    updatePaginationControlsCookbook(recipesData.total);
+                } else
+                {
+                    const errorData = await cookbookDataResponse.json();
+                    console.error('Error fetching cookbook:', errorData.message);
+                    cookbookRecipesContainer.innerHTML = `<p class="message error show">${errorData.message || 'Error during cookbook retrieval.'}</p>`;
+                    updatePaginationControlsCookbook(0);
+                }
+
+            } else
+            {
+                const errorData = await recipesResponse.json();
                 console.error('Error fetching cookbook:', errorData.message);
                 cookbookRecipesContainer.innerHTML = `<p class="message error show">${errorData.message || 'Error during cookbook retrieval.'}</p>`;
                 updatePaginationControlsCookbook(0);
             }
+
         } catch (error)
         {
             console.error('Network error fetching cookbook:', error);
@@ -136,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
                         method: 'DELETE'
                     });
 
@@ -180,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json'
@@ -231,7 +355,12 @@ document.addEventListener('DOMContentLoaded', async () =>
     //popolamento della pagina, prima cosa che succede all'apertura 
     //questa pagina richiede auth, in caso di utente non loggato
     //viene reindirizzato alla pagina di login
-    if (await authUtils.requireAuth())
-        fetchCookbookRecipes();
+    userId = getUserIdFromUrl();
+    if (!userId)
+        userId = localStorage.getItem('userId');
+    else
+        otherUserCookbook = true;
+    shareUrl = `${window.location.origin}/pgrc/cookbook.html?userId=${userId}`;
+    fetchCookbookRecipes();
 
 });

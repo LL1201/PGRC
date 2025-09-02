@@ -20,19 +20,18 @@
     </header>
 
     <main class="container-xl flex-grow-1 py-4">
-        <h1 class="text-center mb-4">My Personal Cookbook</h1>
+        <h1 class="text-center mb-4">Personal Cookbook</h1>
+
+        <div class="text-center mb-4">
+            <button id="share-cookbook-btn" class="btn btn-success">
+
+            </button>
+            <input id="share-cookbook-link" type="text" class="form-control mt-3 mx-auto" style="max-width: 580px;"
+                readonly placeholder="Your shareable link will appear here" />
+        </div>
 
         <section class="cookbook-list">
             <div id="cookbook-recipes" class="row g-3">
-                <div class="col-12">
-                    <p id="empty-cookbook-message" class="text-center text-muted fs-5 py-4" style="display: none;">
-                        Your cookbook is empty! Start adding recipes from the
-                        <a href="recipes.html" class="fw-bold">Recipes</a> page.
-                    </p>
-                    <p id="auth-required-message" class="text-center text-muted fs-5 py-4">
-                        Log in to view your cookbook.
-                    </p>
-                </div>
             </div>
 
             <div class="pagination-controls text-center mt-4">

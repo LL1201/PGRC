@@ -73,10 +73,10 @@ export async function removeRefreshToken(token)
     return true;
 }
 
-export async function verifyRefreshToken(token)
+export async function verifyRefreshToken(userId, token)
 {
     //controlla prima la presenza del token nel db e che non sia scaduto
-    const tokenDocument = await RefreshToken.findOne({ token });
+    const tokenDocument = await RefreshToken.findOne({ userId, token });
     if (!tokenDocument) return null;
 
     if (tokenDocument.expiresAt && tokenDocument.expiresAt < new Date())

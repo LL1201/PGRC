@@ -15,11 +15,38 @@ const userSchema = new mongoose.Schema({
     },
     verified: {
         type: Boolean,
-        required: true
+        default: false
     },
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    personalCookbook: {
+        type: {
+            recipes: {
+                type: [{
+                    mealDbId: {
+                        type: Number,
+                        required: true
+                    },
+                    addedAt: {
+                        type: Date,
+                        default: Date.now
+                    },
+                    privateNote: {
+                        type: String,
+                        default: ''
+                    }
+                }]
+            },
+            publicVisible: {
+                type: Boolean
+            }
+        },
+        default: {
+            recipes: [],
+            publicVisible: false
+        }
     },
     verificationData: {
         token: {

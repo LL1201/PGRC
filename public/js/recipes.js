@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () =>
         if (!authUtils.requireAuth()) return;
 
         const userId = localStorage.getItem('userId');
-        const url = `/pgrc/api/v1/users/${userId}/cookbook`;
+        const url = `/pgrc/api/v1/users/${userId}/cookbook/recipes`;
 
         const response = await authUtils.authenticatedFetch(url, {
             method: 'POST',

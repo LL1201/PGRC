@@ -1,16 +1,22 @@
 //node & express
 import express from "express";
 
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 //database
 import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 
 //middlewares
-import { authenticateUser } from '../middlewares/authMiddleware.js';
+import { authenticateUser, authenticateUserOptionally } from '../middlewares/authMiddleware.js';
 
-import Cookbook from '../models/Cookbook.js';
+import User from '../models/User.js';
 import Recipe from '../models/Recipe.js';
 
-const router = express.Router({ mergeParams: true }); //per ottenere anche il parametro dell'URL "userId"
+const BASE_URL = process.env.BASE_URL;
+
+const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -59,7 +65,7 @@ const router = express.Router({ mergeParams: true }); //per ottenere anche il pa
  *       500:
  *         description: Internal server error
  */
-router.post('/', authenticateUser, async (req, res) =>
+router.post('/recipes', authenticateUser, async (req, res) =>
 {
     const { mealDbId, privateNote } = req.body;
     const userObjectId = req.userObjectId;
@@ -73,42 +79,37 @@ router.post('/', authenticateUser, async (req, res) =>
 
     try
     {
-        //verifica se l'id è valido e appartenente agli id di TheMealDB        
+        //verifica se l'id è valido e appartenente agli id di TheMealDB   
         const existingMealDbRecipe = await Recipe.findOne({ mealDbId: mealDbId });
 
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist in the MealDB database.' });
 
-        //trova il ricettario personale dell'utente specificato (già creato in fase di registrazione)
-        let personalCookbook = await Cookbook.findOne({ userId: reqUserObjectId });
-
-        //verifica se il ricettario esiste
-        if (!personalCookbook)
-            return res.status(404).json({ message: 'Personal cookbook not found.' });
-
         //verifica se la ricetta è già presente nel ricettario
-        const recipeExists = personalCookbook.recipes.some(r => r.mealDbId === mealDbId);
-        if (recipeExists)
+        const user = await User.findOne({
+            _id: reqUserObjectId,
+            'personalCookbook.recipes.mealDbId': mealDbId
+        });
+
+        if (user)
             return res.status(409).json({ message: 'Recipe already exists in your personal cookbook.' });
 
-        const newRecipeDocument = {
+        const newRecipe = {
             mealDbId: mealDbId
         };
 
-        //verifica se la nota è stata specificata
         if (privateNote)
-            newRecipeDocument.privateNote = privateNote;
+            newRecipe.privateNote = privateNote;
 
-        //fa l'update del ricettario aggiungendo la ricetta
-        const updateResult = await Cookbook.updateOne(
-            { userId: reqUserObjectId },
-            { $push: { recipes: newRecipeDocument } }
+        const updateResult = await User.updateOne(
+            { _id: userObjectId },
+            { $push: { 'personalCookbook.recipes': newRecipe } }
         );
 
         if (updateResult.modifiedCount === 0)
             return res.status(500).json({ message: 'Failed to add recipe to cookbook.' });
 
-        res.status(201).json({ message: 'Recipe added to personal cookbook successfully.', cookBookRecipeId: newRecipeDocument._id });
+        res.status(201).json({ message: 'Recipe added to personal cookbook successfully.' });
 
     } catch (error)
     {
@@ -159,27 +160,23 @@ router.post('/', authenticateUser, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.get('/', authenticateUser, async (req, res) =>
+router.get('/recipes', authenticateUserOptionally, async (req, res) =>
 {
-    const userObjectId = req.userObjectId;
+    let userObjectId = null;
     const reqUserObjectId = req.reqUserObjectId;
 
-    // Extract pagination parameters from query and make them required
+    if (req.userObjectId)
+        userObjectId = req.userObjectId;
+
     const start = parseInt(req.query.start);
     const offset = parseInt(req.query.offset);
 
-    // Check if parameters are provided
     if (req.query.start === undefined || req.query.offset === undefined)
         return res.status(400).json({ message: 'Both start and offset parameters are required.' });
 
-    // Check if parameters are valid numbers
     if (isNaN(start) || isNaN(offset))
         return res.status(400).json({ message: 'Start and offset parameters must be valid numbers.' });
 
-    if (!userObjectId.equals(reqUserObjectId))
-        return res.status(403).json({ message: 'You can only view your own cookbook.' });
-
-    // Validate pagination parameters
     if (start < 0)
         return res.status(400).json({ message: 'Start parameter must be >= 0.' });
 
@@ -239,17 +236,30 @@ router.get('/', authenticateUser, async (req, res) =>
             };
         });*/
 
-        const result = await Cookbook.aggregate([
+        const grantedAccess = await User.findOne({ _id: reqUserObjectId, 'personalCookbook.publicVisible': true });
+
+        if (!grantedAccess && (!userObjectId || !userObjectId.equals(reqUserObjectId)))
+            return res.status(403).json({ message: 'Access denied.' });
+
+        const result = await User.aggregate([
             {
-                $match: { userId: reqUserObjectId }
+                $match: {
+                    _id: reqUserObjectId,
+                    $or: [
+                        //condizione 1: l'utente che fa la richiesta è il proprietario del ricettario
+                        { _id: userObjectId },
+                        //condizione 2: il ricettario è pubblico
+                        { 'personalCookbook.publicVisible': true }
+                    ]
+                }
             },
             {
-                $unwind: "$recipes"
+                $unwind: "$personalCookbook.recipes"
             },
             {
                 $lookup: {
                     from: "mealdbRecipes",
-                    localField: "recipes.mealDbId",
+                    localField: "personalCookbook.recipes.mealDbId",
                     foreignField: "mealDbId",
                     as: "recipeDetails"
                 }
@@ -265,13 +275,13 @@ router.get('/', authenticateUser, async (req, res) =>
                         {
                             $project: {
                                 _id: 0,
-                                cookBookRecipeId: "$recipes._id",
+                                cookBookRecipeId: "$personalCookbook.recipes._id",
                                 name: "$recipeDetails.name",
                                 category: "$recipeDetails.category",
                                 mealThumb: "$recipeDetails.mealThumb",
                                 mealDbId: "$recipeDetails.mealDbId",
                                 area: "$recipeDetails.area",
-                                privateNote: "$recipes.privateNote"
+                                privateNote: "$personalCookbook.recipes.privateNote"
                             }
                         }
                     ],
@@ -343,7 +353,7 @@ router.get('/', authenticateUser, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
+router.delete('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
@@ -367,9 +377,9 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
 
     try
     {
-        const updateResult = await Cookbook.updateOne(
-            { userId: reqUserObjectId },
-            { $pull: { recipes: { _id: objectCookbookRecipeId } } }
+        const updateResult = await User.updateOne(
+            { _id: reqUserObjectId },
+            { $pull: { 'personalCookbook.recipes': { _id: objectCookbookRecipeId } } }
         );
 
 
@@ -432,7 +442,7 @@ router.delete('/:cookbookRecipeId', authenticateUser, async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
+router.patch('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =>
 {
     //privateNote sarà non presente o una stringa vuota per rimuovere la nota dalla ricetta
     const { privateNote } = req.body;
@@ -463,21 +473,20 @@ router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
         if (privateNote.trim() !== '')
         {
             //se la nota è specificata viene impostata
-            updateQuery = { $set: { "recipes.$.privateNote": privateNote } };
+            updateQuery = { $set: { "personalCookbook.recipes.$.privateNote": privateNote } };
         } else
         {
             //se la nota è stringa vuota viene rimosso il campo
-            updateQuery = { $unset: { "recipes.$.privateNote": "" } };
+            updateQuery = { $unset: { "personalCookbook.recipes.$.privateNote": "" } };
         }
-
         //sintassi:
         //db.collection.updateOne(
         //    <filter>,
         //    <update>,
-        const updateResult = await Cookbook.updateOne(
+        const updateResult = await User.updateOne(
             {
-                userId: reqUserObjectId,
-                "recipes._id": objectCookbookRecipeId
+                _id: reqUserObjectId,
+                "personalCookbook.recipes._id": objectCookbookRecipeId
             },
             updateQuery
         );
@@ -507,4 +516,77 @@ router.patch('/:cookbookRecipeId', authenticateUser, async (req, res) =>
     }
 });
 
+router.patch('/', authenticateUser, async (req, res) =>
+{
+    //privateNote sarà non presente o una stringa vuota per rimuovere la nota dalla ricetta
+    const { publicVisible } = req.body;
+    const userObjectId = req.userObjectId;
+    const reqUserObjectId = req.reqUserObjectId;
+
+    if (!userObjectId.equals(reqUserObjectId))
+        return res.status(403).json({ message: 'You can only edit notes of your own cookbook.' });
+
+    //non potevo fare !publicVisible perché se passo publicVisible a false questo controllo scatta
+    if (typeof publicVisible === 'undefined')
+        return res.status(400).json({ message: 'publicVisible attribute is required.' });
+
+    if (typeof publicVisible !== 'boolean')
+    {
+        console.error(`publicVisible is not a valid boolean: ${publicVisible}`);
+        return res.status(400).json({ message: 'Invalid publicVisible value.' });
+    }
+
+    try
+    {
+        const updateQuery = { $set: { "personalCookbook.publicVisible": publicVisible } };
+
+        const updateResult = await User.updateOne(
+            {
+                _id: reqUserObjectId
+            },
+            updateQuery
+        );
+
+        if (updateResult.modifiedCount === 0)
+            return res.status(500).json({ message: 'Failed to update cookbook.' });
+
+        res.status(200).json({ message: 'Cookbook updated successfully.' });
+
+    } catch (error)
+    {
+        console.error('Error updating cookbook:', error);
+        res.status(500).json({ message: 'An internal server error occurred while updating the cookbook.' });
+    }
+});
+
+router.get('/', authenticateUser, async (req, res) =>
+{
+    const userObjectId = req.userObjectId;
+    const reqUserObjectId = req.reqUserObjectId;
+
+    if (!userObjectId.equals(reqUserObjectId))
+        return res.status(403).json({ message: 'You can only view your own cookbook.' });
+
+    try
+    {
+        const userCookbook = await User.findOne({ _id: reqUserObjectId }).select({ "personalCookbook.publicVisible": 1 });
+
+        if (!userCookbook)
+            return res.status(403).json({ message: 'Cookbook not found' });
+
+        res.status(200).json({
+            publicVisible: userCookbook.personalCookbook.publicVisible,
+            recipes: `${BASE_URL}/pgrc/api/v1/users/${reqUserObjectId}/recipes`
+        });
+
+    } catch (error)
+    {
+        console.error('Error retrieving personal cookbook:', error);
+        res.status(500).json({ message: 'An internal server error occurred while retrieving the cookbook.' });
+    }
+});
+
 export default router;
+
+
+//TODO vedere output di login accesstoken exp

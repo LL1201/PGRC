@@ -82,6 +82,7 @@ async function authenticatedFetch(url, options = {})
 
     try
     {
+        console.log('Making authenticated fetch request to:', authOptions);
         let response = await fetch(url, authOptions);
 
         //se la richiesta precedente non va a buon fine per errori di autenticazione

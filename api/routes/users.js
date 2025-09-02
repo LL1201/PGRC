@@ -13,7 +13,6 @@ import { AuthMethod, verifyRefreshToken, generateAccessToken, removeRefreshToken
 import User from '../models/User.js';
 import RefreshToken from "../models/RefreshToken.js";
 import Review from "../models/Review.js";
-import Cookbook from "../models/Cookbook.js";
 
 //middlewares
 import { authenticateUser, authenticateUserOptionally } from '../middlewares/authMiddleware.js';
@@ -88,7 +87,6 @@ router.post("/", async (req, res) =>
         email: user.email,
         username: user.username,
         hashedPassword: pswHash,
-        verified: false,
         verificationData: {
             token: emailVerificationToken,
             expiration: emailVerificationTokenExpiration
@@ -241,7 +239,6 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
 
             //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
             await RefreshToken.deleteMany({ userId: reqUserObjectId });
-            await Cookbook.deleteOne({ userId: reqUserObjectId });
             await Review.deleteMany({ authorUserId: reqUserObjectId });
             const deleteUserResult = await User.deleteOne({ _id: reqUserObjectId });
 
@@ -467,27 +464,13 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
             return res.status(404).json({ message: 'Invalid, expired, or already used verification token.' });
 
 
-        if (await updateUser(reqUserObjectId, { verified: true },
+        if (await updateUser(reqUserObjectId,
+            { verified: true },
             {
                 'verificationData.token': '',
                 'verificationData.expiration': ''
             }))
         {
-            //creazione del ricettario personale
-            const newCookbook = new Cookbook({ userId: user._id });
-            try
-            {
-                await newCookbook.save();
-            } catch (error)
-            {
-                console.error(`Failed to create personal cookbook for user ${user._id} after verification.`, error);
-                return res.status(500).json({ message: 'Account verified, but failed to create personal cookbook. Please contact support.' });
-            }
-
-            console.log(`New personal cookbook created for user ${user._id}.`);
-
-            //risposta di conferma positiva
-            console.log(`User ${user.email} verified successfully.`);
             return res.status(200).json({ status: 'OK', message: 'Account verified successfully! You can now log in.' });
         }
 
@@ -598,11 +581,12 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 router.delete("/:userId/access-token", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
+    const reqUserId = req.params.userId;
 
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
 
-    if (!await verifyRefreshToken(refreshToken))
+    if (!await verifyRefreshToken(reqUserId, refreshToken))
         return res.status(401).json({ message: 'Invalid refresh token.' });
 
     try
@@ -667,13 +651,14 @@ router.delete("/:userId/access-token", async (req, res) =>
 router.post("/:userId/access-token", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
+    const reqUserId = req.params.userId;
 
     if (!refreshToken)
         return res.status(400).json({ message: 'Refresh token is required.' });
 
     try
     {
-        const tokenData = await verifyRefreshToken(refreshToken);
+        const tokenData = await verifyRefreshToken(reqUserId, refreshToken);
         if (!tokenData)
             return res.status(401).json({ message: 'Invalid refresh token.' });
 

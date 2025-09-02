@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const BASE_URL = process.env.BASE_URL;
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
@@ -24,7 +24,7 @@ export async function sendConfirmationMail(mailTo, token, userId)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma il tuo account',
-        text: `Ciao, \n\nper confermare la tua registrazione a PGRC visita il seguente link: ${FRONTEND_URL}/verify-account.html?confirmationToken=${token}&userId=${userId}`
+        text: `Ciao, \n\nper confermare la tua registrazione a PGRC visita il seguente link: ${BASE_URL + "/pgrc"}/verify-account.html?confirmationToken=${token}&userId=${userId}`
     };
 
     try
@@ -43,7 +43,7 @@ export function sendPasswordResetMail(mailTo, token, userId)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Reimposta la tua password',
-        text: `Ciao, \n\nper reimpostare la tua password di Party Join visita il seguente link: ${FRONTEND_URL}/password-reset.html?resetToken=${token}&userId=${userId}`
+        text: `Ciao, \n\nper reimpostare la tua password di Party Join visita il seguente link: ${BASE_URL + "/pgrc"}/password-reset.html?resetToken=${token}&userId=${userId}`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
@@ -64,7 +64,7 @@ export function sendAccountDeletionEmail(mailTo, token, userId)
         from: SMTP_USER,
         to: mailTo,
         subject: 'Conferma di cancellazione account',
-        text: `Ciao, \n\nper confermare la cancellazione del tuo account PGRC visita il seguente link: ${FRONTEND_URL}/account-deletion.html?deleteToken=${token}&userId=${userId}`
+        text: `Ciao, \n\nper confermare la cancellazione del tuo account PGRC visita il seguente link: ${BASE_URL + "/pgrc"}/account-deletion.html?deleteToken=${token}&userId=${userId}`
     };
 
     transporter.sendMail(mailOptions, function (error, info)
