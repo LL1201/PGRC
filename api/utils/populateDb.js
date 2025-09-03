@@ -3,9 +3,6 @@ import Recipe from '../models/Recipe.js';
 
 async function populateTheMealDbRecipes()
 {
-    //const db = getDb();
-    //const recipesCollection = db.collection('mealdbRecipes');
-
     //controlla se la collezione è già popolata
     const count = await Recipe.countDocuments();
     if (count > 0)

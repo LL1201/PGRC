@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     const prevPageBtnCookbook = document.getElementById('prev-page-cookbook');
     const nextPageBtnCookbook = document.getElementById('next-page-cookbook');
     const pageInfoSpanCookbook = document.getElementById('page-info-cookbook');
-    const shareCookbookBtn = document.getElementById('share-cookbook-btn');
+    let shareCookbookBtn = null;
     const shareLinkInput = document.getElementById('share-cookbook-link');
 
     let shareUrl = null;
@@ -24,32 +24,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     function displayCookbookRecipes(recipes, cookbookData = null)
     {
         cookbookRecipesContainer.innerHTML = '';
-
-        if (!recipes || recipes.length === 0)
-        {
-            const emptyCol = document.createElement('div');
-            emptyCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
-            emptyCol.style.minHeight = '300px';
-            if (!otherUserCookbook)
-            {
-                emptyCol.innerHTML = `
-                    <p class="text-center text-muted fs-5">
-                        Your cookbook is empty! Start adding recipes from the
-                        <a href="recipes.html" class="fw-bold">Recipes</a> page.
-                    </p>
-                `;
-            } else
-            {
-                emptyCol.innerHTML = `
-                    <p class="text-center text-muted fs-5">
-                        This user's cookbook is empty!
-                    </p>
-                `;
-            }
-            cookbookRecipesContainer.appendChild(emptyCol);
-            updatePaginationControlsCookbook(0);
-            return;
-        }
+        shareCookbookBtn = document.getElementById('share-cookbook-btn');
 
         //aggiorna bottone e link in base allo stato attuale
         if (cookbookData && cookbookData.publicVisible)
@@ -68,45 +43,8 @@ document.addEventListener('DOMContentLoaded', async () =>
         {
             shareCookbookBtn.style.display = 'none';
             shareLinkInput.style.display = 'none';
-        }
-
-        recipes.forEach(recipe =>
+        } else
         {
-            const recipeCard = document.createElement('div');
-            recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3');
-            recipeCard.innerHTML = `
-                <div class="recipe-card h-100">
-                    <img src="${recipe.mealThumb}" alt="${recipe.name}" class="card-img-top">
-                    <div class="recipe-card-content">
-                        <h3>${recipe.name}</h3>
-                        <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
-                        ${recipe.privateNote ? `<p class="private-note-display">Notes: ${recipe.privateNote}</p>` : ''}                        
-                            <div class="cookbook-card-actions">
-                            <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">View Details</button>
-                            ${otherUserCookbook ? '' : `                                
-                                <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
-                                <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Remove from cookbook</button>
-                            `}
-                            </div>                        
-                    </div>
-                </div>
-            `;
-            cookbookRecipesContainer.appendChild(recipeCard);
-        });
-
-        if (!otherUserCookbook)
-        {
-            //event listeners
-            document.querySelectorAll('.remove-btn').forEach(button =>
-            {
-                button.addEventListener('click', handleRemoveFromCookbook);
-            });
-
-            document.querySelectorAll('.edit-note-btn').forEach(button =>
-            {
-                button.addEventListener('click', handleEditNote);
-            });
-
             //rimuove eventuali listener precedenti per evitare duplicazioni
             const newShareBtn = shareCookbookBtn.cloneNode(true);
             shareCookbookBtn.parentNode.replaceChild(newShareBtn, shareCookbookBtn);
@@ -149,6 +87,70 @@ document.addEventListener('DOMContentLoaded', async () =>
                     "Yes",
                     "Cancel"
                 );
+            });
+        }
+
+        if (!recipes || recipes.length === 0)
+        {
+            const emptyCol = document.createElement('div');
+            emptyCol.classList.add('col-12', 'd-flex', 'align-items-center', 'justify-content-center');
+            emptyCol.style.minHeight = '300px';
+            if (!otherUserCookbook)
+            {
+                emptyCol.innerHTML = `
+                    <p class="text-center text-muted fs-5">
+                        Your cookbook is empty! Start adding recipes from the
+                        <a href="recipes.html" class="fw-bold">Recipes</a> page.
+                    </p>
+                `;
+            } else
+            {
+                emptyCol.innerHTML = `
+                    <p class="text-center text-muted fs-5">
+                        This user's cookbook is empty!
+                    </p>
+                `;
+            }
+            cookbookRecipesContainer.appendChild(emptyCol);
+            updatePaginationControlsCookbook(0);
+            return;
+        }
+
+        recipes.forEach(recipe =>
+        {
+            const recipeCard = document.createElement('div');
+            recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3');
+            recipeCard.innerHTML = `
+                <div class="recipe-card h-100">
+                    <img src="${recipe.mealThumb}" alt="${recipe.name}" class="card-img-top">
+                    <div class="recipe-card-content">
+                        <h3>${recipe.name}</h3>
+                        <p>${recipe.category || 'N/A'} | ${recipe.area || 'N/A'}</p>
+                        ${recipe.privateNote ? `<p class="private-note-display">Notes: ${recipe.privateNote}</p>` : ''}                        
+                            <div class="cookbook-card-actions">
+                            <button class="btn primary-btn view-details-btn w-100" data-mealid="${recipe.mealDbId}">View Details</button>
+                            ${otherUserCookbook ? '' : `                                
+                                <button class="btn edit-note-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}" data-privatenote="${recipe.privateNote || ''}">Edit Note</button>
+                                <button class="btn remove-btn w-100" data-cookbookrecipeid="${recipe.cookBookRecipeId}" data-mealid="${recipe.mealDbId}">Remove from cookbook</button>
+                            `}
+                            </div>                        
+                    </div>
+                </div>
+            `;
+            cookbookRecipesContainer.appendChild(recipeCard);
+        });
+
+        if (!otherUserCookbook)
+        {
+            //event listeners
+            document.querySelectorAll('.remove-btn').forEach(button =>
+            {
+                button.addEventListener('click', handleRemoveFromCookbook);
+            });
+
+            document.querySelectorAll('.edit-note-btn').forEach(button =>
+            {
+                button.addEventListener('click', handleEditNote);
             });
         }
 

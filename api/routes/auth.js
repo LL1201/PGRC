@@ -98,6 +98,11 @@ router.post("/access-tokens", async (req, res) =>
     {
         const loginResult = await User.findOne({ email: loginData.email, verified: true });
 
+        if (!loginResult.hashedPassword && loginResult.googleId)
+        {
+            return res.status(400).json({ message: 'Invalid authentication method.' });
+        }
+
         if (!loginResult || !await bcrypt.compare(loginData.password, loginResult.hashedPassword))
             return res.status(401).json({ message: 'Invalid email or password or you did not confirmed your account' });
 
@@ -246,9 +251,6 @@ router.get("/auth/google/callback", async (req, res) =>
                 createdAt: new Date()
             });
             await user.save();
-
-            //crea anche il ricettario personale
-            await Cookbook.create({ userId: user._id, recipes: [] });
         }
 
         const userId = user._id.toString();
