@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import RefreshToken from '../models/RefreshToken.js';
+import { createObjectId } from '../utils/objectId.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.JWT_ACCESS_TOKEN_EXPIRATION;
@@ -76,8 +77,11 @@ export async function removeRefreshToken(token)
 export async function verifyRefreshToken(userId, token)
 {
     //controlla prima la presenza del token nel db e che non sia scaduto
-    const tokenDocument = await RefreshToken.findOne({ userId, token });
+    const tokenDocument = await RefreshToken.findOne({ userId: createObjectId(userId), token });
     if (!tokenDocument) return null;
+
+    console.log(tokenDocument.expiresAt);
+    console.log(new Date());
 
     if (tokenDocument.expiresAt && tokenDocument.expiresAt < new Date())
         return null;

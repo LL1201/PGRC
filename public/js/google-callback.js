@@ -23,4 +23,6 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     if (await authUtils.isAuthenticated())
         window.location.href = 'my-profile.html';
+    else
+        window.location.href = 'login.html';
 });

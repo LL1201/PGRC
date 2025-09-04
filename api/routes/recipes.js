@@ -44,7 +44,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/search', async (req, res) =>
+router.get('', async (req, res) =>
 {
     //q contiene la query nel caso di ricerca
     //letter contiene una singola lettera nel caso voglia ottenere un elenco delle ricette che iniziano per A
@@ -88,7 +88,7 @@ router.get('/search', async (req, res) =>
         } else if (letter)
         {
             //ricerca per lettera iniziale del nome del piatto            
-            const letterRegex = new RegExp(`^${letter}`, 'i');
+            const letterRegex = new RegExp(`^${letter.charAt(0)}`, 'i');
             query.name = { $regex: letterRegex };
         } else
         {

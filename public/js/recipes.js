@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         //in pratica il range è [start, end)
         const startIndex = (currentPage - 1) * itemsPerPage;
-        let url = `/pgrc/api/v1/recipes/search?start=${startIndex}&offset=${startIndex + itemsPerPage}`;
+        let url = `/pgrc/api/v1/recipes?start=${startIndex}&offset=${startIndex + itemsPerPage}`;
 
         if (currentQuery.q)
             url += `&q=${encodeURIComponent(currentQuery.q)}`;

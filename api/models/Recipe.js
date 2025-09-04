@@ -59,6 +59,13 @@ const recipeSchema = new mongoose.Schema({
     }
 });
 
+recipeSchema.index({
+    name: "text",
+    "ingredients.ingredientName": "text"
+});
+
+recipeSchema.index({ mealDbId: 1 }, { unique: true });
+
 const Recipe = mongoose.model("Recipe", recipeSchema, "mealdbRecipes");
 
 export default Recipe;

@@ -265,6 +265,9 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
                 }
             },
             {
+                $sort: { "personalCookbook.recipes.addedAt": -1 }
+            },
+            {
                 $unwind: "$recipeDetails"
             },
             {
@@ -281,7 +284,7 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
                                 mealThumb: "$recipeDetails.mealThumb",
                                 mealDbId: "$recipeDetails.mealDbId",
                                 area: "$recipeDetails.area",
-                                privateNote: "$personalCookbook.recipes.privateNote"
+                                privateNote: !grantedAccess ? "$personalCookbook.recipes.privateNote" : ""
                             }
                         }
                     ],
@@ -297,14 +300,14 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
         //devo far così perché il risultato è nel formato 
         //[ { pagination: [ [Object], [Object] ], total: [ [Object] ] } ]
         //quindi un array, che in questo caso ha un solo elemento ([0])
-        const recipesWithNotes = result[0].pagination;
+        const recipes = result[0].pagination;
 
         //formato di total: [ { count: 12 } ]
         //se il count è 0, total è un array vuoto, quindi devo controllare prima di assegnarlo
         const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
 
         res.status(200).json({
-            recipes: recipesWithNotes,
+            recipes: recipes,
             total: total
         });
 

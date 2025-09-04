@@ -73,7 +73,7 @@ router.post("/access-tokens", async (req, res) =>
     const loginData = req.body;
 
     if (!loginData)
-        return res.status(400).json({ message: 'Email and password are required' });
+        return res.status(400).json({ message: 'Login data is required' });
     else if (loginData.authProvider && loginData.authProvider === AuthMethod.Google)
     {
         const url = oauth2Client.generateAuthUrl({
@@ -104,7 +104,8 @@ router.post("/access-tokens", async (req, res) =>
         }
 
         if (!loginResult || !await bcrypt.compare(loginData.password, loginResult.hashedPassword))
-            return res.status(401).json({ message: 'Invalid email or password or you did not confirmed your account' });
+            return res.status(401).
+                set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Invalid email or password or you did not confirmed your account' });
 
         const accessToken = generateAccessToken(loginResult._id);
         const refreshToken = await generateRefreshToken(loginResult._id);
@@ -207,11 +208,6 @@ router.post("/password-lost-tokens", async (req, res) =>
     }
 });
 
-/*router.get("/auth/google", passport.authenticate("google", {
-    scope: ["https://www.googleapis.com/auth/plus.login", "email"],
-}));*/
-
-
 router.get("/auth/google/callback", async (req, res) =>
 {
     const { code, state } = req.query;
@@ -256,7 +252,6 @@ router.get("/auth/google/callback", async (req, res) =>
         const userId = user._id.toString();
 
         const refreshToken = await generateRefreshToken(userId, AuthMethod.Google);
-        const accessToken = generateAccessToken(userId);
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
@@ -265,13 +260,6 @@ router.get("/auth/google/callback", async (req, res) =>
             path: `/pgrc/api/v1/users/${userId}`,
             maxAge: 24 * 60 * 60 * 1000
         });
-
-        /*res.status(200).json({
-            message: 'Successful login',
-            userId: userId,
-            accessToken: accessToken,
-            accessTokenExpiration: 1000 * 60 * 60
-        });*/
 
         res.redirect(`/pgrc/google-callback.html?userId=${userId}`);
     } catch (err)

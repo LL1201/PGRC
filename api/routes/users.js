@@ -3,8 +3,6 @@ import express from "express";
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-//database
-
 //utils
 import emailValidator from "email-validator";
 import { sendConfirmationMail, sendAccountDeletionEmail, sendAccountDeletionConfirmationEmail } from '../utils/mailUtils.js';
@@ -82,7 +80,7 @@ router.post("/", async (req, res) =>
     //scadenza tra 30 minuti (ottiene il timestamp corrente in millisecondi e somma 30 minuti convertito in millisecondi)
     const emailVerificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
 
-    //TODO - piatti preferiti
+    //TODO - miglioramento futuro piatti preferiti
     const newUserDocument = {
         email: user.email,
         username: user.username,
@@ -195,7 +193,8 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
                     return res.status(400).json({ message: 'Password is required for email-authenticated users.' });
 
                 if (!await bcrypt.compare(password, user.hashedPassword))
-                    return res.status(401).json({ message: 'Invalid password.' });
+                    return res.status(401).
+                        set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Invalid password.' });
             }
 
             //genera un token
@@ -234,7 +233,8 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
                     { _id: user._id },
                     { $unset: { deleteAccountData: "" } }
                 );
-                return res.status(401).json({ message: 'Invalid or expired delete token. Please restart the deletion process.' });
+                return res.status(401).
+                    set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Invalid or expired delete token. Please restart the deletion process.' });
             }
 
             //elimina tutti i refreshToken associati all'utente, il suo cookbook e le sue review   
@@ -308,16 +308,17 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
  */
 router.get('/:userId', authenticateUser, async (req, res) =>
 {
+    //TODO HATEOS cookbook
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
+
+    if (!reqUserObjectId)
+        return res.status(400).json({ message: 'User ID is required.' });
 
     //solo l'utente può vedere le proprie info
     //TODO - miglioramento futuro, permettere ad altri utenti di interagire con altri
     if (!userObjectId.equals(reqUserObjectId))
         return res.status(403).json({ message: 'You can only view your own profile.' });
-
-    if (!reqUserObjectId)
-        return res.status(400).json({ message: 'User ID is required.' });
 
     try
     {
@@ -400,7 +401,8 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 
     if (username || email)
         if (!req.userObjectId)
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+            return res.status(401).
+                set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Unauthorized. Please log in.' });
 
     if (confirmed && !confirmationToken)
         return res.status(400).json({ message: 'Confirmation token and confirmation value are both required when confirming account.' });
@@ -410,7 +412,8 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 
     if (username || email)
         if (!req.userObjectId)
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+            return res.status(401).
+                set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Unauthorized. Please log in.' });
         else
             if (!req.userObjectId.equals(reqUserObjectId))
                 return res.status(403).json({ message: 'You can only edit your own account.' });
@@ -587,7 +590,10 @@ router.delete("/:userId/access-token", async (req, res) =>
         return res.status(400).json({ message: 'Refresh token is required.' });
 
     if (!await verifyRefreshToken(reqUserId, refreshToken))
-        return res.status(401).json({ message: 'Invalid refresh token.' });
+        return res
+            .status(401)
+            .set('WWW-Authenticate', 'Bearer realm="Access to the protected API"')
+            .json({ message: 'Invalid refresh token.' });
 
     try
     {

@@ -170,10 +170,21 @@ async function requireAuth()
 async function logout()
 {
     const userId = localStorage.getItem('userId');
+
+    if (!userId)
+    {
+        window.location.href = 'login.html';
+        return null;
+    }
+
     try
     {
         await fetch(`/pgrc/api/v1/users/${userId}/access-token`, {
             method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
             credentials: 'include' //per includere il cookie che contiene il refresh token
         });
     } catch (error)

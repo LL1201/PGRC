@@ -28,13 +28,17 @@ export async function authenticateUser(req, res, next, authIsOptional = false)
     //se l'auth è obbligatoria e il token è null restituisce errore
     //se l'auth è opzionale e il token è null va avanti
     if (!authIsOptional && !token)
-        return res.status(401).json({ message: 'Access token required.' });
+        return res
+            .status(401)
+            .set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Access token required.' });
     else if (!token && authIsOptional)
         return next();
 
     const decoded = await verifyToken(token);
     if (!decoded)
-        return res.status(401).json({ message: 'Invalid or expired access token.' });
+        return res.status(401).
+            set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').
+            set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Invalid or expired access token.' });
 
     //req.userId contiene l'id dell'utente associato al JWT passato
     //req.userObjectId contiene l'id associato al JWT in formato ObjectId
