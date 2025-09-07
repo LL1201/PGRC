@@ -12,12 +12,11 @@ header {
     align-items: center;
     font-size: 1.8rem;
     font-weight: bold;
-    color: var(--white-color) !important;
-    text-decoration: none;
+    color: var(--white-color);
 }
 
 .navbar-brand:hover {
-    color: var(--white-color) !important;
+    color: var(--white-color);
     text-decoration: none;
 }
 
@@ -61,31 +60,6 @@ header {
     display: none;
 }
 
-/* Dropdown menu styles
-.dropdown-menu {
-    background-color: var(--white-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0.375rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.dropdown-item {
-    color: var(--dark-color);
-    padding: 8px 16px;
-    transition: background-color 0.3s ease;
-}
-
-.dropdown-item:hover {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-}
-
-.dropdown-divider {
-    border-top: 1px solid var(--border-color);
-    margin: 4px 0;
-}*/
-
-/* Responsive sizing */
 @media (max-width: 991.98px) {
     .logo-img {
         width: 60px;

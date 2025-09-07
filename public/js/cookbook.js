@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     function getUserIdFromUrl()
     {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('userId');
+        return urlParams.get('user-id');
     }
 
     //per visualizzare le ricette nel ricettario
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         recipes.forEach(recipe =>
         {
             const recipeCard = document.createElement('div');
-            recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3');
+            recipeCard.classList.add('col-lg-3', 'col-md-4', 'col-sm-6', 'mb-3', 'col-xs-12');
             recipeCard.innerHTML = `
                 <div class="recipe-card h-100">
                     <img src="${recipe.mealThumb}" alt="${recipe.name}" class="card-img-top">
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     //viene reindirizzato alla pagina di login
     userId = getUserIdFromUrl();
     if (!userId)
-        userId = localStorage.getItem('userId');
+        userId = sessionStorage.getItem('userId');
     else
         otherUserCookbook = true;
     shareUrl = `${window.location.origin}/pgrc/cookbook.html?userId=${userId}`;

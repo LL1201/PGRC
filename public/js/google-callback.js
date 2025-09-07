@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('userId');
+    const userId = urlParams.get('user-id');
 
     //TODO - veder se si possono usare gli alert dell'utility
     const verificationMessage = document.getElementById('verification-message');
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         return;
     }
 
-    localStorage.setItem('userId', userId);
+    sessionStorage.setItem('userId', userId);
 
     if (await authUtils.isAuthenticated())
         window.location.href = 'my-profile.html';

@@ -4,7 +4,6 @@
     font-weight: bold;
     text-align: center;
     position: fixed;
-    /* Cambiato da fixed a absolute */
     top: 12%;
     right: 1%;
     min-width: 300px;

@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () =>
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                myUserId = localStorage.getItem('userId');
+                myUserId = sessionStorage.getItem('userId');
             } else
             {
                 response = await fetch(url, {

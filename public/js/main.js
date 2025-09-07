@@ -13,6 +13,20 @@ document.addEventListener('DOMContentLoaded', async () =>
     cookbookNavItem.querySelector('a').setAttribute('href', 'cookbook.html');
     authLink.querySelector('a').setAttribute('href', 'login.html');
 
+    if ('serviceWorker' in navigator)
+    {
+        window.addEventListener('load', function ()
+        {
+            navigator.serviceWorker.register('serviceWorker.js', { scope: '/' }).then(function (registration)
+            {
+                console.log('ServiceWorker registration succesful!')
+            }, function (err)
+            {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+
     try
     {
         const isAuth = await authUtils.isAuthenticated();
@@ -41,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     async function handleLogout(event)
     {
         event.preventDefault();
+        //TODO errori
         await authUtils.logout();
     }
 });

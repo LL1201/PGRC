@@ -46,7 +46,7 @@ const swaggerOptions = {
 };
 
 const corsOptions = {
-    origin: ['https:/www.lloner.it'],
+    origin: ['https://www.lloner.it'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     // maxAge: 86400, // Cache the preflight response for 24 hours
@@ -61,12 +61,15 @@ const port = 3003;
 app.use(express.json());
 app.use(cookieParser());
 
-//middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
-app.use(htmlProcessor);
-app.use(cors(corsOptions));
+app.disable('x-powered-by');
 
 //enable CORS for preflight requests
 app.options('/', cors(corsOptions));
+app.use(cors(corsOptions));
+
+//middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
+app.use(htmlProcessor);
+
 
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));

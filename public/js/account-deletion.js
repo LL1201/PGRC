@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('deleteToken');
-    const userId = urlParams.get('userId');
+    const token = urlParams.get('delete-token');
+    const userId = urlParams.get('user-id');
 
     //TODO - veder se si possono usare gli alert dell'utility
     const verificationMessage = document.getElementById('verification-message');

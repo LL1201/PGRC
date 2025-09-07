@@ -99,9 +99,8 @@ router.post("/access-tokens", async (req, res) =>
         const loginResult = await User.findOne({ email: loginData.email, verified: true });
 
         if (!loginResult.hashedPassword && loginResult.googleId)
-        {
             return res.status(400).json({ message: 'Invalid authentication method.' });
-        }
+
 
         if (!loginResult || !await bcrypt.compare(loginData.password, loginResult.hashedPassword))
             return res.status(401).
@@ -261,7 +260,7 @@ router.get("/auth/google/callback", async (req, res) =>
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        res.redirect(`/pgrc/google-callback.html?userId=${userId}`);
+        res.redirect(`/pgrc/google-callback.html?user-id=${userId}`);
     } catch (err)
     {
         console.error(err);

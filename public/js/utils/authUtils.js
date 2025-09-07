@@ -13,7 +13,7 @@ function getJwtPayload(token)
 
 function getAuthMethod()
 {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (!token) return null;
 
     const payload = getJwtPayload(token);
@@ -24,7 +24,7 @@ function getAuthMethod()
 
 async function refreshAccessToken()
 {
-    const userId = localStorage.getItem('userId');
+    const userId = sessionStorage.getItem('userId');
 
     if (!userId)
         return null;
@@ -39,21 +39,21 @@ async function refreshAccessToken()
         if (response.ok)
         {
             const data = await response.json();
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('userId', data.userId);
+            sessionStorage.setItem('accessToken', data.accessToken);
+            sessionStorage.setItem('userId', data.userId);
             return { accessToken: data.accessToken, userId: data.userId };
         } else
         {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('userId');
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('userId');
             //window.location.href = 'login.html';
             return null;
         }
     } catch (error)
     {
         console.error('Error refreshing token:', error);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('userId');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('userId');
         //window.location.href = 'login.html';
         return null;
     }
@@ -62,8 +62,8 @@ async function refreshAccessToken()
 //fetch autenticato automatico con eventuale rinnovo del refresh token
 async function authenticatedFetch(url, options = {})
 {
-    const token = localStorage.getItem('accessToken');
-    const userId = localStorage.getItem('userId');
+    const token = sessionStorage.getItem('accessToken');
+    const userId = sessionStorage.getItem('userId');
 
     if (!token || !userId)
     {
@@ -82,11 +82,10 @@ async function authenticatedFetch(url, options = {})
 
     try
     {
-        console.log('Making authenticated fetch request to:', authOptions);
         let response = await fetch(url, authOptions);
 
         //se la richiesta precedente non va a buon fine per errori di autenticazione
-        //allora prova a fare il refresh del token
+        //allora prova a fare il refresh del token        
         if (response.status === 401 || response.status === 403)
         {
             const newToken = await refreshAccessToken();
@@ -94,7 +93,7 @@ async function authenticatedFetch(url, options = {})
             if (newToken)
             {
                 //riprova la richiesta con il nuovo token
-                authOptions.headers['Authorization'] = `Bearer ${newToken}`;
+                authOptions.headers['Authorization'] = `Bearer ${newToken.accessToken}`;
                 response = await fetch(url, authOptions);
             } else
             {
@@ -113,8 +112,8 @@ async function authenticatedFetch(url, options = {})
 
 async function isAuthenticated()
 {
-    let token = localStorage.getItem('accessToken');
-    let userId = localStorage.getItem('userId');
+    let token = sessionStorage.getItem('accessToken');
+    let userId = sessionStorage.getItem('userId');
 
     //se non ci sono questi token prova a fare un refresh
     if (!token || !userId)
@@ -169,7 +168,7 @@ async function requireAuth()
 
 async function logout()
 {
-    const userId = localStorage.getItem('userId');
+    const userId = sessionStorage.getItem('userId');
 
     if (!userId)
     {
@@ -193,8 +192,8 @@ async function logout()
     } finally
     {
         //pulizia local storage
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('userId');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('userId');
         window.accessToken = null;
         window.location.href = 'login.html';
     }

@@ -109,7 +109,7 @@ router.post('/recipes', authenticateUser, async (req, res) =>
         if (updateResult.modifiedCount === 0)
             return res.status(500).json({ message: 'Failed to add recipe to cookbook.' });
 
-        res.status(201).json({ message: 'Recipe added to personal cookbook successfully.' });
+        res.status(201).json({ message: 'Recipe successfully added to personal cookbook.' });
 
     } catch (error)
     {
@@ -284,7 +284,7 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
                                 mealThumb: "$recipeDetails.mealThumb",
                                 mealDbId: "$recipeDetails.mealDbId",
                                 area: "$recipeDetails.area",
-                                privateNote: !grantedAccess ? "$personalCookbook.recipes.privateNote" : ""
+                                privateNote: !userObjectId || !userObjectId.equals(reqUserObjectId) ? "" : "$personalCookbook.recipes.privateNote"
                             }
                         }
                     ],
@@ -390,7 +390,7 @@ router.delete('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =
         if (updateResult.modifiedCount === 0)
             return res.status(404).json({ message: 'Recipe not found in your personal cookbook.' });
 
-        res.status(200).json({ message: 'Recipe removed from personal cookbook successfully.' });
+        res.status(200).json({ message: 'Recipe successfully removed from personal cookbook.' });
 
     } catch (error)
     {
@@ -510,7 +510,7 @@ router.patch('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =>
             }*/
         }
 
-        res.status(200).json({ message: 'Private note updated successfully.' });
+        res.status(200).json({ message: 'Private note successfully updated.' });
 
     } catch (error)
     {
@@ -553,7 +553,7 @@ router.patch('/', authenticateUser, async (req, res) =>
         if (updateResult.modifiedCount === 0)
             return res.status(500).json({ message: 'Failed to update cookbook.' });
 
-        res.status(200).json({ message: 'Cookbook updated successfully.' });
+        res.status(200).json({ message: 'Cookbook successfully updated.' });
 
     } catch (error)
     {
@@ -575,7 +575,7 @@ router.get('/', authenticateUser, async (req, res) =>
         const userCookbook = await User.findOne({ _id: reqUserObjectId }).select({ "personalCookbook.publicVisible": 1 });
 
         if (!userCookbook)
-            return res.status(403).json({ message: 'Cookbook not found' });
+            return res.status(404).json({ message: 'Cookbook not found' });
 
         res.status(200).json({
             publicVisible: userCookbook.personalCookbook.publicVisible,

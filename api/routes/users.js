@@ -202,7 +202,6 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
             const newDeleteToken = crypto.randomBytes(32).toString('hex');
             const hashedDeleteToken = await bcrypt.hash(newDeleteToken, HASH_SALT);
             const deleteTokenExpiration = new Date(Date.now() + ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION);
-            //TODO .env le scadenze dei token
 
             await User.updateOne(
                 { _id: user._id },
@@ -466,7 +465,6 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
         if (!user)
             return res.status(404).json({ message: 'Invalid, expired, or already used verification token.' });
 
-
         if (await updateUser(reqUserObjectId,
             { verified: true },
             {
@@ -672,6 +670,7 @@ router.post("/:userId/access-token", async (req, res) =>
         const authMethod = tokenData.authMethod;
 
         const newAccessToken = generateAccessToken(userId, authMethod);
+
         res.status(200).json({
             userId: userId,
             accessToken: newAccessToken

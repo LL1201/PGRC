@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         //lo devo assegnare qua perché se il controllo precedente isAuthenticaed
         //dovesse aggiornare l'access token, dichiarandolo come const al caricamento del DOM
         //qua lo avrei al valore letto in precedenza e non quello aggiornato
-        userId = localStorage.getItem('userId');
+        userId = sessionStorage.getItem('userId');
 
         try
         {

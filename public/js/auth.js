@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded', async () =>
 
             if (response.ok)
             {
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('userId', data.userId);
+                sessionStorage.setItem('accessToken', data.accessToken);
+                sessionStorage.setItem('userId', data.userId);
                 alertMsgsUtils.showSuccess(data.message);
                 setTimeout(() =>
                 {

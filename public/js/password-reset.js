@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('resetToken');
-    const userId = urlParams.get('userId');
+    const token = urlParams.get('reset-token');
+    const userId = urlParams.get('user-id');
 
     const loadingSpinner = document.getElementById('loading-spinner');
     const passwordResetForm = document.getElementById('password-reset-form');

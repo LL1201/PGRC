@@ -80,9 +80,6 @@ export async function verifyRefreshToken(userId, token)
     const tokenDocument = await RefreshToken.findOne({ userId: createObjectId(userId), token });
     if (!tokenDocument) return null;
 
-    console.log(tokenDocument.expiresAt);
-    console.log(new Date());
-
     if (tokenDocument.expiresAt && tokenDocument.expiresAt < new Date())
         return null;
 
