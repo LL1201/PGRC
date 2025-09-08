@@ -80,7 +80,6 @@ router.post("/", async (req, res) =>
     //scadenza tra 30 minuti (ottiene il timestamp corrente in millisecondi e somma 30 minuti convertito in millisecondi)
     const emailVerificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
 
-    //TODO - miglioramento futuro piatti preferiti
     const newUserDocument = {
         email: user.email,
         username: user.username,
@@ -552,7 +551,6 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
     }
 });
 
-//TODO vedere se salvare access token nel db
 /**
  * @swagger
  * /api/v1/auth/logout:

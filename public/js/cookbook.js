@@ -263,6 +263,7 @@ document.addEventListener('DOMContentLoaded', async () =>
                 try
                 {
                     const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
+                        headers: { 'Content-Type': 'application/json' },
                         method: 'DELETE'
                     });
 

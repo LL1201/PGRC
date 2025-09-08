@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
-    //TODO - media punteggi review
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
     const resetButton = document.getElementById('reset-button');
@@ -164,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () =>
         nextPageBtn.disabled = currentPage >= totalPages;
     }
 
-    //TODO - manca la specifica della nota quando aggiunto al ricettario
     async function addToCookbook(mealDbId)
     {
         if (!authUtils.requireAuth()) return;

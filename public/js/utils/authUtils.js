@@ -41,7 +41,7 @@ async function refreshAccessToken()
             const data = await response.json();
             sessionStorage.setItem('accessToken', data.accessToken);
             sessionStorage.setItem('userId', data.userId);
-            return { accessToken: data.accessToken, userId: data.userId };
+            return true;
         } else
         {
             sessionStorage.removeItem('accessToken');
@@ -62,7 +62,7 @@ async function refreshAccessToken()
 //fetch autenticato automatico con eventuale rinnovo del refresh token
 async function authenticatedFetch(url, options = {})
 {
-    const token = sessionStorage.getItem('accessToken');
+    let token = sessionStorage.getItem('accessToken');
     const userId = sessionStorage.getItem('userId');
 
     if (!token || !userId)
@@ -85,15 +85,14 @@ async function authenticatedFetch(url, options = {})
         let response = await fetch(url, authOptions);
 
         //se la richiesta precedente non va a buon fine per errori di autenticazione
-        //allora prova a fare il refresh del token        
+        //allora prova a fare il refresh del token
         if (response.status === 401 || response.status === 403)
         {
-            const newToken = await refreshAccessToken();
-
-            if (newToken)
+            if (await refreshAccessToken())
             {
-                //riprova la richiesta con il nuovo token
-                authOptions.headers['Authorization'] = `Bearer ${newToken.accessToken}`;
+                token = sessionStorage.getItem('accessToken');
+
+                authOptions.headers['Authorization'] = `Bearer ${token}`;
                 response = await fetch(url, authOptions);
             } else
             {
@@ -181,8 +180,7 @@ async function logout()
         await fetch(`/pgrc/api/v1/users/${userId}/access-token`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             credentials: 'include' //per includere il cookie che contiene il refresh token
         });

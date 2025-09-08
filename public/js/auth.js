@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () =>
 {
+
+
     if (await authUtils.isAuthenticated())
         window.location.href = 'my-profile.html';
 
@@ -57,6 +59,12 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 sessionStorage.setItem('accessToken', data.accessToken);
                 sessionStorage.setItem('userId', data.userId);
+
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SET_TOKEN',
+                    token: data.accessToken
+                });
+
                 alertMsgsUtils.showSuccess(data.message);
                 setTimeout(() =>
                 {

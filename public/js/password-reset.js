@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () =>
     if (!token)
     {
         loadingSpinner.style.display = 'none';
-        //TODO - verificare se è possibile validare il token prima
         alertMsgsUtils.showError('Missing reset token.');
         return;
     }

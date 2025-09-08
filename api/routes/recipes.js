@@ -92,7 +92,6 @@ router.get('', async (req, res) =>
             query.name = { $regex: letterRegex };
         } else
         {
-            //TODO - miglioramento futuro valutare se restituire delle ricette se non specifico parameteri (miglioramento futuro)
             return res.status(400).json({ message: 'Please provide a search query (q) or a starting letter (letter).' });
         }
 
