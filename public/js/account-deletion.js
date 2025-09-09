@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () =>
                 }
             };
 
-            const response = await fetch(`/pgrc/api/v1/users/${userId}`, options);
+            const response = await fetch(`/api/v1/users/${userId}`, options);
 
             const data = await response.json();
             if (response.ok)
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
                 setTimeout(async () =>
                 {
-                    window.location.href = '/pgrc/';
+                    window.location.href = '/';
                 }, 2000);
             }
             else

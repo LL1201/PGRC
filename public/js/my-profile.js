@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, {
+            const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
 
-            //const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`);
+            //const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`);
             if (!response) return;
 
             if (response.ok)
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, {
+            const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, email })
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             if (authUtils.getAuthMethod() === 'email')
                 options.headers['X-User-Password'] = password;
 
-            const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}`, options);
+            const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`, options);
             const data = await response.json();
             if (response.ok)
             {

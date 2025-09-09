@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            let url = `/pgrc/api/v1/auth/users/${userId}`;
+            let url = `/api/v1/auth/users/${userId}`;
             const response = await fetch(url, {
                 method: 'PATCH',
                 headers: {

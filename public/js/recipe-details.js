@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         try
         {
-            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}`, {
+            const response = await fetch(`/api/v1/recipes/${recipeId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         try
         {
-            const response = await fetch(`/pgrc/api/v1/recipes/${recipeId}/reviews?start=0&offset=1`, {
+            const response = await fetch(`/api/v1/recipes/${recipeId}/reviews?start=0&offset=1`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () =>
             //imposto la richiesta autenticata se sono effettivamente autenticato
             //in modo da ottenere la mia recensione in cima alle altre e mostrare il pulsante elimina
             let myUserId = null;
-            const url = `/pgrc/api/v1/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
+            const url = `/api/v1/recipes/${recipeId}/reviews?start=${reviewsCurrentStart}&offset=${REVIEWS_PAGE_SIZE}`;
             let response = null;
 
             if (await authUtils.isAuthenticated())
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () =>
                         try
                         {
                             const response = await window.authUtils.authenticatedFetch(
-                                `/pgrc/api/v1/recipes/${review.mealDbId}/reviews/${review.reviewId}`,
+                                `/api/v1/recipes/${review.mealDbId}/reviews/${review.reviewId}`,
                                 { method: 'DELETE' }
                             );
                             const data = await response.json();
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () =>
             try
             {
                 const response = await window.authUtils.authenticatedFetch(
-                    `/pgrc/api/v1/recipes/${recipeId}/reviews`,
+                    `/api/v1/recipes/${recipeId}/reviews`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

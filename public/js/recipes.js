@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         //in pratica il range è [start, end)
         const startIndex = (currentPage - 1) * itemsPerPage;
-        let url = `/pgrc/api/v1/recipes?start=${startIndex}&offset=${startIndex + itemsPerPage}`;
+        let url = `/api/v1/recipes?start=${startIndex}&offset=${startIndex + itemsPerPage}`;
 
         if (currentQuery.q)
             url += `&q=${encodeURIComponent(currentQuery.q)}`;
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () =>
         if (!authUtils.requireAuth()) return;
 
         const userId = sessionStorage.getItem('userId');
-        const url = `/pgrc/api/v1/users/${userId}/cookbook/recipes`;
+        const url = `/api/v1/users/${userId}/cookbook/recipes`;
 
         const response = await authUtils.authenticatedFetch(url, {
             method: 'POST',

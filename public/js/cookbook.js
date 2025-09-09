@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () =>
                     `Do you want to ${wantToShare ? 'share' : 'unshare'} your cookbook?`,
                     async () =>
                     {
-                        const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook`, {
+                        const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}/cookbook`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ publicVisible: wantToShare })
@@ -169,10 +169,10 @@ document.addEventListener('DOMContentLoaded', async () =>
     {
         let recipesResponse = null;
         let cookbookDataResponse = null;
-        const cookbookDataUrl = `/pgrc/api/v1/users/${userId}/cookbook`;
+        const cookbookDataUrl = `/api/v1/users/${userId}/cookbook`;
 
         const startIndex = (currentPageCookbook - 1) * itemsPerPageCookbook;
-        const recipesUrl = `/pgrc/api/v1/users/${userId}/cookbook/recipes?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
+        const recipesUrl = `/api/v1/users/${userId}/cookbook/recipes?start=${startIndex}&offset=${startIndex + itemsPerPageCookbook}`;
 
         try
         {
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
                         headers: { 'Content-Type': 'application/json' },
                         method: 'DELETE'
                     });
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             {
                 try
                 {
-                    const response = await authUtils.authenticatedFetch(`/pgrc/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
+                    const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}/cookbook/recipes/${cookbookRecipeId}`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json'
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         userId = sessionStorage.getItem('userId');
     else
         otherUserCookbook = true;
-    shareUrl = `${window.location.origin}/pgrc/cookbook.html?userId=${userId}`;
+    shareUrl = `${window.location.origin}/cookbook.html?userId=${userId}`;
     fetchCookbookRecipes();
 
 });

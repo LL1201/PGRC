@@ -16,13 +16,13 @@ import User from '../models/User.js';
 dotenv.config();
 
 const router = express.Router();
-const HASH_SALT = parseInt(process.env.HASH_SALT);
-const PASSWORD_RESET_TOKEN_EXPIRATION = parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRATION);
+const HASH_SALT = parseInt(process.env.HASH_SALT) || 10;
+const PASSWORD_RESET_TOKEN_EXPIRATION = parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRATION) || 3600000; //default 1h
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_OAUTH_CALLBACK_URI
+    process.env.BASE_URL + '/api/v1/auth/google/callback'
 );
 
 /**
@@ -113,7 +113,7 @@ router.post("/access-tokens", async (req, res) =>
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            path: `/pgrc/api/v1/users/${loginResult._id}`,
+            path: `/api/v1/users/${loginResult._id}`,
             maxAge: 24 * 60 * 60 * 1000
         });
 
@@ -256,15 +256,15 @@ router.get("/auth/google/callback", async (req, res) =>
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            path: `/pgrc/api/v1/users/${userId}`,
+            path: `/api/v1/users/${userId}`,
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        res.redirect(`/pgrc/google-callback.html?user-id=${userId}`);
+        res.redirect(`/google-callback.html?user-id=${userId}`);
     } catch (err)
     {
         console.error(err);
-        res.redirect("/pgrc/login.html");
+        res.redirect("/login.html");
     }
 });
 

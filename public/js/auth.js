@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await fetch('/pgrc/api/v1/access-tokens', {
+            const response = await fetch('/api/v1/access-tokens', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
         try
         {
-            const response = await fetch('/pgrc/api/v1/users', {
+            const response = await fetch('/api/v1/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     continueWithGoogleButton.addEventListener('click', async () =>
     {
-        const res = await fetch("/pgrc/api/v1/access-tokens", {
+        const res = await fetch("/api/v1/access-tokens", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ authProvider: "google" })

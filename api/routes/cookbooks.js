@@ -579,7 +579,7 @@ router.get('/', authenticateUser, async (req, res) =>
 
         res.status(200).json({
             publicVisible: userCookbook.personalCookbook.publicVisible,
-            recipes: `${BASE_URL}/pgrc/api/v1/users/${reqUserObjectId}/recipes`
+            recipes: `${BASE_URL}/api/v1/users/${reqUserObjectId}/recipes`
         });
 
     } catch (error)

@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     try
     {
-        const response = await fetch(`/pgrc/api/v1/users/${userId}`, {
+        const response = await fetch(`/api/v1/users/${userId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'

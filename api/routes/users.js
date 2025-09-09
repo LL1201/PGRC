@@ -17,7 +17,7 @@ import { authenticateUser, authenticateUserOptionally } from '../middlewares/aut
 
 const router = express.Router();
 const HASH_SALT = parseInt(process.env.HASH_SALT);
-const ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION = parseInt(process.env.ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION);
+const ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION = parseInt(process.env.ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION) || 3600000; //default 1h
 
 /**
  * @swagger
@@ -598,7 +598,7 @@ router.delete("/:userId/access-token", async (req, res) =>
 
             //invalida il cookie refreshToken impostado il suo valore a deleted e scadenza alla data 0        
             res.cookie('refreshToken', 'deleted', {
-                path: '/pgrc/api/v1/',
+                path: '/api/v1/',
                 expires: new Date(0),
                 httpOnly: true,
                 sameSite: 'strict'

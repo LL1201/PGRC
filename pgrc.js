@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 //database
 import populateTheMealDbRecipes from './api/utils/populateDb.js';
@@ -38,7 +41,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'https://www.lloner.it/pgrc/api/v1',
+                url: 'https://www.lloner.it/api/v1',
             },
         ],
     },
@@ -56,7 +59,8 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 //server
 const app = express();
-const port = 3003;
+const listeningPort = process.env.APP_LISTENING_PORT;
+const listeningAddress = process.env.APP_LISTENING_ADDRESS;
 
 app.use(express.json());
 app.use(cookieParser());
@@ -99,9 +103,9 @@ db.connect().then(async () =>
 {
     //chiamata alla funzione di popolamento delle ricette dopo la connessione al DB
     await populateTheMealDbRecipes();
-    app.listen(port, () =>
+    app.listen(listeningPort, listeningAddress, () =>
     {
-        console.log(`Server is listening on http://localhost:${port}`);
+        console.log(`Server is listening on http://${listeningAddress}:${listeningPort}`);
     });
 }).catch(err =>
 {
