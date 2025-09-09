@@ -120,8 +120,7 @@ router.post("/access-tokens", async (req, res) =>
         res.status(200).json({
             message: 'Successful login',
             userId: loginResult._id,
-            accessToken: accessToken,
-            accessTokenExpiration: 1000 * 60 * 60
+            accessToken: accessToken
         });
     } catch (e)
     {

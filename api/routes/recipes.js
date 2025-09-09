@@ -48,7 +48,6 @@ router.get('', async (req, res) =>
 {
     //q contiene la query nel caso di ricerca
     //letter contiene una singola lettera nel caso voglia ottenere un elenco delle ricette che iniziano per A
-    //TODO - miglioramento futuro utile in caso di ordinamenti
     const { q, letter } = req.query;
 
     const start = parseInt(req.query.start);

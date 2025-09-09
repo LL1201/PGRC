@@ -314,7 +314,6 @@ router.get('/:userId', authenticateUser, async (req, res) =>
         return res.status(400).json({ message: 'User ID is required.' });
 
     //solo l'utente può vedere le proprie info
-    //TODO - miglioramento futuro, permettere ad altri utenti di interagire con altri
     if (!userObjectId.equals(reqUserObjectId))
         return res.status(403).json({ message: 'You can only view your own profile.' });
 
@@ -511,7 +510,6 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
                 return res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
             }
             //TODO controllare comportamento in caso di ritorno null della funzione updateUser
-            //TODO - miglioramento futuro fare in modo che ci sia uno storico dei password reset
         } catch (e)
         {
             console.error("Error resetting password:", e);

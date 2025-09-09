@@ -590,6 +590,3 @@ router.get('/', authenticateUser, async (req, res) =>
 });
 
 export default router;
-
-
-//TODO vedere output di login accesstoken exp
