@@ -31,7 +31,7 @@ const router = express.Router({ mergeParams: true });
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     requestBody:
  *       required: true
  *       content:
@@ -49,6 +49,9 @@ const router = express.Router({ mergeParams: true });
  *                 type: string
  *                 format: date
  *                 example: "2024-06-01"
+ *               notes:
+ *                 type: string
+ *                 example: "Ottima ricetta!"
  *     responses:
  *       201:
  *         description: Review added to recipe
@@ -58,6 +61,8 @@ const router = express.Router({ mergeParams: true });
  *         description: Unauthorized
  *       404:
  *         description: Recipe not found
+ *       409:
+ *         description: You have already left a review for this recipe
  *       500:
  *         description: Internal server error
  */
@@ -160,7 +165,43 @@ router.post('/', authenticateUser, async (req, res) =>
  *         description: Number of reviews to return (default 10)
  *     responses:
  *       200:
- *         description: Paginated reviews and total count
+ *         description: Paginated reviews, total count, and statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reviewId:
+ *                         type: string
+ *                       mealDbId:
+ *                         type: integer
+ *                       authorUsername:
+ *                         type: string
+ *                       authorUserId:
+ *                         type: string
+ *                       difficulty:
+ *                         type: integer
+ *                       taste:
+ *                         type: integer
+ *                       notes:
+ *                         type: string
+ *                       executionDate:
+ *                         type: string
+ *                         format: date
+ *                 total:
+ *                   type: integer
+ *                 statistics:
+ *                   type: object
+ *                   properties:
+ *                     avgDifficulty:
+ *                       type: number
+ *                     avgTaste:
+ *                       type: number
  *       400:
  *         description: Invalid or missing parameters
  *       404:
@@ -329,7 +370,7 @@ router.get('/', authenticateUserOptionally, async (req, res) =>
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     responses:
  *       200:
  *         description: Review removed

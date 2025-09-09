@@ -41,7 +41,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: 'https://www.lloner.it/api/v1',
+                url: 'https://pgrc.lloner.it/api/v1',
             },
         ],
     },
@@ -49,7 +49,7 @@ const swaggerOptions = {
 };
 
 const corsOptions = {
-    origin: ['https://www.lloner.it'],
+    origin: ['https://pgrc.lloner.it'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     // maxAge: 86400, // Cache the preflight response for 24 hours

@@ -8,7 +8,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/recipes/search:
+ * /api/v1/recipes:
  *   get:
  *     summary: Search recipes by keyword or starting letter (paginated)
  *     tags:
@@ -39,6 +39,28 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Paginated recipes and total count
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipes:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       mealDbId:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                       mealThumb:
+ *                         type: string
+ *                       area:
+ *                         type: string
+ *                 total:
+ *                   type: integer
  *       400:
  *         description: Invalid or missing parameters
  *       500:
@@ -158,6 +180,11 @@ router.get('', async (req, res) =>
  *     responses:
  *       200:
  *         description: Recipe details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: Oggetto ricetta completo, con tutte le proprietà disponibili per la ricetta richiesta.
  *       400:
  *         description: Recipe ID is required
  *       404:

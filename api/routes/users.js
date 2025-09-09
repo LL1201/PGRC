@@ -123,33 +123,37 @@ router.post("/", async (req, res) =>
  *         description: User ID
  *       - in: header
  *         name: Authorization
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *       - in: cookie
  *         name: refreshToken
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
  *         description: Refresh token cookie
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               password:
- *                 type: string
- *                 example: password123
+ *       - in: header
+ *         name: X-User-Password
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: User password (for email-authenticated users)
+ *       - in: header
+ *         name: X-User-Delete-Token
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Account deletion token (from email)
  *     responses:
  *       200:
  *         description: User successfully deleted
+ *       202:
+ *         description: Deletion confirmation email sent
  *       400:
- *         description: Refresh token or password is required
+ *         description: Refresh token, password, or delete token is required
  *       401:
- *         description: Invalid refresh token or password
+ *         description: Invalid refresh token, password, or delete token
  *       403:
  *         description: You can only delete your own account
  *       404:
@@ -280,7 +284,7 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     responses:
  *       200:
  *         description: User profile data
@@ -349,7 +353,7 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  * @swagger
  * /api/v1/users/{userId}:
  *   patch:
- *     summary: Update authenticated user's username and/or email
+ *     summary: Update authenticated user's username and/or email, confirm account, or reset password
  *     tags:
  *       - Users
  *     parameters:
@@ -361,16 +365,20 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  *         description: User ID
  *       - in: header
  *         name: Authorization
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             description: |
+ *               - Se presenti `username` o `email`, vengono aggiornati solo questi campi e gli altri parametri vengono ignorati.
+ *               - Se presente `confirmed`, è obbligatorio anche `confirmationToken`.
+ *               - Se presente `password`, è obbligatorio anche `resetPasswordToken`.
  *             properties:
  *               username:
  *                 type: string
@@ -378,13 +386,29 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  *               email:
  *                 type: string
  *                 example: newemail@example.com
+ *               confirmed:
+ *                 type: boolean
+ *                 example: true
+ *               confirmationToken:
+ *                 type: string
+ *                 example: "token"
+ *               password:
+ *                 type: string
+ *                 example: "newpassword"
+ *               resetPasswordToken:
+ *                 type: string
+ *                 example: "token"
  *     responses:
  *       200:
- *         description: User data updated successfully
+ *         description: User data updated successfully / Account verified / Password reset
  *       400:
- *         description: No changes made or user not found, or invalid email format
+ *         description: No changes made, user not found, invalid email format, or missing/invalid tokens
+ *       401:
+ *         description: Unauthorized. Please log in.
  *       403:
  *         description: You can only update your own account
+ *       404:
+ *         description: User not found, invalid or expired token
  *       409:
  *         description: Email or username already exists
  *       500:
@@ -551,8 +575,8 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/auth/logout:
- *   post:
+ * /api/v1/users/{userId}/access-token:
+ *   delete:
  *     summary: Logout and invalidate refresh token
  *     tags:
  *       - Auth
@@ -617,7 +641,7 @@ router.delete("/:userId/access-token", async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/auth/access-token/refresh:
+ * /api/v1/users/{userId}/access-token:
  *   post:
  *     summary: Refresh access token using refresh token cookie
  *     tags:
@@ -677,7 +701,6 @@ router.post("/:userId/access-token", async (req, res) =>
         res.status(500).json({ message: 'Internal server error.' });
     }
 });
-
 
 
 export default router;

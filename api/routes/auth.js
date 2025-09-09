@@ -27,9 +27,9 @@ const oauth2Client = new google.auth.OAuth2(
 
 /**
  * @swagger
- * /api/v1/auth/login:
+ * /api/v1/auth/access-tokens:
  *   post:
- *     summary: Login using email and password
+ *     summary: Login using email and password or start Google OAuth login
  *     tags:
  *       - Auth
  *     requestBody:
@@ -45,9 +45,13 @@ const oauth2Client = new google.auth.OAuth2(
  *               password:
  *                 type: string
  *                 example: password123
+ *               authProvider:
+ *                 type: string
+ *                 example: google
+ *                 description: Se impostato a 'google', avvia il login Google OAuth
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Login successful or Google OAuth URL returned
  *         content:
  *           application/json:
  *             schema:
@@ -59,12 +63,12 @@ const oauth2Client = new google.auth.OAuth2(
  *                   type: string
  *                 accessToken:
  *                   type: string
- *                 accessTokenExpiration:
- *                   type: integer
+ *                 redirectUrl:
+ *                   type: string
  *       400:
  *         description: Email and password are required or invalid email format
  *       401:
- *         description: Invalid email or password or account not confirmed
+ *         description: Invalid email or password or you did not confirmed your account
  *       500:
  *         description: Database error
  */
@@ -131,7 +135,7 @@ router.post("/access-tokens", async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/auth/password-lost:
+ * /api/v1/auth/password-lost-tokens:
  *   post:
  *     summary: Request password reset email
  *     tags:

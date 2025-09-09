@@ -20,7 +20,7 @@ const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
- * /api/v1/users/{userId}/cookbook:
+ * /api/v1/users/{userId}/cookbook/recipes:
  *   post:
  *     summary: Add a recipe to the user's personal cookbook
  *     tags:
@@ -37,7 +37,7 @@ const router = express.Router({ mergeParams: true });
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     requestBody:
  *       required: true
  *       content:
@@ -120,7 +120,7 @@ router.post('/recipes', authenticateUser, async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/users/{userId}/cookbook:
+ * /api/v1/users/{userId}/cookbook/recipes:
  *   get:
  *     summary: Get paginated recipes from the user's personal cookbook
  *     tags:
@@ -134,10 +134,10 @@ router.post('/recipes', authenticateUser, async (req, res) =>
  *         description: User ID
  *       - in: header
  *         name: Authorization
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *       - in: query
  *         name: start
  *         required: true
@@ -156,7 +156,7 @@ router.post('/recipes', authenticateUser, async (req, res) =>
  *       400:
  *         description: Invalid or missing pagination parameters
  *       403:
- *         description: You can only view your own cookbook
+ *         description: You can only view your own cookbook or cookbook is not public
  *       500:
  *         description: Internal server error
  */
@@ -188,54 +188,6 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
 
     try
     {
-        /* --------------- OLD METHOD -------------------------
-        const personalCookbook = await db.collection('personalCookbooks').findOne({ userId: reqUserObjectId });
-
-        if (!personalCookbook || personalCookbook.recipes.length === 0)
-            return res.status(200).json({ recipes: [] });
-
-        
-        //per ogni elemento in personalCookbook ricava l'id e restituisce l'array di questi id
-        //serve per la riga successiva che estrae le info di tutti i questi id
-        const mealDbIds = personalCookbook.recipes.map((r) => r.mealDbId);
-
-        const projection = {
-            name: 1,
-            category: 1,
-            category: 1,
-            mealThumb: 1,
-            mealDbId: 1,
-            area: 1,
-            _id: 0
-        };
-
-
-        const detailedRecipes = await db.collection('mealdbRecipes')
-            .find({ mealDbId: { $in: mealDbIds } })
-            .project(projection)
-            .skip(start)
-            .limit(offset)
-            .toArray();
-
-        //ottimizzato... piuttosto che ottenere tutto e poi paginare        
-        const total = await db.collection('mealdbRecipes').countDocuments({ mealDbId: { $in: mealDbIds } });
-
-        //aggiunge le note alle ricette dettagliate
-        const recipesWithNotes = detailedRecipes.map((detailedRecipe) =>
-        {
-            //per ogni ricetta dettagliata in detailedRecipes, viene cercata nel ricettario personale
-            //confronta i due id per verificare che siano la stessa ricetta 
-            //l'elemento che fa matchh è ritornato e conterrà la privateNote
-            const cookbookEntry = personalCookbook.recipes.find((r) => r.mealDbId === detailedRecipe.mealDbId);
-            return {
-                cookBookRecipeId: cookbookEntry._id,
-                ...detailedRecipe,
-                //aggiunge la nota se presente
-                //verifica con operatore ternario
-                privateNote: cookbookEntry ? cookbookEntry.privateNote : undefined
-            };
-        });*/
-
         const grantedAccess = await User.findOne({ _id: reqUserObjectId, 'personalCookbook.publicVisible': true });
 
         if (!grantedAccess && (!userObjectId || !userObjectId.equals(reqUserObjectId)))
@@ -320,7 +272,7 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/users/{userId}/cookbook/{cookbookRecipeId}:
+ * /api/v1/users/{userId}/cookbook/recipes/{cookbookRecipeId}:
  *   delete:
  *     summary: Remove a recipe from the user's personal cookbook
  *     tags:
@@ -343,7 +295,7 @@ router.get('/recipes', authenticateUserOptionally, async (req, res) =>
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     responses:
  *       200:
  *         description: Recipe removed from personal cookbook successfully
@@ -401,7 +353,7 @@ router.delete('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =
 
 /**
  * @swagger
- * /api/v1/users/{userId}/cookbook/{cookbookRecipeId}:
+ * /api/v1/users/{userId}/cookbook/recipes/{cookbookRecipeId}:
  *   patch:
  *     summary: Edit or remove the private note of a recipe in the user's personal cookbook
  *     tags:
@@ -424,7 +376,7 @@ router.delete('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =
  *         required: true
  *         schema:
  *           type: string
- *         description: Bearer access token (Bearer &lt;access_token&gt;)
+ *         description: Bearer access token (Bearer <access_token>)
  *     requestBody:
  *       required: true
  *       content:
@@ -519,6 +471,46 @@ router.patch('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook:
+ *   patch:
+ *     summary: Update the public visibility of the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer <access_token>)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               publicVisible:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Cookbook successfully updated
+ *       400:
+ *         description: publicVisible attribute is required or invalid
+ *       403:
+ *         description: You can only update your own cookbook
+ *       500:
+ *         description: Internal server error
+ */
 router.patch('/', authenticateUser, async (req, res) =>
 {
     //privateNote sarà non presente o una stringa vuota per rimuovere la nota dalla ricetta
@@ -562,6 +554,46 @@ router.patch('/', authenticateUser, async (req, res) =>
     }
 });
 
+/**
+ * @swagger
+ * /api/v1/users/{userId}/cookbook:
+ *   get:
+ *     summary: Get the public visibility status and recipes endpoint of the user's personal cookbook
+ *     tags:
+ *       - Cookbook
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer access token (Bearer <access_token>)
+ *     responses:
+ *       200:
+ *         description: Cookbook visibility and recipes endpoint
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 publicVisible:
+ *                   type: boolean
+ *                 recipes:
+ *                   type: string
+ *                   description: Endpoint URI to get the user's cookbook recipes
+ *       403:
+ *         description: You can only view your own cookbook
+ *       404:
+ *         description: Cookbook not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticateUser, async (req, res) =>
 {
     const userObjectId = req.userObjectId;
