@@ -33,25 +33,29 @@
                                 <input type="text" class="form-control" id="userId" disabled>
                             </div>
                             <div class="mb-3">
+                                <label for="email" class="form-label fw-bold">Email</label>
+                                <input type="email" class="form-control" id="email" disabled>
+                            </div>
+                            <div class="mb-3">
                                 <label for="username" class="form-label fw-bold">Username</label>
                                 <input type="text" class="form-control" id="username" required>
                             </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label fw-bold">Email</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
+
                             <div class="text-end">
                                 <button type="submit" class="btn primary-btn">Save Changes</button>
                             </div>
                         </form>
                         <hr>
-                        <div>
+                        <!--https://getbootstrap.com/docs/5.0/utilities/spacing/#gap-->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary w-100" id="change-password-btn">Change
+                                Password</button>
                             <button class="btn btn-outline-danger w-100" id="delete-account-btn">Delete
                                 Account</button>
                         </div>
                     </div>
                 </div>
-                <!-- Account deletion modal -->
+                <!--account deletion modal -->
                 <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">

@@ -97,7 +97,7 @@ router.post("/", async (req, res) =>
         const result = await newUser.save();
         console.log(`User registered successfully. ID: ${result._id}`);
 
-        await sendConfirmationMail(newUserDocument.email, emailVerificationToken);
+        await sendConfirmationMail(newUserDocument.email, emailVerificationToken, result._id.toString());
 
         res.status(202).json({ message: 'Verification email sent. Please check your inbox and spam folder.', userId: result._id });
     } catch (e)
@@ -376,16 +376,13 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  *           schema:
  *             type: object
  *             description: |
- *               - Se presenti `username` o `email`, vengono aggiornati solo questi campi e gli altri parametri vengono ignorati.
+ *               - Se presente `username`, viene aggiornato solo questo e gli altri parametri vengono ignorati.
  *               - Se presente `confirmed`, è obbligatorio anche `confirmationToken`.
  *               - Se presente `password`, è obbligatorio anche `resetPasswordToken`.
  *             properties:
  *               username:
  *                 type: string
- *                 example: newusername
- *               email:
- *                 type: string
- *                 example: newemail@example.com
+ *                 example: newusername *               
  *               confirmed:
  *                 type: boolean
  *                 example: true
@@ -418,7 +415,7 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 {
     //TODO - valutare il cambio mail con conferma via email      
     const reqUserObjectId = req.reqUserObjectId;
-    const { username, email, confirmed, confirmationToken, password, resetPasswordToken } = req.body;
+    const { username, confirmed, confirmationToken, password, resetPasswordToken } = req.body;
 
     if (username || email)
         if (!req.userObjectId)
@@ -431,7 +428,7 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
     if (password && !resetPasswordToken)
         return res.status(400).json({ message: 'Reset token and password are both required when resetting password.' });
 
-    if (username || email)
+    if (username)
         if (!req.userObjectId)
             return res.status(401).
                 set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Unauthorized. Please log in.' });
@@ -439,20 +436,15 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
             if (!req.userObjectId.equals(reqUserObjectId))
                 return res.status(403).json({ message: 'You can only edit your own account.' });
 
-
-    if (email && !emailValidator.validate(email))
-        return res.status(400).json({ message: 'Invalid email format.' });
-
     let query = [];
     let updateFields = {};
-    if (username || email)
+    if (username)
     {
-        //controllo unicità username/email se forniti        
+        //controllo unicità username
+        //creo una query dinamica in modo che se in futuro ci sono altri campi
+        //da aggiornare è sufficiente fare una modifica veloce   
         if (username)
             query.push({ username });
-
-        if (email)
-            query.push({ email });
 
         if (query.length > 0)
         {
@@ -461,15 +453,12 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
                 _id: { $ne: reqUserObjectId }
             });
             if (existing)
-                return res.status(409).json({ message: 'Email or username already exists.' });
+                return res.status(409).json({ message: 'Username already exists.' });
         }
 
         //costruisce la query per l'update
         if (username)
             updateFields.username = username;
-
-        if (email)
-            updateFields.email = email;
 
         if (await updateUser(reqUserObjectId, updateFields))
         {
@@ -513,7 +502,7 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
             if (!user)
                 return res.status(404).json({ message: 'User not found or token has expired.' });
 
-            const isMatch = await bcrypt.compare(resetToken, user.resetPasswordData.token);
+            const isMatch = await bcrypt.compare(resetPasswordToken, user.resetPasswordData.token);
             if (!isMatch)
                 return res.status(403).json({ message: 'Invalid token.' });
 

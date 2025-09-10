@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         userId = sessionStorage.getItem('userId');
     else
         otherUserCookbook = true;
-    shareUrl = `${window.location.origin}/cookbook.html?userId=${userId}`;
+    shareUrl = `${window.location.origin}/cookbook.html?user-id=${userId}`;
     fetchCookbookRecipes();
 
 });

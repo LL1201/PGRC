@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', async () =>
 
     try
     {
-        const isAuth = await authUtils.isAuthenticated();
+        let isAuth = null;
+        if (window.authUtils)
+            isAuth = await authUtils.isAuthenticated();
 
         if (isAuth)
         {

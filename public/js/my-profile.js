@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', async () =>
     const deleteAccountForm = document.getElementById('delete-account-form');
     const deletePasswordInput = document.getElementById('delete-password');
     const deleteAccountAlert = document.getElementById('delete-account-alert');
+    const changePasswordBtn = document.getElementById('change-password-btn');
+
     let userId = null;
 
     async function loadProfile()
@@ -53,11 +55,10 @@ document.addEventListener('DOMContentLoaded', async () =>
     {
         e.preventDefault();
         const username = usernameInput.value.trim();
-        const email = emailInput.value.trim();
 
-        if (!username || !email)
+        if (!username)
         {
-            alertMsgsUtils.showError('Username or email are required.');
+            alertMsgsUtils.showError('Username is required.');
             return;
         }
 
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () =>
             const response = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email })
+                body: JSON.stringify({ username })
             });
             const data = await response.json();
             if (response.ok)
@@ -117,6 +118,45 @@ document.addEventListener('DOMContentLoaded', async () =>
         }
         await deleteAccountRequest(password);
 
+    });
+
+    changePasswordBtn.addEventListener('click', () =>
+    {
+        alertMsgsUtils.showConfirmation("Are you sure to change your password? You'll receive an email.", async () =>
+        {
+            try
+            {
+                const userEmailResult = await authUtils.authenticatedFetch(`/api/v1/users/${userId}`, {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (userEmailResult.ok)
+                {
+                    const userEmail = (await userEmailResult.json()).email;
+
+                    const response = await fetch("/api/v1/password-lost-tokens", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ email: userEmail })
+                    });
+
+                    if (response.ok)
+                        alertMsgsUtils.showSuccess("Check your email inbox.");
+                    else
+                        alertMsgsUtils.showError("Error. Retry");
+                }
+            }
+            catch (e)
+            {
+                alertMsgsUtils.showError('Network error');
+            }
+
+
+        }, undefined, "Confirm you password change", undefined, "Confirm", "Cancel");
     });
 
     async function deleteAccountRequest(password)

@@ -43,6 +43,10 @@ h1 {
     margin-bottom: 30px;
 }
 
+.card-title {
+    color: var(--white-color);
+}
+
 .ingredients-box {
     background-color: var(--white-color);
     border: 1px solid var(--border-color);
