@@ -3,11 +3,23 @@ import Recipe from '../models/Recipe.js';
 
 async function populateTheMealDbRecipes()
 {
-    //controlla se la collezione è già popolata
-    const count = await Recipe.countDocuments();
+    //TESTING controlla se la collezione è già popolata per evitare di fare tanti dump
+    /*const count = await Recipe.countDocuments();
     if (count > 0)
     {
         console.log("La collezione 'mealdbRecipes' è già popolata. Salto il dump iniziale.");
+        return;
+    }*/
+
+    try
+    {
+        //elimina tutti i documenti nella collezione mealdbRecipes
+        console.log("Deleting all existing documents from mealdbRecipes collection...");
+        const result = await Recipe.deleteMany({});
+        console.log(`${result.deletedCount} documents deleted.`);
+    } catch (error)
+    {
+        console.error("Error deleting documents:", error);
         return;
     }
 
