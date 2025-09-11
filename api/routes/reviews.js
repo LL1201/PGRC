@@ -4,6 +4,7 @@ import express from "express";
 //database
 import { createObjectId, isValidObjectId } from '../utils/objectId.js';
 
+//models
 import Review from '../models/Review.js';
 import Recipe from '../models/Recipe.js';
 
@@ -12,60 +13,7 @@ import { authenticateUser, authenticateUserOptionally } from '../middlewares/aut
 
 const router = express.Router({ mergeParams: true });
 
-/**
- * @swagger
- * /api/v1/recipes/{mealDbId}/reviews:
- *   post:
- *     summary: Add a review to a recipe
- *     tags:
- *       - Reviews
- *     parameters:
- *       - in: path
- *         name: mealDbId
- *         required: true
- *         schema:
- *           type: integer
- *         description: TheMealDB recipe ID
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer access token (Bearer <access_token>)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               difficultyEvaluation:
- *                 type: integer
- *                 example: 4
- *               tasteEvaluation:
- *                 type: integer
- *                 example: 5
- *               executionDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-06-01"
- *               notes:
- *                 type: string
- *                 example: "Ottima ricetta!"
- *     responses:
- *       201:
- *         description: Review added to recipe
- *       400:
- *         description: Missing or invalid parameters
- *       403:
- *         description: Unauthorized
- *       404:
- *         description: Recipe not found
- *       409:
- *         description: You have already left a review for this recipe
- *       500:
- *         description: Internal server error
- */
+
 router.post('/', authenticateUser, async (req, res) =>
 {
     const mealDbId = parseInt(req.params.mealDbId);
@@ -139,76 +87,6 @@ router.post('/', authenticateUser, async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/recipes/{mealDbId}/reviews:
- *   get:
- *     summary: Get paginated reviews for a recipe
- *     tags:
- *       - Reviews
- *     parameters:
- *       - in: path
- *         name: mealDbId
- *         required: true
- *         schema:
- *           type: integer
- *         description: TheMealDB recipe ID
- *       - in: query
- *         name: start
- *         schema:
- *           type: integer
- *         description: Start index for pagination (default 0)
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: Number of reviews to return (default 10)
- *     responses:
- *       200:
- *         description: Paginated reviews, total count, and statistics
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 reviews:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       reviewId:
- *                         type: string
- *                       mealDbId:
- *                         type: integer
- *                       authorUsername:
- *                         type: string
- *                       authorUserId:
- *                         type: string
- *                       difficulty:
- *                         type: integer
- *                       taste:
- *                         type: integer
- *                       notes:
- *                         type: string
- *                       executionDate:
- *                         type: string
- *                         format: date
- *                 total:
- *                   type: integer
- *                 statistics:
- *                   type: object
- *                   properties:
- *                     avgDifficulty:
- *                       type: number
- *                     avgTaste:
- *                       type: number
- *       400:
- *         description: Invalid or missing parameters
- *       404:
- *         description: Recipe not found
- *       500:
- *         description: Internal server error
- */
 router.get('/', authenticateUserOptionally, async (req, res) =>
 {
     const mealDbIdFromParams = req.params.mealDbId;
@@ -344,44 +222,6 @@ router.get('/', authenticateUserOptionally, async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/recipes/{mealDbId}/reviews/{reviewId}:
- *   delete:
- *     summary: Delete a review from a recipe
- *     tags:
- *       - Reviews
- *     parameters:
- *       - in: path
- *         name: mealDbId
- *         required: true
- *         schema:
- *           type: integer
- *         description: TheMealDB recipe ID
- *       - in: path
- *         name: reviewId
- *         required: true
- *         schema:
- *           type: string
- *         description: Review ID (ObjectId)
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer access token (Bearer <access_token>)
- *     responses:
- *       200:
- *         description: Review removed
- *       400:
- *         description: Invalid parameters
- *       403:
- *         description: Unauthorized
- *       404:
- *         description: Recipe or review not found
- *       500:
- *         description: Internal server error
- */
 router.delete('/:reviewId', authenticateUser, async (req, res) =>
 {
     let objectReviewId;

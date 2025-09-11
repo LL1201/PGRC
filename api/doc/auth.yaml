@@ -1,0 +1,119 @@
+paths:
+  /api/v1/auth/password-reset-tokens:
+    post:
+      summary: Request password reset email
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+      responses:
+        200:
+          description: If the email exists, a password reset link will be sent
+        400:
+          description: Email is required
+        500:
+          description: Internal server error
+  /api/v1/auth/access-tokens:
+    post:
+      summary: Login using email and password or start Google OAuth login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+                authProvider:
+                  type: string
+                  example: google
+                  description: Se impostato a 'google', avvia il login Google OAuth
+      responses:
+        200:
+          description: Login successful or Google OAuth URL returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  userId:
+                    type: string
+                  accessToken:
+                    type: string
+                  redirectUrl:
+                    type: string
+        400:
+          description: Email and password are required or invalid email format
+        401:
+          description: Invalid email or password or you did not confirmed your account
+        500:
+          description: Database error
+  /api/v1/users/{userId}/access-token:
+    delete:
+      summary: Logout and invalidate refresh token
+      tags:
+        - Auth
+      description: |
+        Effettua il logout dell'utente. Richiede il cookie `refreshToken` inviato dal client.
+      parameters:
+        - in: cookie
+          name: refreshToken
+          required: true
+          schema:
+            type: string
+          description: Refresh token cookie
+      responses:
+        200:
+          description: Logged out successfully
+        400:
+          description: Refresh token is required
+        401:
+          description: Invalid refresh token
+        500:
+          description: Internal server error
+    post:
+      summary: Refresh access token using refresh token cookie
+      tags:
+        - Auth
+      description: |
+        Richiede il cookie `refreshToken` inviato dal client.
+      parameters:
+        - name: refreshToken
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: Refresh token cookie
+    responses:
+      200:
+        description: New access token issued
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+      400:
+        description: Refresh token is required
+      401:
+        description: Invalid refresh token
+      500:
+        description: Internal server error

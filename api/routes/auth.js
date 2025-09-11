@@ -11,6 +11,7 @@ import { google } from 'googleapis';
 import { generateAccessToken, generateRefreshToken, AuthMethod } from "../utils/authUtils.js";
 import { sendPasswordResetMail } from '../utils/mailUtils.js';
 
+//models
 import User from '../models/User.js';
 
 dotenv.config();
@@ -25,53 +26,7 @@ const oauth2Client = new google.auth.OAuth2(
     process.env.BASE_URL + '/api/v1/auth/google/callback'
 );
 
-/**
- * @swagger
- * /api/v1/auth/access-tokens:
- *   post:
- *     summary: Login using email and password or start Google OAuth login
- *     tags:
- *       - Auth
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *               authProvider:
- *                 type: string
- *                 example: google
- *                 description: Se impostato a 'google', avvia il login Google OAuth
- *     responses:
- *       200:
- *         description: Login successful or Google OAuth URL returned
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 accessToken:
- *                   type: string
- *                 redirectUrl:
- *                   type: string
- *       400:
- *         description: Email and password are required or invalid email format
- *       401:
- *         description: Invalid email or password or you did not confirmed your account
- *       500:
- *         description: Database error
- */
+
 router.post("/access-tokens", async (req, res) =>
 {
     const loginData = req.body;
@@ -133,31 +88,6 @@ router.post("/access-tokens", async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/auth/password-reset-tokens:
- *   post:
- *     summary: Request password reset email
- *     tags:
- *       - Auth
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
- *     responses:
- *       200:
- *         description: If the email exists, a password reset link will be sent
- *       400:
- *         description: Email is required
- *       500:
- *         description: Internal server error
- */
 router.post("/password-reset-tokens", async (req, res) =>
 {
     const { email } = req.body;

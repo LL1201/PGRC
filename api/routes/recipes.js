@@ -1,71 +1,11 @@
 //node & express
 import express from "express";
 
-//database
+//models
 import Recipe from '../models/Recipe.js';
 
 const router = express.Router();
 
-/**
- * @swagger
- * /api/v1/recipes:
- *   get:
- *     summary: Search recipes by keyword or starting letter (paginated)
- *     tags:
- *       - Recipes
- *     parameters:
- *       - in: query
- *         name: q
- *         schema:
- *           type: string
- *         description: Search query (name or ingredient)
- *       - in: query
- *         name: letter
- *         schema:
- *           type: string
- *         description: Starting letter of recipe name
- *       - in: query
- *         name: start
- *         required: true
- *         schema:
- *           type: integer
- *         description: Start index for pagination (>= 0)
- *       - in: query
- *         name: offset
- *         required: true
- *         schema:
- *           type: integer
- *         description: End index for pagination (>= start, <= start+12)
- *     responses:
- *       200:
- *         description: Paginated recipes and total count
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 recipes:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       mealDbId:
- *                         type: integer
- *                       name:
- *                         type: string
- *                       category:
- *                         type: string
- *                       mealThumb:
- *                         type: string
- *                       area:
- *                         type: string
- *                 total:
- *                   type: integer
- *       400:
- *         description: Invalid or missing parameters
- *       500:
- *         description: Internal server error
- */
 router.get('', async (req, res) =>
 {
     //q contiene la query nel caso di ricerca
@@ -163,35 +103,6 @@ router.get('', async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/recipes/{mealDbId}:
- *   get:
- *     summary: Get details of a recipe by mealDbId
- *     tags:
- *       - Recipes
- *     parameters:
- *       - in: path
- *         name: mealDbId
- *         required: true
- *         schema:
- *           type: integer
- *         description: TheMealDB recipe ID
- *     responses:
- *       200:
- *         description: Recipe details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               description: Oggetto ricetta completo, con tutte le proprietà disponibili per la ricetta richiesta.
- *       400:
- *         description: Recipe ID is required
- *       404:
- *         description: Recipe not found in local database
- *       500:
- *         description: Internal server error
- */
 router.get('/:mealDbId', async (req, res) =>
 {
     const mealDbIdFromParams = req.params.mealDbId; //id originario di TheMealDB (vedi documentazione per ulteriori dettagli)

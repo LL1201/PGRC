@@ -29,7 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const swaggerOptions = {
-    swaggerDefinition: {
+    definition: {
         openapi: '3.0.0',
         info: {
             title: 'PGRC API',
@@ -45,8 +45,10 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./api/routes/*.js']
+    apis: ['./api/doc/*.yaml']
 };
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 const corsOptions = {
     origin: ['https://pgrc.lloner.it'],
@@ -54,7 +56,6 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 //server
 const app = express();

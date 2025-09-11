@@ -8,6 +8,7 @@ import emailValidator from "email-validator";
 import { sendConfirmationMail, sendAccountDeletionEmail, sendAccountDeletionConfirmationEmail } from '../utils/mailUtils.js';
 import { AuthMethod, verifyRefreshToken, generateAccessToken, removeRefreshToken } from "../utils/authUtils.js";
 
+//models
 import User from '../models/User.js';
 import RefreshToken from "../models/RefreshToken.js";
 import Review from "../models/Review.js";
@@ -19,39 +20,7 @@ const router = express.Router();
 const HASH_SALT = parseInt(process.env.HASH_SALT);
 const ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION = parseInt(process.env.ACCOUNT_CONFIRMATION_TOKEN_EXPIRATION) || 3600000; //default 1h
 
-/**
- * @swagger
- * /api/v1/users:
- *   post:
- *     summary: Register a new user
- *     tags:
- *       - Users
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: johndoe
- *               email:
- *                 type: string
- *                 example: johndoe@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *     responses:
- *       202:
- *         description: Verification email sent
- *       400:
- *         description: All fields are required or invalid email format
- *       409:
- *         description: Email or username already exists
- *       500:
- *         description: Internal server error
- */
+
 router.post("/", async (req, res) =>
 {
     const user = req.body;
@@ -107,60 +76,6 @@ router.post("/", async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/users/{userId}:
- *   delete:
- *     summary: Delete the authenticated user's account
- *     tags:
- *       - Users
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: User ID
- *       - in: header
- *         name: Authorization
- *         required: false
- *         schema:
- *           type: string
- *         description: Bearer access token (Bearer <access_token>)
- *       - in: cookie
- *         name: refreshToken
- *         required: false
- *         schema:
- *           type: string
- *         description: Refresh token cookie
- *       - in: header
- *         name: X-User-Password
- *         required: false
- *         schema:
- *           type: string
- *         description: User password (for email-authenticated users)
- *       - in: header
- *         name: X-User-Delete-Token
- *         required: false
- *         schema:
- *           type: string
- *         description: Account deletion token (from email)
- *     responses:
- *       200:
- *         description: User successfully deleted
- *       202:
- *         description: Deletion confirmation email sent
- *       400:
- *         description: Refresh token, password, or delete token is required
- *       401:
- *         description: Invalid refresh token, password, or delete token
- *       403:
- *         description: You can only delete your own account
- *       404:
- *         description: User not found or already deleted
- *       500:
- *         description: Internal server error
- */
 router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
 {
     //l'auth è opzionale perché quando richiedo l'eliminazione account faccio un logout allo user e quindi quando clicca il link
@@ -279,49 +194,6 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/users/{userId}:
- *   get:
- *     summary: Get authenticated user's profile
- *     tags:
- *       - Users
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: User ID
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer access token (Bearer <access_token>)
- *     responses:
- *       200:
- *         description: User profile data
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 email:
- *                   type: string
- *                 username:
- *                   type: string
- *       400:
- *         description: User ID is required
- *       403:
- *         description: You can only view your own profile
- *       404:
- *         description: User not found in local database
- *       500:
- *         description: Internal server error
- */
 router.get('/:userId', authenticateUser, async (req, res) =>
 {
     const userObjectId = req.userObjectId;
@@ -362,68 +234,6 @@ router.get('/:userId', authenticateUser, async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/users/{userId}:
- *   patch:
- *     summary: Update authenticated user's username and/or email, confirm account, or reset password
- *     tags:
- *       - Users
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: User ID
- *       - in: header
- *         name: Authorization
- *         required: false
- *         schema:
- *           type: string
- *         description: Bearer access token (Bearer <access_token>)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             description: |
- *               - Se presente `username`, viene aggiornato solo questo e gli altri parametri vengono ignorati.
- *               - Se presente `confirmed`, è obbligatorio anche `confirmationToken`.
- *               - Se presente `password`, è obbligatorio anche `resetPasswordToken`.
- *             properties:
- *               username:
- *                 type: string
- *                 example: newusername *               
- *               confirmed:
- *                 type: boolean
- *                 example: true
- *               confirmationToken:
- *                 type: string
- *                 example: "token"
- *               password:
- *                 type: string
- *                 example: "newpassword"
- *               resetPasswordToken:
- *                 type: string
- *                 example: "token"
- *     responses:
- *       200:
- *         description: User data updated successfully / Account verified / Password reset
- *       400:
- *         description: No changes made, user not found, invalid email format, or missing/invalid tokens
- *       401:
- *         description: Unauthorized. Please log in.
- *       403:
- *         description: You can only update your own account
- *       404:
- *         description: User not found, invalid or expired token
- *       409:
- *         description: Email or username already exists
- *       500:
- *         description: Internal server error
- */
 router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 {
     const reqUserObjectId = req.reqUserObjectId;
@@ -573,32 +383,6 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/users/{userId}/access-token:
- *   delete:
- *     summary: Logout and invalidate refresh token
- *     tags:
- *       - Auth
- *     description: |
- *       Effettua il logout dell'utente. Richiede il cookie `refreshToken` inviato dal client.
- *     parameters:
- *       - in: cookie
- *         name: refreshToken
- *         required: true
- *         schema:
- *           type: string
- *         description: Refresh token cookie
- *     responses:
- *       200:
- *         description: Logged out successfully
- *       400:
- *         description: Refresh token is required
- *       401:
- *         description: Invalid refresh token
- *       500:
- *         description: Internal server error
- */
 router.delete("/:userId/access-token", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;
@@ -639,39 +423,6 @@ router.delete("/:userId/access-token", async (req, res) =>
     }
 });
 
-/**
- * @swagger
- * /api/v1/users/{userId}/access-token:
- *   post:
- *     summary: Refresh access token using refresh token cookie
- *     tags:
- *       - Auth
- *     description: |
- *       Richiede il cookie `refreshToken` inviato dal client.
- *     parameters:
- *       - name: refreshToken
- *         in: cookie
- *         required: true
- *         schema:
- *           type: string
- *         description: Refresh token cookie
- *     responses:
- *       200:
- *         description: New access token issued
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *       400:
- *         description: Refresh token is required
- *       401:
- *         description: Invalid refresh token
- *       500:
- *         description: Internal server error
- */
 router.post("/:userId/access-token", async (req, res) =>
 {
     const refreshToken = req.cookies.refreshToken;

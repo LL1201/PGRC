@@ -1,0 +1,180 @@
+paths:
+  /api/v1/users:
+    post:
+      summary: Register a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        202:
+          description: Verification email sent
+        400:
+          description: All fields are required or invalid email format
+        409:
+          description: Email or username already exists
+        500:
+          description: Internal server error
+
+  /api/v1/users/{userId}:
+    delete:
+      summary: Delete the authenticated user's account
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+          description: Bearer access token (Bearer <access_token>)
+        - in: cookie
+          name: refreshToken
+          required: false
+          schema:
+            type: string
+          description: Refresh token cookie
+        - in: header
+          name: X-User-Password
+          required: false
+          schema:
+            type: string
+          description: User password (for email-authenticated users)
+        - in: header
+          name: X-User-Delete-Token
+          required: false
+          schema:
+            type: string
+          description: Account deletion token (from email)
+      responses:
+        200:
+          description: User successfully deleted
+        202:
+          description: Deletion confirmation email sent
+        400:
+          description: Refresh token, password, or delete token is required
+        401:
+          description: Invalid refresh token, password, or delete token
+        403:
+          description: You can only delete your own account
+        404:
+          description: User not found or already deleted
+        500:
+          description: Internal server error
+    get:
+      summary: Get authenticated user's profile
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: Bearer access token (Bearer <access_token>)
+      responses:
+        200:
+          description: User profile data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  email:
+                    type: string
+                  username:
+                    type: string
+        400:
+          description: User ID is required
+        403:
+          description: You can only view your own profile
+        404:
+          description: User not found in local database
+        500:
+          description: Internal server error
+    patch:
+      summary: Update authenticated user's username and/or email, confirm account, or reset password
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+          description: Bearer access token (Bearer <access_token>)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: |
+                - Se presente `username`, viene aggiornato solo questo e gli altri parametri vengono ignorati.
+                - Se presente `confirmed`, è obbligatorio anche `confirmationToken`.
+                - Se presente `password`, è obbligatorio anche `resetPasswordToken`.
+              properties:
+                username:
+                  type: string
+                  example: newusername
+                confirmed:
+                  type: boolean
+                  example: true
+                confirmationToken:
+                  type: string
+                  example: "token"
+                password:
+                  type: string
+                  example: "newpassword"
+                resetPasswordToken:
+                  type: string
+                  example: "token"
+      responses:
+        200:
+          description: User data updated successfully / Account verified / Password reset
+        400:
+          description: No changes made, user not found, invalid email format, or missing/invalid tokens
+        401:
+          description: Unauthorized. Please log in.
+        403:
+          description: You can only update your own account
+        404:
+          description: User not found, invalid or expired token
+        409:
+          description: Email or username already exists
+        500:
+          description: Internal server error
