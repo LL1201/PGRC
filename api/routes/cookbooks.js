@@ -448,19 +448,7 @@ router.patch('/recipes/:cookbookRecipeId', authenticateUser, async (req, res) =>
 
 
         if (updateResult.modifiedCount === 0)
-        {
             return res.status(500).json({ message: 'Failed to update note.' });
-            /*//se la ricetta non è stata trovata o non è stata modificata
-            const cookbook = await db.collection('personalCookbooks').findOne({ userId: userObjectId });
-            if (!cookbook || !cookbook.recipes.some(r => r.mealDbId === mealDbId))
-            {
-                return res.status(404).json({ message: 'Recipe not found in your personal cookbook.' });
-            } else
-            {
-                // Ricetta trovata ma forse la nota era già quella o altri problemi
-                return res.status(500).json({ message: 'Failed to update note (no modification made).' });
-            }*/
-        }
 
         res.status(200).json({ message: 'Private note successfully updated.' });
 

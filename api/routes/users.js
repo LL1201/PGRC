@@ -180,15 +180,23 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
     try
     {
         //estraggo l'utente con tale id
-        let user = await User.findById(reqUserObjectId);
-
-        if (!user)
-            return res.status(404).json({ message: 'User not found or already deleted.' });
+        //let user = await User.findById(reqUserObjectId);  
 
         if (password || authMethod === AuthMethod.Google)
         {
             if (deleteToken)
                 return res.status(400).json({ message: 'Cannot provide both password and delete token.' });
+
+            let user = await User.findOne({
+                _id: reqUserObjectId,
+                $or: [
+                    { 'deleteAccountData.expiration': { $exists: false } },
+                    { 'deleteAccountData.expiration': { $lte: new Date() } }
+                ]
+            });
+
+            if (!user)
+                return res.status(202).json({ message: 'Deletion confirmation email sent. Please check your inbox to confirm.' });
 
             if (authMethod === AuthMethod.Email)
             {
@@ -225,7 +233,14 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
             return res.status(202).json({ message: 'Deletion confirmation email sent. Please check your inbox to confirm.' });
         } else if (deleteToken)
         {
-            if (!user.deleteAccountData || !user.deleteAccountData.token || !user.deleteAccountData.expiration)
+            let user = await User.findOne({
+                _id: reqUserObjectId,
+                $and: [
+                    { 'deleteAccountData.expiration': { $exists: true } },
+                    { 'deleteAccountData.expiration': { $gte: new Date() } }
+                ]
+            });
+            if (!user)
                 return res.status(400).json({ message: 'Invalid or expired delete token. Please restart the deletion process.' });
 
             if (!await bcrypt.compare(deleteToken, user.deleteAccountData.token) || user.deleteAccountData.expiration < new Date())
@@ -417,7 +432,7 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
     const reqUserObjectId = req.reqUserObjectId;
     const { username, confirmed, confirmationToken, password, resetPasswordToken } = req.body;
 
-    if (username || email)
+    if (username)
         if (!req.userObjectId)
             return res.status(401).
                 set('WWW-Authenticate', 'Bearer realm="Access to the protected API"').json({ message: 'Unauthorized. Please log in.' });

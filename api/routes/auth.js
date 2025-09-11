@@ -135,7 +135,7 @@ router.post("/access-tokens", async (req, res) =>
 
 /**
  * @swagger
- * /api/v1/auth/password-lost-tokens:
+ * /api/v1/auth/password-reset-tokens:
  *   post:
  *     summary: Request password reset email
  *     tags:
@@ -158,16 +158,19 @@ router.post("/access-tokens", async (req, res) =>
  *       500:
  *         description: Internal server error
  */
-router.post("/password-lost-tokens", async (req, res) =>
+router.post("/password-reset-tokens", async (req, res) =>
 {
     const { email } = req.body;
 
     if (!email)
         return res.status(400).json({ message: 'Email is required.' });
 
-    //controllo l'esistenza dello user    
+    //controllo l'esistenza dello user e che sia idoneo per un cambio password
+    //se non ha hashed password vuol dire che si è registrato con google e non può resettare la password
+    //se l'utente ha una registrazione normale e ha anche un googleId comunque può resettare la password
     const user = await User.findOne({
         email: email,
+        hashedPassword: { $exists: true },
         $or: [
             { 'resetPasswordData.expiration': { $exists: false } },
             { 'resetPasswordData.expiration': { $lte: new Date() } }

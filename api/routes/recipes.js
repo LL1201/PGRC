@@ -75,11 +75,11 @@ router.get('', async (req, res) =>
     const start = parseInt(req.query.start);
     const offset = parseInt(req.query.offset);
 
-    // Check if parameters are provided
+    //check if parameters are provided
     if (req.query.start === undefined || req.query.offset === undefined)
         return res.status(400).json({ message: 'Both start and offset parameters are required.' });
 
-    // Check if parameters are valid numbers
+    //check if parameters are valid numbers
     if (isNaN(start) || isNaN(offset))
         return res.status(400).json({ message: 'Start and offset parameters must be valid numbers.' });
 

@@ -9,7 +9,7 @@ const DB_PORT = process.env.DB_PORT;
 const DB_USER = process.env.DB_USER;
 const DB_PSW = process.env.DB_PSW;
 
-// Costruzione dinamica della connection string
+//costruzione dinamica della connection string
 const DB_STRING = `mongodb://${DB_USER}:${DB_PSW}@${DB_HOST}:${DB_PORT}/`;
 
 class Database

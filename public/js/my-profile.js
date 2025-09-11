@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () =>
                 {
                     const userEmail = (await userEmailResult.json()).email;
 
-                    const response = await fetch("/api/v1/password-lost-tokens", {
+                    const response = await fetch("/api/v1/password-reset-tokens", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', async () =>
         {
             const options = {
                 method: 'DELETE',
+                headers: {}
             };
 
             if (authUtils.getAuthMethod() === 'email')

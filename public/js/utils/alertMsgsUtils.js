@@ -16,10 +16,10 @@ function showAlert(message, type = 'info', duration = 5000)
 {
     hideAlert();
 
-    // Usa il container in alto a destra
+    //usa il container in alto a destra
     const container = ensureAlertBannerContainer();
 
-    // Crea il banner custom
+    //crea il banner custom
     const alertDiv = document.createElement('div');
     let typeClass = '';
     switch (type)
@@ -36,7 +36,7 @@ function showAlert(message, type = 'info', duration = 5000)
         <button type="button" class="btn-close" aria-label="Close" style="float:right; margin-left:10px;"></button>
     `;
 
-    // Chiudi manualmente
+    //chiudi manualmente
     alertDiv.querySelector('.btn-close').onclick = () =>
     {
         alertDiv.remove();
@@ -44,7 +44,7 @@ function showAlert(message, type = 'info', duration = 5000)
 
     container.appendChild(alertDiv);
 
-    // Auto-hide dopo duration
+    //auto-hide
     if (duration > 0)
     {
         setTimeout(() =>
@@ -203,20 +203,6 @@ function showPrompt(message, defaultValue = '', onConfirm, onCancel = null, conf
     {
         hidePrompt();
         if (onCancel) onCancel();
-    };
-
-    input.onkeydown = (e) =>
-    {
-        if (e.key === 'Enter' && e.ctrlKey)
-        {
-            hidePrompt();
-            if (onConfirm) onConfirm(input.value);
-        }
-        if (e.key === 'Escape')
-        {
-            hidePrompt();
-            if (onCancel) onCancel();
-        }
     };
 
     const bsModal = new bootstrap.Modal(modalDiv);

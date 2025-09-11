@@ -51,8 +51,7 @@ const swaggerOptions = {
 const corsOptions = {
     origin: ['https://pgrc.lloner.it'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-    // maxAge: 86400, // Cache the preflight response for 24 hours
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

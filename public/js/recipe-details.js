@@ -266,15 +266,15 @@ document.addEventListener('DOMContentLoaded', () =>
         const div = document.createElement('div');
         div.className = 'review-card';
 
-        // Format date
+        //formattazione data a seconda del preferred language settato sul browser
         let dateStr = '';
         if (review.executionDate)
         {
             const d = new Date(review.executionDate);
+
             if (!isNaN(d))
-            {
-                dateStr = d.toLocaleDateString('it-IT');
-            }
+                dateStr = d.toLocaleDateString(navigator.language);
+
         }
 
         div.innerHTML = `
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () =>
                             if (response.ok)
                             {
                                 alertMsgsUtils.showSuccess('Review deleted successfully!');
-                                // Reload reviews and show the form again
+                                //ricarica le review per mostrare l'aggiornamento avvenuto
                                 fetchAndDisplayReviews(true, review.mealDbId);
                             }
                             else

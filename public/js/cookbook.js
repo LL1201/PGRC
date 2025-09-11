@@ -219,6 +219,7 @@ document.addEventListener('DOMContentLoaded', async () =>
 
             } else
             {
+                shareLinkInput.style.display = 'none';
                 const errorData = await recipesResponse.json();
                 console.error('Error fetching cookbook:', errorData.message);
                 cookbookRecipesContainer.innerHTML = `<p class="message error show">${errorData.message || 'Error during cookbook retrieval.'}</p>`;
