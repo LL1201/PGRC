@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', async () =>
     const token = urlParams.get('confirmation-token');
     const userId = urlParams.get('user-id');
 
-    //TODO - veder se si possono usare gli alert dell'utility
     const loadingSpinner = document.getElementById('loading-spinner');
     const verificationMessage = document.getElementById('verification-message');
     const loginRedirectLink = document.getElementById('login-redirect-link');

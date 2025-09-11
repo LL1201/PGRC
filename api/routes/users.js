@@ -226,7 +226,6 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
                 }
             );
 
-            //TODO vedere di errori invio mail
             sendAccountDeletionEmail(user.email, newDeleteToken, user._id);
             console.log(`Deletion confirmation email sent for user ID: ${reqUserObjectId}`);
 
@@ -325,7 +324,6 @@ router.delete("/:userId", authenticateUserOptionally, async (req, res) =>
  */
 router.get('/:userId', authenticateUser, async (req, res) =>
 {
-    //TODO HATEOS cookbook
     const userObjectId = req.userObjectId;
     const reqUserObjectId = req.reqUserObjectId;
 
@@ -428,7 +426,6 @@ router.get('/:userId', authenticateUser, async (req, res) =>
  */
 router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
 {
-    //TODO - valutare il cambio mail con conferma via email      
     const reqUserObjectId = req.reqUserObjectId;
     const { username, confirmed, confirmationToken, password, resetPasswordToken } = req.body;
 
@@ -537,7 +534,6 @@ router.patch("/:userId", authenticateUserOptionally, async (req, res) =>
                 console.log(`User ${user.email} reset password successfully.`);
                 return res.status(200).json({ message: 'Password has been reset successfully. You can now log in.' });
             }
-            //TODO controllare comportamento in caso di ritorno null della funzione updateUser
         } catch (e)
         {
             console.error("Error resetting password:", e);

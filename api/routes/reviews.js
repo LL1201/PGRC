@@ -243,7 +243,6 @@ router.get('/', authenticateUserOptionally, async (req, res) =>
         if (!existingMealDbRecipe)
             return res.status(404).json({ message: 'Recipe with the provided mealDbId does not exist.' });
 
-        //TODO - capire bene
         const pipeline = [
             { $match: { mealDbId: mealDbId } },
             {

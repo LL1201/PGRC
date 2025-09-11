@@ -398,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () =>
         };
     }
 
-    //TODO - sostituire con i miei errori
     function showError(title, message)
     {
         const recipeContainer = document.getElementById('recipe-container');

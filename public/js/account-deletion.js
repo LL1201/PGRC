@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', async () =>
     const token = urlParams.get('delete-token');
     const userId = urlParams.get('user-id');
 
-    //TODO - veder se si possono usare gli alert dell'utility
     const verificationMessage = document.getElementById('verification-message');
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
