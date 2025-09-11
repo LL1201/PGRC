@@ -56,7 +56,6 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 
-
 //server
 const app = express();
 const listeningPort = process.env.APP_LISTENING_PORT;
@@ -74,7 +73,6 @@ app.use(cors(corsOptions));
 //middleware per l'aggiunta del menu a tutte le pagine che hanno il placeholder <!-- NAVBAR_PLACEHOLDER -->
 app.use(htmlProcessor);
 
-
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use("/api/v1/users/:userId/cookbook", cookbooksRouter);
@@ -83,6 +81,7 @@ app.use("/api/v1/recipes/:mealDbId/reviews", reviewsRouter);
 app.use("/api/v1/recipes", recipesRouter);
 app.use("/api/v1", authRouter);
 
+//per inviare uno status 400 quando il JSON è malformato
 app.use((err, req, res, next) =>
 {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err)
@@ -93,6 +92,7 @@ app.use((err, req, res, next) =>
     next(err);
 });
 
+//come un "default deny" alla fine delle regole firewall
 app.use((req, res) =>
 {
     res.status(404).json({ message: 'Invalid endpoint or HTTP method' });
